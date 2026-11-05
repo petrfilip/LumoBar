@@ -530,3 +530,15 @@
 "circadian.keyframe.edit" = "Upravit tento časový bod";
 "circadian.keyframe.time" = "Čas";
 "circadian.reset" = "Obnovit výchozí";
+
+/* Focus automation & login item */
+"focus.automation.title" = "Automatizace ve Zkratkách";
+"focus.automation.hint" = "macOS aplikacím neprozrazuje, který režim Soustředění je zapnutý. Ve Zkratkách otevřete Automatizace, vytvořte „Když se zapne <režim>“ s akcí „Otevřít URL“ a vložte URL odpovídajícího přiřazení níže. Přidejte i „Když se vypne <režim>“ s URL pro vypnutí Soustředění. Každé přiřazení výše má vlastní URL.";
+"focus.automation.off" = "Soustředění vypnuto";
+"focus.automation.copy.help" = "Zkopírovat URL";
+"login.item.title" = "Spustit po přihlášení";
+"login.item.detail" = "Automaticky spustit LampControl po přihlášení";
+"login.item.approval.hint" = "Vyžaduje schválení: povolte LampControl v Nastavení systému › Obecné › Položky po přihlášení.";
+"login.item.open.settings" = "Otevřít Položky po přihlášení";
+"login.item.error.register" = "Spouštění po přihlášení se nepodařilo zapnout: %@";
+"login.item.error.unregister" = "Spouštění po přihlášení se nepodařilo vypnout: %@";
