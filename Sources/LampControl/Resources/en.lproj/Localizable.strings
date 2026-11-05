@@ -536,3 +536,9 @@
 "focus.automation.hint" = "macOS doesn't tell apps which Focus is active. In Shortcuts, open Automation, create \"When <Focus> turns on\" with the action \"Open URLs\", and paste the matching URL below. Add \"When <Focus> turns off\" with the Focus off URL. Name each mapping above with the mode identifier shown here.";
 "focus.automation.off" = "Focus off";
 "focus.automation.copy.help" = "Copy URL";
+"login.item.title" = "Launch at login";
+"login.item.detail" = "Start LampControl automatically when you log in";
+"login.item.approval.hint" = "Approval needed: allow LampControl in System Settings › General › Login Items.";
+"login.item.open.settings" = "Open Login Items";
+"login.item.error.register" = "Couldn't enable launch at login: %@";
+"login.item.error.unregister" = "Couldn't disable launch at login: %@";

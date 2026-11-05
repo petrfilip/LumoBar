@@ -536,3 +536,9 @@
 "focus.automation.hint" = "macOS n'indique pas aux apps quel Focus est actif. Dans Raccourcis, ouvrez Automatisation, créez « Quand <Focus> s'active » avec l'action « Ouvrir les URL », puis collez l'URL correspondante ci-dessous. Ajoutez « Quand <Focus> se désactive » avec l'URL Focus désactivé. Nommez chaque mapping ci-dessus avec l'identifiant du mode affiché ici.";
 "focus.automation.off" = "Focus désactivé";
 "focus.automation.copy.help" = "Copier l'URL";
+"login.item.title" = "Ouvrir à la connexion";
+"login.item.detail" = "Lance LampControl automatiquement à l'ouverture de session";
+"login.item.approval.hint" = "Approbation requise : autorisez LampControl dans Réglages Système › Général › Ouverture.";
+"login.item.open.settings" = "Ouvrir les éléments de connexion";
+"login.item.error.register" = "Impossible d'activer l'ouverture à la connexion : %@";
+"login.item.error.unregister" = "Impossible de désactiver l'ouverture à la connexion : %@";

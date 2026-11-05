@@ -1929,6 +1929,34 @@ struct SettingsView: View {
 
             settingsGroup {
                 toggleRow(
+                    title: "login.item.title",
+                    subtitle: "login.item.detail",
+                    isOn: Binding(
+                        get: { appState.isLaunchAtLoginOn },
+                        set: { appState.setLaunchAtLogin($0) }
+                    )
+                )
+
+                if appState.loginItemStatus == .requiresApproval {
+                    hint("login.item.approval.hint")
+
+                    Button {
+                        appState.openLoginItemsSettings()
+                    } label: {
+                        Label("login.item.open.settings", systemImage: "gearshape")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(accent)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                    }
+                    .liquidGlassButtonStyle()
+                    .help("login.item.open.settings")
+                }
+            }
+            .onAppear { appState.refreshLoginItemStatus() }
+
+            settingsGroup {
+                toggleRow(
                     title: "updates.auto.check",
                     subtitle: "updates.auto.check.detail",
                     isOn: $appState.updateService.automaticChecksEnabled

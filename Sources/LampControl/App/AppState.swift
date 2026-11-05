@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import OSLog
+import ServiceManagement
 
 @MainActor
 final class AppState: ObservableObject {
@@ -250,6 +251,39 @@ final class AppState: ObservableObject {
     func applySceneForCurrentFocus() async {
         guard let scene = sceneForCurrentFocus() else { return }
         await applyScene(scene)
+    }
+
+    // MARK: Launch at login
+
+    /// Mirrors `SMAppService.mainApp.status`; refreshed on demand (Settings appear / after a change).
+    @Published private(set) var loginItemStatus: SMAppService.Status = SMAppService.mainApp.status
+
+    /// True when the app is registered (including pending user approval).
+    var isLaunchAtLoginOn: Bool {
+        loginItemStatus == .enabled || loginItemStatus == .requiresApproval
+    }
+
+    func refreshLoginItemStatus() {
+        loginItemStatus = SMAppService.mainApp.status
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        let service = SMAppService.mainApp
+        do {
+            if enabled {
+                if service.status != .enabled { try service.register() }
+            } else if service.status == .enabled || service.status == .requiresApproval {
+                try service.unregister()
+            }
+        } catch {
+            let key = enabled ? "login.item.error.register" : "login.item.error.unregister"
+            message = String(format: NSLocalizedString(key, comment: ""), error.localizedDescription)
+        }
+        refreshLoginItemStatus()
+    }
+
+    func openLoginItemsSettings() {
+        SMAppService.openSystemSettingsLoginItems()
     }
 
     // MARK: Focus automation (URL scheme)
