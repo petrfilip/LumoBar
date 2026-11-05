@@ -198,10 +198,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            let (view, rect) = popoverAnchor(for: button)
+            popover.show(relativeTo: rect, of: view, preferredEdge: .minY)
             updatePopoverSize(animated: false)
             popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    /// Invisible window used to anchor the popover on the right display.
+    private lazy var anchorWindow: NSWindow = {
+        let window = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: true)
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = false
+        window.ignoresMouseEvents = true
+        window.level = .statusBar
+        window.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
+        window.isReleasedWhenClosed = false
+        return window
+    }()
+
+    /// With several displays every menu bar shows the status item, but the
+    /// button's window lives on one of them (typically the last active one)
+    /// at the moment of the click — anchoring to it opened the popover on
+    /// the "other" monitor. When the click happened in another display's menu
+    /// bar, anchor to an invisible window placed right under the cursor there.
+    private func popoverAnchor(for button: NSStatusBarButton) -> (NSView, NSRect) {
+        let fallback: (NSView, NSRect) = (button, button.bounds)
+        guard let buttonWindow = button.window else { return fallback }
+
+        let mouse = NSEvent.mouseLocation
+        guard let clickScreen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }),
+              clickScreen != buttonWindow.screen
+        else { return fallback }
+
+        // Only when the click is in that screen's menu bar (not e.g. "Open"
+        // chosen from the context menu or a keyboard shortcut).
+        let menuBarHeight = max(NSStatusBar.system.thickness, clickScreen.frame.maxY - clickScreen.visibleFrame.maxY)
+        guard mouse.y >= clickScreen.frame.maxY - menuBarHeight - 2 else { return fallback }
+
+        let buttonFrame = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+        let frame = NSRect(
+            x: mouse.x - buttonFrame.width / 2,
+            y: clickScreen.frame.maxY - menuBarHeight,
+            width: buttonFrame.width,
+            height: menuBarHeight
+        )
+        anchorWindow.setFrame(frame, display: false)
+        anchorWindow.orderFrontRegardless()
+        guard let content = anchorWindow.contentView else { return fallback }
+        return (content, content.bounds)
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        anchorWindow.orderOut(nil)
     }
 
     private func updatePopoverSize(animated: Bool) {

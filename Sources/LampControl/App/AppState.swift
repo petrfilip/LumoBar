@@ -600,7 +600,7 @@ final class AppState: ObservableObject {
         switch selectedTab {
         case .settings: height = 720
         // LampsView wraps its body in a ScrollView; the popover is sized to
-        // a content-aware target capped at 620pt. Anything beyond scrolls
+        // a content-aware target capped at 860pt. Anything beyond scrolls
         // (rooms, expanded rows, scene editor).
         case .lamps:    height = lampsPopoverHeight
         }
