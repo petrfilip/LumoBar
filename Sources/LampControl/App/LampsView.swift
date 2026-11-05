@@ -31,7 +31,7 @@ struct LampsView: View {
             statusBar
 
             // Search and filter controls
-            if !appState.lamps.isEmpty && appState.canSync {
+            if appState.showsLampFilters && appState.canSync {
                 HStack(spacing: LCSpacing.xs) {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")

@@ -653,6 +653,12 @@ final class AppState: ObservableObject {
 
     /// Groups only make sense with at least two color lamps; with a single
     /// bulb the group bar and the per-lamp "Add to group" toggle were noise.
+    /// Search / hide-offline row: pointless with one or two lamps. Stays visible
+    /// while a filter is active so the user can always switch it off again.
+    var showsLampFilters: Bool {
+        lamps.count > 2 || hideOfflineLamps || !searchText.isEmpty
+    }
+
     var showsGroupControls: Bool {
         lamps.lazy.filter { $0.capabilities.colorCode != nil }.prefix(2).count >= 2
     }
@@ -728,7 +734,7 @@ final class AppState: ObservableObject {
         }
 
         // search + offline toggle row
-        if !lamps.isEmpty { h += 44 }
+        if showsLampFilters { h += 44 }
 
         // empty/filter empty state card
         if lamps.isEmpty && !isAutoSyncing { return min(h + 200, 540) }
