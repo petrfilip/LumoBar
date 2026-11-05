@@ -43,29 +43,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.contentViewController = hosting
         appState.closePopover = { [weak self] in self?.popover.performClose(nil) }
 
-        // PERF: previously we re-ran `updatePopoverSize` on every `objectWillChange`
-        // (debounced 180ms). On a live system with sync polling this triggers a
-        // continuous resize/layout loop in SwiftUI — main cause of the 3 FPS popover.
-        // We now resize only on key layout-affecting events.
-        Publishers.MergeMany(
-            appState.$selectedTab.map { _ in () }.eraseToAnyPublisher(),
-            appState.$expandedLampIds.map { _ in () }.eraseToAnyPublisher(),
-            appState.$isGroupPanelExpanded.map { _ in () }.eraseToAnyPublisher(),
-            appState.$hideOfflineLamps.map { _ in () }.eraseToAnyPublisher()
-        )
-        .debounce(for: .milliseconds(120), scheduler: RunLoop.main)
-        .sink { [weak self] _ in
-            self?.updatePopoverSize(animated: false)
-        }
-        .store(in: &cancellables)
-
-        // Resize when the lamp list shape changes (count / visibility), not on every property update.
-        appState.$lamps
-            .map { lamps in lamps.map { "\($0.id):\($0.online)" }.joined(separator: ",") }
-            .removeDuplicates()
-            .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
+        // Keep the popover as tall as SwiftUI's frame (`preferredPopoverSize`).
+        // Enumerating the publishers that affect the height (tab, expanded rows,
+        // search text, rooms, auto-sync banner...) kept missing some, so instead
+        // every state change schedules one check that compares the computed size
+        // with the current content size and only sets it when they differ.
+        // PERF: the check is skipped while the popover is hidden (background sync
+        // polling costs nothing; `togglePopover` sizes it before showing) and
+        // throttled, with a trailing pass so the final state is always applied.
+        appState.objectWillChange
+            .throttle(for: .milliseconds(120), scheduler: RunLoop.main, latest: true)
             .sink { [weak self] _ in
-                self?.updatePopoverSize(animated: false)
+                // `objectWillChange` fires before the new values are stored: read
+                // them on the next main-queue turn.
+                DispatchQueue.main.async {
+                    guard let self, self.popover.isShown else { return }
+                    self.updatePopoverSize(animated: false)
+                }
             }
             .store(in: &cancellables)
     }
