@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import OSLog
 import QuartzCore
 import SwiftUI
 
@@ -34,7 +35,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.behavior = .transient
         popover.animates = false
         popover.delegate = self
-        popover.contentViewController = NSHostingController(rootView: ControlCenterView().environmentObject(appState))
+        let hosting = NSHostingController(rootView: ControlCenterView().environmentObject(appState))
+        // The popover size is driven explicitly by `updatePopoverSize`. Letting the
+        // hosting controller also publish SwiftUI's ideal size made the popover
+        // resize itself right after `show`, which shifted it away from the icon.
+        hosting.sizingOptions = []
+        popover.contentViewController = hosting
         appState.closePopover = { [weak self] in self?.popover.performClose(nil) }
 
         // PERF: previously we re-ran `updatePopoverSize` on every `objectWillChange`
@@ -216,7 +222,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             updatePopoverSize(animated: false)
             popover.show(relativeTo: rect, of: view, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            logPopoverPlacement(anchor: rect, in: view, phase: "show")
+
+            // Safety net: once layout has settled (first show on a display with
+            // a different scale, late SwiftUI layout), re-anchor the popover so
+            // it never stays shifted next to the icon.
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.popover.isShown else { return }
+                self.popover.positioningRect = rect
+                self.logPopoverPlacement(anchor: rect, in: view, phase: "settled")
+            }
         }
+    }
+
+    private static let popoverLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "Popover")
+
+    /// Logs where the popover ended up relative to its anchor, to diagnose
+    /// placement reports: `log show --predicate 'category == "Popover"' --last 10m`
+    private func logPopoverPlacement(anchor rect: NSRect, in view: NSView, phase: String) {
+        guard let anchorWindow = view.window,
+              let popoverFrame = popover.contentViewController?.view.window?.frame else { return }
+        let anchorFrame = anchorWindow.convertToScreen(view.convert(rect, to: nil))
+        let offset = popoverFrame.midX - anchorFrame.midX
+        Self.popoverLog.info("""
+        \(phase, privacy: .public) anchor=\(NSStringFromRect(anchorFrame), privacy: .public) \
+        popover=\(NSStringFromRect(popoverFrame), privacy: .public) dx=\(offset, privacy: .public) \
+        screen=\(anchorWindow.screen?.localizedName ?? "?", privacy: .public) \
+        scale=\(anchorWindow.screen?.backingScaleFactor ?? 0, privacy: .public) \
+        mouse=\(NSStringFromPoint(NSEvent.mouseLocation), privacy: .public)
+        """)
     }
 
     /// Invisible window used to anchor the popover on the right display.
