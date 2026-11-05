@@ -1747,11 +1747,15 @@ final class AppState: ObservableObject {
     }
 
     private func updateLamp(_ next: LampDevice) {
-        let previous = lamps.first { $0.id == next.id }
-        lamps = lamps.map { $0.id == next.id ? next : $0 }
+        guard let index = lamps.firstIndex(where: { $0.id == next.id }) else { return }
+        let previous = lamps[index]
+        // Publishing an identical lamp still re-rendered the whole popover (every command
+        // result and push echo repeats the optimistic value): skip no-ops.
+        guard previous != next else { return }
+        lamps[index] = next
         // The snapshot only holds counts; writing it on every slider tick
         // (previews call this continuously) was needless disk I/O.
-        if previous?.power != next.power || previous?.online != next.online {
+        if previous.power != next.power || previous.online != next.online {
             persistWidgetSnapshot()
         }
     }

@@ -1198,12 +1198,16 @@ private struct ColorSpectrumPicker: View {
     var showsThumb = true
     @Binding var color: HSVColor
     var onCommit: ((HSVColor) -> Void)? = nil
+    /// The thumb follows the pointer through this local value while dragging instead of
+    /// round-tripping through the store, so nothing a bulb pushes back can make it jump.
+    @State private var dragColor: HSVColor?
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            let x = CGFloat(color.h) / 360.0 * size.width
-            let y = CGFloat(color.s) / 1000.0 * size.height
+            let shown = dragColor ?? color
+            let x = CGFloat(shown.h) / 360.0 * size.width
+            let y = CGFloat(shown.s) / 1000.0 * size.height
 
             ZStack(alignment: .topLeading) {
                 LinearGradient(
@@ -1226,7 +1230,7 @@ private struct ColorSpectrumPicker: View {
 
                 Circle()
                     .strokeBorder(Color.white, lineWidth: 2)
-                    .background(Circle().fill(Color(hsv: color)))
+                    .background(Circle().fill(Color(hsv: shown)))
                     .frame(width: 18, height: 18)
                     .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 2)
                     .offset(x: min(max(0, x), size.width) - 9, y: min(max(0, y), size.height) - 9)
@@ -1236,11 +1240,14 @@ private struct ColorSpectrumPicker: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        color = color(at: value.location, in: size)
+                        let picked = color(at: value.location, in: size)
+                        dragColor = picked
+                        color = picked
                     }
                     .onEnded { value in
                         let finalColor = color(at: value.location, in: size)
                         color = finalColor
+                        dragColor = nil
                         onCommit?(finalColor)
                     }
             )

@@ -33,13 +33,6 @@ struct ControlCenterView: View {
                     .padding(.horizontal, LCSpacing.lg)
                     .padding(.top, LCSpacing.md)
                     .padding(.bottom, LCSpacing.sm)
-
-                if !appState.message.isEmpty {
-                    messageBanner
-                        .padding(.horizontal, LCSpacing.lg)
-                        .padding(.bottom, LCSpacing.xs)
-                        .transition(.opacity)
-                }
             }
             .background(
                 ZStack {
@@ -67,6 +60,18 @@ struct ControlCenterView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .layoutPriority(1)
             .clipped()
+            // The banner floats over the content instead of living in the header: inserting it
+            // there grew the header and shoved every lamp row down (then back up when it
+            // auto-dismissed), which read as the whole list flickering on each action.
+            .overlay(alignment: .top) {
+                if !appState.message.isEmpty {
+                    messageBanner
+                        .padding(.horizontal, LCSpacing.lg)
+                        .padding(.top, LCSpacing.xs)
+                        .transition(.opacity)
+                }
+            }
+            .animation(LCAnimation.fade, value: appState.message.isEmpty)
         }
     }
 
