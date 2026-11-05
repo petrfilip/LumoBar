@@ -208,33 +208,56 @@ final class AppState: ObservableObject {
         }
 
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
-        let targets = lamps.filter { room.lampIds.contains($0.id) && $0.online && $0.capabilities.colorCode != nil }
-        guard !targets.isEmpty else { showError(L10n.roomNoOnlineRGB); return }
+        // A captured scene restores each lamp's own look (white-only lamps included); a plain
+        // color scene needs color-capable lamps.
+        let targets = lamps.filter {
+            room.lampIds.contains($0.id) && $0.online && (scene.isCapture || $0.capabilities.colorCode != nil)
+        }
+        guard !targets.isEmpty else { showError(scene.isCapture ? L10n.roomNoOnlineLamp : L10n.roomNoOnlineRGB); return }
         if byUser { await pauseAdaptiveForScene() }
 
         await runBusy {
-            var updated: [LampDevice] = []
             if let snapshots = scene.snapshots {
-                for snap in snapshots {
-                    guard let lamp = targets.first(where: { $0.id == snap.lampId }) else { continue }
-                    let provider = try makeLightProvider(for: lamp)
-                    if let color = snap.color, lamp.capabilities.colorCode != nil {
-                        updated.append(try await provider.setColor(deviceId: lamp.nativeID, color: color))
-                    } else if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
-                        updated.append(try await provider.setBrightness(deviceId: lamp.nativeID, value: brightness))
-                    } else if let temp = snap.temperature, lamp.capabilities.temperature != nil {
-                        updated.append(try await provider.setTemperature(deviceId: lamp.nativeID, value: temp))
-                    }
-                }
+                let outcome = await restoreSnapshots(snapshots, on: targets)
+                for lamp in outcome.updated { updateLamp(lamp) }
+                if let error = outcome.firstError { throw error }
             } else {
+                var updated: [LampDevice] = []
                 for lamp in targets {
                     updated.append(try await applyColor(scene.color, to: lamp))
                 }
+                for lamp in updated { updateLamp(lamp) }
             }
-
-            for lamp in updated { updateLamp(lamp) }
             message = L10n.roomSceneApplied(scene.title)
         }
+    }
+
+    /// Brings each of `candidates` to its captured snapshot (see `LampSnapshot.steps`). A lamp
+    /// that fails does not stop the others, and what changed before a failure is kept so the UI
+    /// shows the real state; only the first error is returned, to be reported once.
+    private func restoreSnapshots(_ snapshots: [LampSnapshot], on candidates: [LampDevice])
+        async -> (updated: [LampDevice], firstError: Error?) {
+        var updated: [LampDevice] = []
+        var firstError: Error?
+        for snap in snapshots {
+            guard let lamp = candidates.first(where: { $0.id == snap.lampId && $0.online }) else { continue }
+            var latest: LampDevice?
+            do {
+                let provider = try makeLightProvider(for: lamp)
+                for step in snap.steps(for: lamp) {
+                    switch step {
+                    case .power(let on): latest = try await provider.setPower(deviceId: lamp.nativeID, value: on)
+                    case .temperature(let v): latest = try await provider.setTemperature(deviceId: lamp.nativeID, value: v)
+                    case .brightness(let v): latest = try await provider.setBrightness(deviceId: lamp.nativeID, value: v)
+                    case .color(let c): latest = try await provider.setColor(deviceId: lamp.nativeID, color: c)
+                    }
+                }
+            } catch {
+                if firstError == nil { firstError = error }
+            }
+            if let latest { updated.append(latest) }
+        }
+        return (updated, firstError)
     }
 
     // MARK: - Focus Mode Mappings
@@ -1038,31 +1061,9 @@ final class AppState: ObservableObject {
         guard !snapshots.isEmpty else { return }
         if byUser { await pauseAdaptiveForScene() }
         await runBusy {
-            var updated: [LampDevice] = []
-            for snap in snapshots {
-                guard let lamp = lamps.first(where: { $0.id == snap.lampId && $0.online }) else { continue }
-                let provider = try makeLightProvider(for: lamp)
-                // Many bulbs (e.g. Yeelight) reject color commands while off.
-                if snap.power, !lamp.power {
-                    updated.append(try await provider.setPower(deviceId: lamp.nativeID, value: true))
-                }
-                if snap.workMode == "white", let temp = snap.temperature, lamp.capabilities.temperature != nil {
-                    updated.append(try await provider.setTemperature(deviceId: lamp.nativeID, value: temp))
-                    if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
-                        updated.append(try await provider.setBrightness(deviceId: lamp.nativeID, value: brightness))
-                    }
-                } else if let color = snap.color, lamp.capabilities.colorCode != nil {
-                    updated.append(try await provider.setColor(deviceId: lamp.nativeID, color: color))
-                } else if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
-                    updated.append(try await provider.setBrightness(deviceId: lamp.nativeID, value: brightness))
-                } else if let temp = snap.temperature, lamp.capabilities.temperature != nil {
-                    updated.append(try await provider.setTemperature(deviceId: lamp.nativeID, value: temp))
-                }
-                if !snap.power {
-                    updated.append(try await provider.setPower(deviceId: lamp.nativeID, value: false))
-                }
-            }
-            for lamp in updated { updateLamp(lamp) }
+            let outcome = await restoreSnapshots(snapshots, on: lamps.filter(\.online))
+            for lamp in outcome.updated { updateLamp(lamp) }
+            if let error = outcome.firstError { throw error }
             message = L10n.sceneApplied(name)
         }
     }
