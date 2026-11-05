@@ -1095,7 +1095,7 @@ struct SettingsView: View {
                                 .foregroundStyle(accent)
                                 .frame(width: 44, alignment: .leading)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("\(kf.brightness)% lum.")
+                                Text(L10n.circadianKeyframeBrightness(kf.brightness))
                                     .font(.system(size: 10, weight: .medium))
                                     .foregroundStyle(LCTheme.muted)
                                 Text("\(kf.temperature) K")

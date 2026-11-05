@@ -234,4 +234,108 @@ enum L10n {
     static func menuAbout(version: String) -> String {
         String(format: NSLocalizedString("menu.about", comment: ""), version)
     }
+
+    // MARK: - Status banner messages (AppState)
+
+    private static func s(_ key: String) -> String { NSLocalizedString(key, comment: "") }
+
+    // Rooms
+    static var roomsSaveFailed: String  { s("status.rooms.save.failed") }
+    static var roomNoOnlineLamp: String { s("status.room.no.online") }
+    static var roomNoOnlineRGB: String  { s("status.room.no.rgb") }
+    static func roomPower(_ on: Bool) -> String { s(on ? "status.room.on" : "status.room.off") }
+    static func roomSceneApplied(_ scene: String) -> String {
+        String(format: s("status.room.scene.applied"), scene)
+    }
+    static var focusSaveFailed: String  { s("status.focus.save.failed") }
+
+    // Premium upsells
+    static var premiumScenes: String      { s("status.premium.scenes") }
+    static var premiumGroups: String      { s("status.premium.groups") }
+    static var premiumAutomations: String { s("status.premium.automations") }
+    static var premiumAdaptive: String    { s("status.premium.adaptive") }
+
+    // Sync / providers
+    static func lampsSynced(_ count: Int) -> String {
+        String(format: s("status.lamps.synced"), count)
+    }
+    static var lampsNoneFound: String { s("status.lamps.none.found") }
+    static var settingsSaved: String { s("status.settings.saved") }
+    static var settingsSavedNoneFound: String { s("status.settings.saved.none.found") }
+    /// `provider` is a brand name (Hue, LIFX, …) and is not translated.
+    static func settingsUnreadable(_ provider: String) -> String {
+        String(format: s("status.settings.unreadable"), provider)
+    }
+    static func lifxConnected(_ count: Int) -> String {
+        String(format: s("status.lifx.connected"), count)
+    }
+    static func goveeConnected(_ count: Int) -> String {
+        String(format: s("status.govee.connected"), count)
+    }
+    static var yeelightIPRequired: String { s("status.yeelight.ip.required") }
+    static func yeelightAdded(_ count: Int) -> String {
+        String(format: s("status.yeelight.added"), count)
+    }
+    static var yeelightRemoved: String { s("status.yeelight.removed") }
+    static var nanoleafIPRequired: String { s("status.nanoleaf.ip.required") }
+    static func nanoleafAdded(_ count: Int) -> String {
+        String(format: s("status.nanoleaf.added"), count)
+    }
+    static var nanoleafRemoved: String { s("status.nanoleaf.removed") }
+    static var wizIPRequired: String { s("status.wiz.ip.required") }
+    static func wizAdded(_ count: Int) -> String {
+        String(format: s("status.wiz.added"), count)
+    }
+    static var wizRemoved: String { s("status.wiz.removed") }
+    static var hueNoneFound: String { s("status.hue.none.found") }
+    static func hueBridgesFound(_ count: Int) -> String {
+        String(format: s("status.hue.found"), count)
+    }
+    static var hueBridgeSelected: String  { s("status.hue.selected") }
+    static var hueBridgeConnected: String { s("status.hue.connected") }
+    static var hueBridgeRequired: String  { s("error.hue.bridge.required") }
+    static var tuyaCredentialsIncomplete: String { s("error.tuya.credentials.incomplete") }
+
+    // Lamps, groups, scenes
+    static var selectRGBLamp: String { s("status.select.rgb") }
+    static var selectLamp: String    { s("status.select.lamp") }
+    static func colorApplied(_ count: Int) -> String {
+        String(format: s("status.color.applied"), count)
+    }
+    static func groupPower(_ on: Bool) -> String { s(on ? "status.group.on" : "status.group.off") }
+    static func allLampsPower(_ on: Bool) -> String { s(on ? "status.all.on" : "status.all.off") }
+    static var sceneNameRequired: String { s("status.scene.name.required") }
+    static func sceneUpdated(_ name: String) -> String { String(format: s("status.scene.updated"), name) }
+    static func sceneCreated(_ name: String) -> String { String(format: s("status.scene.created"), name) }
+    static func sceneApplied(_ name: String) -> String { String(format: s("status.scene.applied"), name) }
+    static var sceneDeleted: String { s("status.scene.deleted") }
+    static var scenesUnreadable: String { s("status.scenes.unreadable") }
+    static var ambianceNoRGB: String { s("status.ambiance.no.rgb") }
+    static func ambianceAppliedToAll(_ title: String) -> String {
+        String(format: s("status.ambiance.applied.all"), title)
+    }
+    static func ambianceApplied(_ title: String, count: Int) -> String {
+        String(format: s("status.ambiance.applied.count"), title, count)
+    }
+
+    // License
+    static var premiumPurchaseRegistered: String { s("status.premium.purchase.registered") }
+    static var premiumActivated: String   { s("status.premium.activated") }
+    static var premiumNotDetected: String { s("status.premium.not.detected") }
+    static var localStateReset: String    { s("status.local.state.reset") }
+    static var licenseNotValidated: String { s("status.license.not.validated") }
+    static var licenseUnreadable: String  { s("status.license.unreadable") }
+
+    // Settings saved
+    static var shortcutsSaved: String { s("status.shortcuts.saved") }
+    static func automationSaved(_ name: String) -> String {
+        String(format: s("status.automation.saved"), name)
+    }
+    static var automationDeleted: String { s("status.automation.deleted") }
+    static var adaptiveSaved: String { s("status.adaptive.saved") }
+
+    // Views
+    static func circadianKeyframeBrightness(_ percent: Int) -> String {
+        String(format: s("circadian.keyframe.brightness"), percent)
+    }
 }

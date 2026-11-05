@@ -144,7 +144,7 @@ struct LampsView: View {
                                     } label: { Label(L10n.roomAllOff, systemImage: "lightbulb.slash") }
                                     if !appState.userScenes.isEmpty {
                                         Divider()
-                                        Section("Scènes") {
+                                        Section("lamps.room.scenes") {
                                             ForEach(appState.userScenes) { scene in
                                                 Button(scene.title) { Task { await appState.applyScene(scene, toRoomId: room.id, byUser: true) } }
                                             }

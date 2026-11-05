@@ -114,7 +114,7 @@ final class AppState: ObservableObject {
         do {
             try roomStore.saveRooms(rooms)
         } catch {
-            message = "Impossible de sauvegarder les pièces."
+            showError(L10n.roomsSaveFailed)
         }
     }
 
@@ -122,7 +122,7 @@ final class AppState: ObservableObject {
         do {
             try roomStore.saveRooms(rooms)
         } catch {
-            message = "Impossible de sauvegarder les pièces."
+            showError(L10n.roomsSaveFailed)
         }
     }
 
@@ -160,7 +160,7 @@ final class AppState: ObservableObject {
     func setPowerForRoom(_ roomId: String, value: Bool) async {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         let targets = lamps.filter { room.lampIds.contains($0.id) && $0.online }
-        guard !targets.isEmpty else { message = "Aucune lampe en ligne dans cette pièce."; return }
+        guard !targets.isEmpty else { showError(L10n.roomNoOnlineLamp); return }
 
         await runBusy {
             var updated: [LampDevice] = []
@@ -168,19 +168,19 @@ final class AppState: ObservableObject {
                 updated.append(try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value))
             }
             for lamp in updated { updateLamp(lamp) }
-            message = value ? "Pièce allumée." : "Pièce éteinte."
+            message = L10n.roomPower(value)
         }
     }
 
     func applyScene(_ scene: UserLightScene, toRoomId roomId: String, byUser: Bool = false) async {
         guard licenseState.entitlements.canUseCustomScenes else {
-            message = "Les scènes personnalisées sont incluses dans Premium."
+            message = L10n.premiumScenes
             return
         }
 
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         let targets = lamps.filter { room.lampIds.contains($0.id) && $0.online && $0.capabilities.colorCode != nil }
-        guard !targets.isEmpty else { message = "Aucune lampe RGB en ligne dans cette pièce."; return }
+        guard !targets.isEmpty else { showError(L10n.roomNoOnlineRGB); return }
         if byUser { await pauseAdaptiveForScene() }
 
         await runBusy {
@@ -204,7 +204,7 @@ final class AppState: ObservableObject {
             }
 
             for lamp in updated { updateLamp(lamp) }
-            message = "Scène \(scene.title) appliquée à la pièce."
+            message = L10n.roomSceneApplied(scene.title)
         }
     }
 
@@ -218,7 +218,7 @@ final class AppState: ObservableObject {
         do {
             try focusMappingStore.saveMappings(focusMappings)
         } catch {
-            message = "Impossible de sauvegarder les mappings Focus."
+            showError(L10n.focusSaveFailed)
         }
     }
 
@@ -363,7 +363,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "LIFX connecté. \(synced.count) lampe(s) synchronisée(s)."
+            message = L10n.lifxConnected(synced.count)
             selectedTab = .lamps
         }
     }
@@ -377,7 +377,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "Govee connecté. \(synced.count) lampe(s) synchronisée(s)."
+            message = L10n.goveeConnected(synced.count)
             selectedTab = .lamps
         }
     }
@@ -385,7 +385,7 @@ final class AppState: ObservableObject {
     func addYeelightBulb(host: String, name: String) async {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanHost.isEmpty else {
-            message = "Adresse IP Yeelight requise."
+            showError(L10n.yeelightIPRequired)
             return
         }
 
@@ -404,7 +404,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "Yeelight ajoutée. \(synced.count) lampe(s) synchronisée(s)."
+            message = L10n.yeelightAdded(synced.count)
         }
     }
 
@@ -420,7 +420,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "Yeelight retirée."
+            message = L10n.yeelightRemoved
         }
     }
 
@@ -437,7 +437,7 @@ final class AppState: ObservableObject {
             settings = saved.settings
             hasSecret = saved.hasSecret
             lightProviders[.tuya] = nil
-            message = "Réglages enregistrés."
+            message = L10n.settingsSaved
             selectedTab = .lamps
         }
     }
@@ -454,7 +454,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = synced.isEmpty ? "Réglages enregistrés. Aucune lampe compatible trouvée." : "\(synced.count) lampe(s) synchronisée(s)."
+            message = synced.isEmpty ? L10n.settingsSavedNoneFound : L10n.lampsSynced(synced.count)
             selectedTab = .lamps
         }
     }
@@ -487,7 +487,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = synced.isEmpty ? "Aucune lampe compatible trouvée." : "\(synced.count) lampe(s) synchronisée(s)."
+            message = synced.isEmpty ? L10n.lampsNoneFound : L10n.lampsSynced(synced.count)
             persistWidgetSnapshot()
         }
     }
@@ -547,7 +547,7 @@ final class AppState: ObservableObject {
 
     func toggleSelection(_ lamp: LampDevice) {
         guard licenseState.entitlements.canUseGroups else {
-            message = "Les groupes sont inclus dans Premium."
+            message = L10n.premiumGroups
             return
         }
 
@@ -562,7 +562,7 @@ final class AppState: ObservableObject {
 
     func selectAllRGBLamps() {
         guard licenseState.entitlements.canUseGroups else {
-            message = "Les groupes sont inclus dans Premium."
+            message = L10n.premiumGroups
             return
         }
 
@@ -672,13 +672,13 @@ final class AppState: ObservableObject {
 
     func applyGroupColor() async {
         guard licenseState.entitlements.canUseGroups else {
-            message = "Les groupes sont inclus dans Premium."
+            message = L10n.premiumGroups
             return
         }
 
         let targets = lamps.filter { selectedLampIds.contains($0.id) && canShow(groupColor, on: $0) }
         guard !targets.isEmpty else {
-            message = "Sélectionnez au moins une lampe RGB."
+            showError(L10n.selectRGBLamp)
             return
         }
 
@@ -690,7 +690,7 @@ final class AppState: ObservableObject {
             for lamp in updated {
                 updateLamp(lamp)
             }
-            message = "Couleur appliquée à \(updated.count) lampe(s)."
+            message = L10n.colorApplied(updated.count)
         }
     }
 
@@ -704,7 +704,7 @@ final class AppState: ObservableObject {
 
     func applyScene(_ scene: UserLightScene, byUser: Bool = false) async {
         guard licenseState.entitlements.canUseCustomScenes else {
-            message = "Les scènes personnalisées sont incluses dans Premium."
+            message = L10n.premiumScenes
             return
         }
 
@@ -717,12 +717,12 @@ final class AppState: ObservableObject {
 
     func saveUserScene(id: UUID?, title: String, icon: String, color: HSVColor, snapshots: [LampSnapshot]? = nil) {
         guard licenseState.entitlements.canUseCustomScenes else {
-            message = "Les scènes personnalisées sont incluses dans Premium."
+            message = L10n.premiumScenes
             return
         }
 
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanTitle.isEmpty else { message = "Nom de scène requis."; return }
+        guard !cleanTitle.isEmpty else { showError(L10n.sceneNameRequired); return }
         let cleanIcon = icon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "paintpalette.fill" : icon.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if let id, let index = userScenes.firstIndex(where: { $0.id == id }) {
@@ -730,10 +730,10 @@ final class AppState: ObservableObject {
             userScenes[index].icon = cleanIcon
             userScenes[index].color = color
             userScenes[index].snapshots = snapshots
-            message = "Scène « \(cleanTitle) » mise à jour."
+            message = L10n.sceneUpdated(cleanTitle)
         } else {
             userScenes.append(UserLightScene(title: cleanTitle, icon: cleanIcon, color: color, snapshots: snapshots))
-            message = "Scène « \(cleanTitle) » créée."
+            message = L10n.sceneCreated(cleanTitle)
         }
         persistScenes()
     }
@@ -783,20 +783,20 @@ final class AppState: ObservableObject {
                 }
             }
             for lamp in updated { updateLamp(lamp) }
-            message = "Scène « \(name) » appliquée."
+            message = L10n.sceneApplied(name)
         }
     }
 
     func deleteUserScene(_ scene: UserLightScene) {
         guard licenseState.entitlements.canUseCustomScenes else {
-            message = "Les scènes personnalisées sont incluses dans Premium."
+            message = L10n.premiumScenes
             return
         }
 
         userScenes.removeAll { $0.id == scene.id }
         persistScenes()
         persistWidgetSnapshot()
-        message = "Scène supprimée."
+        message = L10n.sceneDeleted
     }
 
     private func applyScene(title: String, color: HSVColor, byUser: Bool) async {
@@ -808,7 +808,7 @@ final class AppState: ObservableObject {
             : selectedTargets
 
         guard !targets.isEmpty else {
-            message = "Aucune lampe RGB en ligne pour appliquer cette ambiance."
+            showError(L10n.ambianceNoRGB)
             return
         }
         if byUser { await pauseAdaptiveForScene() }
@@ -823,20 +823,21 @@ final class AppState: ObservableObject {
             for lamp in updated {
                 updateLamp(lamp)
             }
-            let scope = selectedTargets.isEmpty ? "toutes les lampes RGB" : "\(updated.count) lampe(s)"
-            message = "Ambiance \(title) appliquée à \(scope)."
+            message = selectedTargets.isEmpty
+                ? L10n.ambianceAppliedToAll(title)
+                : L10n.ambianceApplied(title, count: updated.count)
         }
     }
 
     func applyGroupPower(_ value: Bool) async {
         guard licenseState.entitlements.canUseGroups else {
-            message = "Les groupes sont inclus dans Premium."
+            message = L10n.premiumGroups
             return
         }
 
         let targets = lamps.filter { selectedLampIds.contains($0.id) }
         guard !targets.isEmpty else {
-            message = "Sélectionnez au moins une lampe."
+            showError(L10n.selectLamp)
             return
         }
 
@@ -848,7 +849,7 @@ final class AppState: ObservableObject {
             for lamp in updated {
                 updateLamp(lamp)
             }
-            message = value ? "Groupe allumé." : "Groupe éteint."
+            message = L10n.groupPower(value)
         }
     }
 
@@ -857,7 +858,7 @@ final class AppState: ObservableObject {
             let next = try await licenseActivationService.activate(licenseKey: licenseKey, expectedEmail: email)
             licenseState = next
             try licenseStore.save(next)
-            message = "Achat Premium pris en compte."
+            message = L10n.premiumPurchaseRegistered
         }
     }
 
@@ -866,7 +867,7 @@ final class AppState: ObservableObject {
             let next = try await licenseActivationService.validate(licenseState)
             licenseState = next
             try licenseStore.save(next)
-            message = next.tier == .premium ? "Premium activé." : "Achat Premium non détecté."
+            message = next.tier == .premium ? L10n.premiumActivated : L10n.premiumNotDetected
         }
     }
 
@@ -878,7 +879,7 @@ final class AppState: ObservableObject {
 
             licenseState = .earlyAccess
             try licenseStore.save(licenseState)
-            message = "État local réinitialisé."
+            message = L10n.localStateReset
         }
     }
 
@@ -889,27 +890,27 @@ final class AppState: ObservableObject {
     func discoverHueBridges() async {
         await runBusy {
             discoveredHueBridges = try await hueClient.discoverBridges()
-            message = discoveredHueBridges.isEmpty ? "Aucun bridge Hue trouvé." : "\(discoveredHueBridges.count) bridge Hue détecté(s)."
+            message = discoveredHueBridges.isEmpty ? L10n.hueNoneFound : L10n.hueBridgesFound(discoveredHueBridges.count)
         }
     }
 
     func selectHueBridge(_ bridge: HueBridge) {
         hueSettings.bridgeID = bridge.id
         hueSettings.bridgeIP = bridge.internalipaddress
-        message = "Bridge Hue sélectionné. Appuyez sur son bouton, puis connectez."
+        message = L10n.hueBridgeSelected
     }
 
     func pairHueBridge() async {
         await runBusy {
             let bridgeIP = hueSettings.bridgeIP.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !bridgeIP.isEmpty else {
-                throw LampControlError.configuration("Sélectionnez ou renseignez un bridge Hue.")
+                throw LampControlError.configuration(L10n.hueBridgeRequired)
             }
 
             hueSettings.username = try await hueClient.createUser(bridgeIP: bridgeIP)
             hueSettings = try hueSettingsStore.save(hueSettings)
             lightProviders[.philipsHue] = nil
-            message = "Bridge Philips Hue connecté."
+            message = L10n.hueBridgeConnected
         }
     }
 
@@ -1001,32 +1002,32 @@ final class AppState: ObservableObject {
             provider = try makeTuyaProvider()
         case .philipsHue:
             guard hueSettings.isConfigured else {
-                throw LampControlError.configuration("Bridge Philips Hue non configuré.")
+                throw LampControlError.configuration(NSLocalizedString("error.hue.not.configured", comment: ""))
             }
             provider = HueLightProvider(settings: hueSettings)
         case .lifx:
             guard lifxSettings.isConfigured else {
-                throw LampControlError.configuration("Token LIFX manquant.")
+                throw LampControlError.configuration(NSLocalizedString("error.lifx.token.missing", comment: ""))
             }
             provider = LifxLightProvider(settings: lifxSettings)
         case .govee:
             guard goveeSettings.isConfigured else {
-                throw LampControlError.configuration("Clé API Govee manquante.")
+                throw LampControlError.configuration(NSLocalizedString("error.govee.apikey.missing", comment: ""))
             }
             provider = GoveeLightProvider(settings: goveeSettings)
         case .yeelight:
             guard yeelightSettings.isConfigured else {
-                throw LampControlError.configuration("Aucune lampe Yeelight enregistrée.")
+                throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
             }
             provider = YeelightLightProvider(settings: yeelightSettings)
         case .nanoleaf:
             guard nanoleafSettings.isConfigured else {
-                throw LampControlError.configuration("Aucun panneau Nanoleaf enregistré.")
+                throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))
             }
             provider = NanoleafLightProvider(settings: nanoleafSettings)
         case .wiz:
             guard wizSettings.isConfigured else {
-                throw LampControlError.configuration("Aucune ampoule WiZ enregistrée.")
+                throw LampControlError.configuration(NSLocalizedString("error.wiz.none", comment: ""))
             }
             provider = WizLightProvider(settings: wizSettings)
         }
@@ -1038,7 +1039,7 @@ final class AppState: ObservableObject {
     private func makeTuyaProvider() throws -> TuyaLightProvider {
         let secret = try settingsStore.accessSecret()
         guard !settings.accessId.isEmpty, !secret.isEmpty, !settings.endpoint.isEmpty, !settings.uid.isEmpty else {
-            throw LampControlError.configuration("Identifiants Tuya incomplets. Ouvrez les réglages.")
+            throw LampControlError.configuration(L10n.tuyaCredentialsIncomplete)
         }
 
         let client = try TuyaClient(accessId: settings.accessId, accessSecret: secret, endpoint: settings.endpoint)
@@ -1050,7 +1051,7 @@ final class AppState: ObservableObject {
         do {
             hueSettings = try hueSettingsStore.load()
         } catch {
-            message = "Réglages Hue illisibles."
+            showError(L10n.settingsUnreadable("Hue"))
         }
     }
 
@@ -1058,7 +1059,7 @@ final class AppState: ObservableObject {
         do {
             lifxSettings = try lifxSettingsStore.load()
         } catch {
-            message = "Réglages LIFX illisibles."
+            showError(L10n.settingsUnreadable("LIFX"))
         }
     }
 
@@ -1066,7 +1067,7 @@ final class AppState: ObservableObject {
         do {
             goveeSettings = try goveeSettingsStore.load()
         } catch {
-            message = "Réglages Govee illisibles."
+            showError(L10n.settingsUnreadable("Govee"))
         }
     }
 
@@ -1074,7 +1075,7 @@ final class AppState: ObservableObject {
         do {
             yeelightSettings = try yeelightSettingsStore.load()
         } catch {
-            message = "Réglages Yeelight illisibles."
+            showError(L10n.settingsUnreadable("Yeelight"))
         }
     }
 
@@ -1082,7 +1083,7 @@ final class AppState: ObservableObject {
 
     func addNanoleafDevice(host: String, name: String) async {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanHost.isEmpty else { message = "Adresse IP Nanoleaf requise."; return }
+        guard !cleanHost.isEmpty else { showError(L10n.nanoleafIPRequired); return }
 
         await runBusy {
             let client = NanoleafClient()
@@ -1098,7 +1099,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "Nanoleaf ajouté. \(synced.count) lampe(s) synchronisée(s)."
+            message = L10n.nanoleafAdded(synced.count)
         }
     }
 
@@ -1113,7 +1114,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "Nanoleaf retiré."
+            message = L10n.nanoleafRemoved
         }
     }
 
@@ -1125,7 +1126,7 @@ final class AppState: ObservableObject {
 
     func addWizDevice(host: String, name: String) async {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanHost.isEmpty else { message = "Adresse IP WiZ requise."; return }
+        guard !cleanHost.isEmpty else { showError(L10n.wizIPRequired); return }
 
         let device = WizDevice(name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? cleanHost : name.trimmingCharacters(in: .whitespacesAndNewlines),
                                host: cleanHost)
@@ -1140,7 +1141,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "WiZ ajoutée. \(synced.count) lampe(s) synchronisée(s)."
+            message = L10n.wizAdded(synced.count)
         }
     }
 
@@ -1155,7 +1156,7 @@ final class AppState: ObservableObject {
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
-            message = "WiZ retirée."
+            message = L10n.wizRemoved
         }
     }
 
@@ -1191,14 +1192,14 @@ final class AppState: ObservableObject {
                 updated.append(try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value))
             }
             for lamp in updated { updateLamp(lamp) }
-            message = value ? "Toutes les lampes allumées." : "Toutes les lampes éteintes."
+            message = L10n.allLampsPower(value)
         }
     }
 
     func saveShortcutSettings() async {
         await runBusy {
             shortcutSettings = try shortcutSettingsStore.save(shortcutSettings)
-            message = "Raccourcis enregistrés."
+            message = L10n.shortcutsSaved
         }
         NotificationCenter.default.post(name: .shortcutSettingsDidChange, object: nil)
     }
@@ -1211,7 +1212,7 @@ final class AppState: ObservableObject {
 
     func saveAutomation(_ automation: Automation) {
         guard licenseState.entitlements.canUseAutomations else {
-            message = "Les automations sont incluses dans Premium."
+            message = L10n.premiumAutomations
             return
         }
         if let idx = automations.firstIndex(where: { $0.id == automation.id }) {
@@ -1221,14 +1222,14 @@ final class AppState: ObservableObject {
         }
         try? automationStore.save(automations)
         automationScheduler.update(automations: automations)
-        message = "Automation « \(automation.name) » enregistrée."
+        message = L10n.automationSaved(automation.name)
     }
 
     func deleteAutomation(_ automation: Automation) {
         automations.removeAll { $0.id == automation.id }
         try? automationStore.save(automations)
         automationScheduler.update(automations: automations)
-        message = "Automation supprimée."
+        message = L10n.automationDeleted
     }
 
     func toggleAutomation(_ automation: Automation) {
@@ -1288,7 +1289,7 @@ final class AppState: ObservableObject {
 
     func setAdaptiveLighting(enabled: Bool) async {
         guard licenseState.entitlements.canUseAdaptiveLighting || !enabled else {
-            message = "L'éclairage adaptatif est inclus dans Premium."
+            message = L10n.premiumAdaptive
             return
         }
         circadianSettings.isEnabled = enabled
@@ -1304,7 +1305,7 @@ final class AppState: ObservableObject {
         await runBusy {
             circadianSettings = try circadianSettingsStore.save(settings)
             circadianService.start(with: circadianSettings)
-            message = "Réglages adaptatifs enregistrés."
+            message = L10n.adaptiveSaved
         }
     }
 
@@ -1357,7 +1358,7 @@ final class AppState: ObservableObject {
         do {
             userScenes = try sceneStore.load()
         } catch {
-            message = "Scènes locales illisibles."
+            showError(L10n.scenesUnreadable)
         }
     }
 
@@ -1384,13 +1385,13 @@ final class AppState: ObservableObject {
                     await MainActor.run {
                         self.licenseState = .earlyAccess
                         try? self.licenseStore.save(self.licenseState)
-                        self.message = "Licence non validée en ligne. Early Access actif."
+                        self.showError(L10n.licenseNotValidated)
                     }
                 }
             }
         } catch {
             licenseState = .earlyAccess
-            message = "Licence locale illisible. Early Access actif."
+            showError(L10n.licenseUnreadable)
         }
     }
 
