@@ -23,3 +23,21 @@ struct FocusMapping: Codable, Identifiable, Equatable {
         self.isEnabled = isEnabled
     }
 }
+
+extension FocusMapping {
+    /// True when `identifier` names this mapping's Focus. Identifiers are matched
+    /// case-insensitively (and ignoring surrounding whitespace) because the
+    /// `lampcontrol://focus?mode=` URL is resolved that way.
+    func matches(focusIdentifier identifier: String) -> Bool {
+        Self.normalized(focusIdentifier) == Self.normalized(identifier)
+    }
+
+    /// First enabled mapping for `identifier`, if any.
+    static func enabledMapping(for identifier: String, in mappings: [FocusMapping]) -> FocusMapping? {
+        mappings.first { $0.isEnabled && $0.matches(focusIdentifier: identifier) }
+    }
+
+    private static func normalized(_ identifier: String) -> String {
+        identifier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+}

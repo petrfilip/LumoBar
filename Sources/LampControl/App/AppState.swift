@@ -270,7 +270,7 @@ final class AppState: ObservableObject {
 
     func sceneForCurrentFocus() -> UserLightScene? {
         guard let currentFocus = currentFocusIdentifier else { return nil }
-        guard let mapping = focusMappings.first(where: { $0.focusIdentifier == currentFocus && $0.isEnabled }) else { return nil }
+        guard let mapping = FocusMapping.enabledMapping(for: currentFocus, in: focusMappings) else { return nil }
         guard let sceneId = mapping.sceneId else { return nil }
         return userScenes.first(where: { $0.id == sceneId })
     }
