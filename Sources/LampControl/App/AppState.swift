@@ -79,6 +79,9 @@ final class AppState: ObservableObject {
     private let licenseActivationService = LicenseActivationService()
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
+    /// Pending retry of the launch-time license check after a network failure.
+    private var licenseRetryTask: Task<Void, Never>?
+    private var licenseNeedsRevalidation = false
     private let yeelightLiveSync = YeelightLiveSync()
     /// Coalesces and paces what sliders / the color picker stream while the user drags.
     private lazy var commandQueue: LampCommandQueue = makeCommandQueue()
@@ -1613,30 +1616,60 @@ final class AppState: ObservableObject {
 
             // Validate license with provider asynchronously at startup to prevent
             // local tampering of license.json (if the file was edited to be premium).
-            Task { [weak self] in
-                guard let self = self else { return }
-                do {
-                    let validated = try await licenseActivationService.validate(self.licenseState)
-                    await MainActor.run {
-                        self.licenseState = validated
-                        do {
-                            try self.licenseStore.save(validated)
-                        } catch {
-                            // non-fatal: keep in-memory state
-                        }
-                    }
-                } catch {
-                    // Validation failed: downgrade to early access and persist.
-                    await MainActor.run {
-                        self.licenseState = .earlyAccess
-                        try? self.licenseStore.save(self.licenseState)
-                        self.showError(L10n.licenseNotValidated)
-                    }
+            revalidateLicense(attempt: 0)
+            // Offline at launch (e.g. launch-at-login before Wi-Fi is up): try
+            // again after wake instead of waiting for the next launch.
+            NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self, self.licenseNeedsRevalidation else { return }
+                    self.revalidateLicense(attempt: 0)
                 }
             }
         } catch {
             licenseState = .earlyAccess
             showError(L10n.licenseUnreadable)
+        }
+    }
+
+    /// Re-checks the cached license with the provider. Only a definitive
+    /// answer changes or persists anything; transport failures keep the cached
+    /// state (and the stored key) silently and retry with a growing delay.
+    private func revalidateLicense(attempt: Int) {
+        licenseRetryTask?.cancel()
+        licenseRetryTask = nil
+        let cached = licenseState
+        Task { [weak self] in
+            guard let self else { return }
+            let result: Result<LicenseState, Error>
+            do {
+                result = .success(try await self.licenseActivationService.validate(cached))
+            } catch {
+                result = .failure(error)
+            }
+            await MainActor.run {
+                // The user activated / reset a license meanwhile: don't clobber it.
+                guard self.licenseState == cached else { return }
+                switch LicenseValidationPolicy.outcome(for: result) {
+                case .adopt(let validated):
+                    self.licenseNeedsRevalidation = false
+                    self.licenseState = validated
+                    // non-fatal if saving fails: keep in-memory state
+                    try? self.licenseStore.save(validated)
+                case .downgrade:
+                    self.licenseNeedsRevalidation = false
+                    self.licenseState = .earlyAccess
+                    try? self.licenseStore.save(self.licenseState)
+                    self.showError(L10n.licenseNotValidated)
+                case .keepCached:
+                    self.licenseNeedsRevalidation = true
+                    guard let delay = LicenseValidationPolicy.retryDelay(afterAttempt: attempt) else { return }
+                    self.licenseRetryTask = Task { [weak self] in
+                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                        guard !Task.isCancelled else { return }
+                        self?.revalidateLicense(attempt: attempt + 1)
+                    }
+                }
+            }
         }
     }
 

@@ -96,12 +96,18 @@ final class LicenseActivationService {
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw LicenseActivationError.networkError
         }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            // 5xx / 429 / 408 say nothing about the license; other 4xx do.
+            if LicenseValidationPolicy.isTransientHTTPStatus(httpResponse.statusCode) {
+                throw LicenseActivationError.networkError
+            }
+            throw LicenseActivationError.apiError(String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)")
+        }
 
-        guard let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        guard let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let licenseData = jsonResponse["license"] as? [String: Any] else {
             throw LicenseActivationError.decodingError
         }
