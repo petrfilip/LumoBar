@@ -16,7 +16,17 @@ final class AppState: ObservableObject {
     @Published var discoveredHueBridges: [HueBridge] = []
     @Published var lamps: [LampDevice] = []
     @Published var selectedTab: ControlTab = .lamps
-    @Published var message = ""
+    /// Banner text. Informational messages auto-hide after a few seconds;
+    /// errors (set via `showError`) stay until the next message.
+    @Published var message = "" {
+        didSet {
+            messageIsError = false
+            scheduleMessageDismiss()
+        }
+    }
+    @Published private(set) var messageIsError = false
+    private var messageDismissTask: Task<Void, Never>?
+    private var pendingAdaptiveNotice = false
     @Published var isBusy = false
     @Published var hasSecret = false
     @Published var selectedLampIds = Set<String>()
@@ -162,7 +172,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    func applyScene(_ scene: UserLightScene, toRoomId roomId: String) async {
+    func applyScene(_ scene: UserLightScene, toRoomId roomId: String, byUser: Bool = false) async {
         guard licenseState.entitlements.canUseCustomScenes else {
             message = "Les scènes personnalisées sont incluses dans Premium."
             return
@@ -171,6 +181,7 @@ final class AppState: ObservableObject {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         let targets = lamps.filter { room.lampIds.contains($0.id) && $0.online && $0.capabilities.colorCode != nil }
         guard !targets.isEmpty else { message = "Aucune lampe RGB en ligne dans cette pièce."; return }
+        if byUser { await pauseAdaptiveForScene() }
 
         await runBusy {
             var updated: [LampDevice] = []
@@ -188,7 +199,7 @@ final class AppState: ObservableObject {
                 }
             } else {
                 for lamp in targets {
-                    updated.append(try await makeLightProvider(for: lamp).setColor(deviceId: lamp.nativeID, color: scene.color))
+                    updated.append(try await applyColor(scene.color, to: lamp))
                 }
             }
 
@@ -339,7 +350,7 @@ final class AppState: ObservableObject {
             hasSecret = loaded.hasSecret
             presentOnboardingIfNeeded()
         } catch {
-            message = error.localizedDescription
+            showError(error)
         }
     }
 
@@ -490,7 +501,7 @@ final class AppState: ObservableObject {
             return true
         } catch {
             updateLamp(lamp)
-            message = error.localizedDescription
+            showError(error)
             return false
         }
     }
@@ -504,7 +515,7 @@ final class AppState: ObservableObject {
             let updated = try await makeLightProvider(for: lamp).setBrightness(deviceId: lamp.nativeID, value: value)
             updateLamp(updated)
         } catch {
-            message = error.localizedDescription
+            showError(error)
         }
     }
 
@@ -517,7 +528,7 @@ final class AppState: ObservableObject {
             let updated = try await makeLightProvider(for: lamp).setTemperature(deviceId: lamp.nativeID, value: value)
             updateLamp(updated)
         } catch {
-            message = error.localizedDescription
+            showError(error)
         }
     }
 
@@ -530,7 +541,7 @@ final class AppState: ObservableObject {
             let updated = try await applyColor(color, to: lamp)
             updateLamp(updated)
         } catch {
-            message = error.localizedDescription
+            showError(error)
         }
     }
 
@@ -602,7 +613,8 @@ final class AppState: ObservableObject {
         // header 56 + outer paddings 28 = ~84pt fixed chrome
         var h: CGFloat = 84
 
-        if !message.isEmpty { h += 56 }
+        // The message banner is not reserved: resizing the popover each time a
+        // banner appeared/disappeared caused flicker; the ScrollView absorbs it.
 
         // status bar card (~56pt)
         h += 56 + 12
@@ -624,14 +636,18 @@ final class AppState: ObservableObject {
         }
         if hiddenLampCount > 0 { h += 56 }
 
-        // Reserve room for ~3 lamp rows + their room headers; ScrollView absorbs the rest.
-        let visibleCount = max(1, min(visibleLamps.count, 3))
-        h += CGFloat(visibleCount) * 72
+        // Reserve room for every visible lamp row (expanded rows at their full
+        // height) + room headers. Previously capped at 3 rows / 620 pt, so two
+        // expanded lamps already did not fit; the screen height is the real
+        // limit (see preferredPopoverHeight), the ScrollView absorbs the rest.
+        for lamp in visibleLamps {
+            h += expandedLampIds.contains(lamp.id) ? expandedLampRowHeight(for: lamp) : 72
+        }
 
         let roomsWithLamps = rooms.filter { room in visibleLamps.contains(where: { room.lampIds.contains($0.id) }) }.count
-        h += CGFloat(min(roomsWithLamps, 2)) * 48
+        h += CGFloat(roomsWithLamps) * 48
 
-        return min(h, 620)
+        return min(h, 860)
     }
 
     private func expandedLampRowHeight(for lamp: LampDevice) -> CGFloat {
@@ -678,20 +694,24 @@ final class AppState: ObservableObject {
         }
     }
 
-    func applyScene(_ preset: LightScenePreset) async {
-        await applyScene(title: preset.title, color: preset.color)
+    /// `byUser`: the user picked this scene (UI or keyboard shortcut), as
+    /// opposed to an automation / Focus trigger. A user-picked scene turns
+    /// adaptive lighting off, otherwise it would overwrite the scene within
+    /// 15 minutes.
+    func applyScene(_ preset: LightScenePreset, byUser: Bool = false) async {
+        await applyScene(title: preset.title, color: preset.color, byUser: byUser)
     }
 
-    func applyScene(_ scene: UserLightScene) async {
+    func applyScene(_ scene: UserLightScene, byUser: Bool = false) async {
         guard licenseState.entitlements.canUseCustomScenes else {
             message = "Les scènes personnalisées sont incluses dans Premium."
             return
         }
 
         if let snapshots = scene.snapshots {
-            await applyCapture(snapshots: snapshots, name: scene.title)
+            await applyCapture(snapshots: snapshots, name: scene.title, byUser: byUser)
         } else {
-            await applyScene(title: scene.title, color: scene.color)
+            await applyScene(title: scene.title, color: scene.color, byUser: byUser)
         }
     }
 
@@ -734,13 +754,18 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func applyCapture(snapshots: [LampSnapshot], name: String) async {
+    private func applyCapture(snapshots: [LampSnapshot], name: String, byUser: Bool) async {
         guard !snapshots.isEmpty else { return }
+        if byUser { await pauseAdaptiveForScene() }
         await runBusy {
             var updated: [LampDevice] = []
             for snap in snapshots {
                 guard let lamp = lamps.first(where: { $0.id == snap.lampId && $0.online }) else { continue }
                 let provider = try makeLightProvider(for: lamp)
+                // Many bulbs (e.g. Yeelight) reject color commands while off.
+                if snap.power, !lamp.power {
+                    updated.append(try await provider.setPower(deviceId: lamp.nativeID, value: true))
+                }
                 if snap.workMode == "white", let temp = snap.temperature, lamp.capabilities.temperature != nil {
                     updated.append(try await provider.setTemperature(deviceId: lamp.nativeID, value: temp))
                     if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
@@ -774,7 +799,7 @@ final class AppState: ObservableObject {
         message = "Scène supprimée."
     }
 
-    private func applyScene(title: String, color: HSVColor) async {
+    private func applyScene(title: String, color: HSVColor, byUser: Bool) async {
         let selectedTargets = lamps.filter {
             selectedLampIds.contains($0.id) && $0.online && canShow(color, on: $0)
         }
@@ -786,6 +811,7 @@ final class AppState: ObservableObject {
             message = "Aucune lampe RGB en ligne pour appliquer cette ambiance."
             return
         }
+        if byUser { await pauseAdaptiveForScene() }
 
         groupColor = color
 
@@ -900,6 +926,11 @@ final class AppState: ObservableObject {
     /// dim and bluish on most bulbs, while CT mode uses the dedicated white LEDs.
     private func applyColor(_ color: HSVColor, to lamp: LampDevice) async throws -> LampDevice {
         let provider = try makeLightProvider(for: lamp)
+        // Many bulbs (e.g. Yeelight) reject color/CT/brightness commands while
+        // off; applying a color implies the lamp should light up.
+        if !lamp.power {
+            _ = try await provider.setPower(deviceId: lamp.nativeID, value: true)
+        }
         guard color.isNearWhite, let temperature = lamp.capabilities.temperature else {
             return try await provider.setColor(deviceId: lamp.nativeID, color: color)
         }
@@ -1140,13 +1171,13 @@ final class AppState: ObservableObject {
             case .powerOffAll:     await applyPowerAll(false)
             case .powerOnAll:      await applyPowerAll(true)
             case .applySceneFocus:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "focus" }) { await applyScene(p) }
+                if let p = LightScenePreset.presets.first(where: { $0.id == "focus" }) { await applyScene(p, byUser: true) }
             case .applySceneRelax:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "relax" }) { await applyScene(p) }
+                if let p = LightScenePreset.presets.first(where: { $0.id == "relax" }) { await applyScene(p, byUser: true) }
             case .applySceneNeon:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "neon" })  { await applyScene(p) }
+                if let p = LightScenePreset.presets.first(where: { $0.id == "neon" })  { await applyScene(p, byUser: true) }
             case .applySceneNight:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "night" }) { await applyScene(p) }
+                if let p = LightScenePreset.presets.first(where: { $0.id == "night" }) { await applyScene(p, byUser: true) }
             }
         }
     }
@@ -1247,6 +1278,14 @@ final class AppState: ObservableObject {
 
     // MARK: - Adaptive Lighting
 
+    /// Turns adaptive lighting off before a user-picked scene and remembers
+    /// to say so in the scene's confirmation message.
+    private func pauseAdaptiveForScene() async {
+        guard circadianSettings.isEnabled else { return }
+        await setAdaptiveLighting(enabled: false)
+        pendingAdaptiveNotice = true
+    }
+
     func setAdaptiveLighting(enabled: Bool) async {
         guard licenseState.entitlements.canUseAdaptiveLighting || !enabled else {
             message = "L'éclairage adaptatif est inclus dans Premium."
@@ -1272,18 +1311,22 @@ final class AppState: ObservableObject {
     func applyCircadianNow() async {
         guard circadianSettings.isEnabled else { return }
         let (brightness, temperature) = circadianService.currentValues()
-        let targets = lamps.filter { $0.online }
-        await runBusy {
-            for lamp in targets {
-                let provider = try makeLightProvider(for: lamp)
-                if circadianSettings.applyBrightness, lamp.capabilities.brightness != nil {
-                    _ = try? await provider.setBrightness(deviceId: lamp.nativeID, value: brightness)
-                }
-                if circadianSettings.applyTemperature, lamp.capabilities.temperature != nil {
-                    _ = try? await provider.setTemperature(deviceId: lamp.nativeID, value: temperature)
-                }
+        // Only adjust lamps that are already on: adaptive lighting must not
+        // switch lamps on, and bulbs reject CT/brightness while off anyway.
+        let targets = lamps.filter { $0.online && $0.power }
+        guard !targets.isEmpty else { return }
+        // Runs every 15 min in the background: no busy state and no banner,
+        // which used to dim the UI and resize the popover on every tick.
+        for lamp in targets {
+            guard let provider = try? makeLightProvider(for: lamp) else { continue }
+            if circadianSettings.applyBrightness, lamp.capabilities.brightness != nil,
+               let updated = try? await provider.setBrightness(deviceId: lamp.nativeID, value: brightness) {
+                updateLamp(updated)
             }
-            message = "Éclairage adaptatif appliqué (\(brightness)%, \(temperature)K)."
+            if circadianSettings.applyTemperature, lamp.capabilities.temperature != nil,
+               let updated = try? await provider.setTemperature(deviceId: lamp.nativeID, value: temperature) {
+                updateLamp(updated)
+            }
         }
     }
 
@@ -1355,13 +1398,18 @@ final class AppState: ObservableObject {
         do {
             try sceneStore.save(userScenes)
         } catch {
-            message = error.localizedDescription
+            showError(error)
         }
     }
 
     private func updateLamp(_ next: LampDevice) {
+        let previous = lamps.first { $0.id == next.id }
         lamps = lamps.map { $0.id == next.id ? next : $0 }
-        persistWidgetSnapshot()
+        // The snapshot only holds counts; writing it on every slider tick
+        // (previews call this continuously) was needless disk I/O.
+        if previous?.power != next.power || previous?.online != next.online {
+            persistWidgetSnapshot()
+        }
     }
 
     private func startAutoSync() {
@@ -1375,14 +1423,43 @@ final class AppState: ObservableObject {
     }
 
     private func runBusy(_ operation: () async throws -> Void) async {
+        // The previous message is kept until the operation sets a new one:
+        // clearing it first made the banner vanish and reappear on every click
+        // (visible flicker).
         isBusy = true
-        message = ""
-        defer { isBusy = false }
+        defer {
+            isBusy = false
+            pendingAdaptiveNotice = false
+        }
 
         do {
             try await operation()
+            if pendingAdaptiveNotice {
+                let notice = NSLocalizedString("adaptive.paused.by.scene", comment: "")
+                message = message.isEmpty ? notice : "\(message) \(notice)"
+            }
         } catch {
-            message = error.localizedDescription
+            showError(error)
+        }
+    }
+
+    func showError(_ error: Error) {
+        showError(error.localizedDescription)
+    }
+
+    func showError(_ text: String) {
+        message = text
+        messageIsError = true
+    }
+
+    private func scheduleMessageDismiss() {
+        messageDismissTask?.cancel()
+        guard !message.isEmpty else { return }
+        let shown = message
+        messageDismissTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            guard let self, !Task.isCancelled, self.message == shown, !self.messageIsError else { return }
+            self.message = ""
         }
     }
 

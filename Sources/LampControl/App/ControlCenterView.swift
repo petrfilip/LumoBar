@@ -96,6 +96,18 @@ struct ControlCenterView: View {
 
             Spacer(minLength: LCSpacing.xs)
 
+            if appState.licenseState.entitlements.canUseAdaptiveLighting {
+                // Adaptive lighting on/off — moved here from the tiny icon in
+                // the lamps status bar, where it was easy to miss.
+                circleIconButton(
+                    icon: appState.circadianSettings.isEnabled ? "sun.and.horizon.fill" : "sun.and.horizon",
+                    help: appState.circadianSettings.isEnabled ? "lamps.adaptive.disable" : "lamps.adaptive.enable",
+                    tint: appState.circadianSettings.isEnabled ? Color.orange : nil
+                ) {
+                    Task { await appState.setAdaptiveLighting(enabled: !appState.circadianSettings.isEnabled) }
+                }
+            }
+
             circleIconButton(
                 icon: appState.selectedTab == .settings ? "lightbulb.2" : "gearshape",
                 help: appState.selectedTab == .settings ? "tab.lamps" : "settings.title"
@@ -116,11 +128,12 @@ struct ControlCenterView: View {
 
     private func circleIconButton(icon: String,
                                   help: LocalizedStringKey,
+                                  tint: Color? = nil,
                                   action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(LCPalette.muted)
+                .foregroundStyle(tint ?? LCPalette.muted)
                 .frame(width: 32, height: 32)
         }
         .buttonStyle(LCGlassButtonStyle(prominent: false, radius: 16))
@@ -154,12 +167,10 @@ struct ControlCenterView: View {
         appState.canSync ? "cloud.active" : "config.required"
     }
 
+    /// Set explicitly by AppState (`showError`) — guessing from French/English
+    /// keywords in the text broke as soon as messages were localized.
     private var isErrorMessage: Bool {
-        let lowered = appState.message.lowercased()
-        return lowered.contains("error") || lowered.contains("erreur") ||
-               lowered.contains("impossible") || lowered.contains("failed") ||
-               lowered.contains("invalide") || lowered.contains("invalid") ||
-               lowered.contains("échec")
+        appState.messageIsError
     }
 }
 

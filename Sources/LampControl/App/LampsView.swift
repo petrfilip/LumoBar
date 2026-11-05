@@ -146,7 +146,7 @@ struct LampsView: View {
                                         Divider()
                                         Section("Scènes") {
                                             ForEach(appState.userScenes) { scene in
-                                                Button(scene.title) { Task { await appState.applyScene(scene, toRoomId: room.id) } }
+                                                Button(scene.title) { Task { await appState.applyScene(scene, toRoomId: room.id, byUser: true) } }
                                             }
                                         }
                                     }
@@ -280,20 +280,6 @@ struct LampsView: View {
 
             Spacer(minLength: LCSpacing.xs)
 
-            if appState.licenseState.entitlements.canUseAdaptiveLighting {
-                Button {
-                    Task { await appState.setAdaptiveLighting(enabled: !appState.circadianSettings.isEnabled) }
-                } label: {
-                    Image(systemName: appState.circadianSettings.isEnabled ? "sun.and.horizon.fill" : "sun.and.horizon")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(appState.circadianSettings.isEnabled ? Color.orange : LCPalette.muted.opacity(0.55))
-                        .frame(width: 24, height: 24)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(LCPressableButtonStyle())
-                .help(appState.circadianSettings.isEnabled ? "lamps.adaptive.disable" : "lamps.adaptive.enable")
-            }
-
             Button { Task { await appState.syncLamps() } } label: {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 12, weight: .semibold))
@@ -358,22 +344,22 @@ private struct ScenePresetBar: View {
             ScrollView(.horizontal) {
                 HStack(spacing: 7) {
                     ForEach(LightScenePreset.presets) { preset in
-                        Button { Task { await appState.applyScene(preset) } } label: {
+                        // No dimming while busy: every click dimmed and restored all
+                        // chips, which read as flicker.
+                        Button { Task { await appState.applyScene(preset, byUser: true) } } label: {
                             SceneChip(title: preset.title, icon: preset.icon, color: preset.color)
                         }
                         .buttonStyle(.plain)
                         .disabled(appState.isBusy)
-                        .opacity(appState.isBusy ? 0.55 : 1)
                         .help(L10n.sceneApplyPreset(preset.title))
                     }
 
                     ForEach(appState.userScenes) { scene in
-                        Button { Task { await appState.applyScene(scene) } } label: {
+                        Button { Task { await appState.applyScene(scene, byUser: true) } } label: {
                             SceneChip(title: scene.title, icon: scene.icon, color: scene.color, isCapture: scene.isCapture)
                         }
                         .buttonStyle(.plain)
                         .disabled(appState.isBusy)
-                        .opacity(appState.isBusy ? 0.55 : 1)
                         .help(scene.isCapture ? L10n.sceneApplyCapture(scene.title) : L10n.sceneApplyAmbiance(scene.title))
                         .contextMenu {
                             Button("lamps.scene.edit") { beginEditing(scene) }

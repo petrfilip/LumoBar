@@ -37,7 +37,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             appState.$selectedTab.map { _ in () }.eraseToAnyPublisher(),
             appState.$expandedLampIds.map { _ in () }.eraseToAnyPublisher(),
             appState.$isGroupPanelExpanded.map { _ in () }.eraseToAnyPublisher(),
-            appState.$message.map { _ in () }.eraseToAnyPublisher(),
             appState.$hideOfflineLamps.map { _ in () }.eraseToAnyPublisher()
         )
         .debounce(for: .milliseconds(120), scheduler: RunLoop.main)

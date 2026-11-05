@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Quitter LampControl";
+"adaptive.paused.by.scene" = "Éclairage adaptatif désactivé pour conserver la scène.";
 "setup.providers.connected" = "Connecté : %@";
 "setup.providers.none" = "Connectez au moins un fournisseur de lampes.";
 "app.close" = "Fermer";

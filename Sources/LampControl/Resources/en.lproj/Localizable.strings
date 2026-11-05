@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Quit LampControl";
+"adaptive.paused.by.scene" = "Adaptive lighting turned off so the scene stays.";
 "setup.providers.connected" = "Connected: %@";
 "setup.providers.none" = "Connect at least one lamp provider.";
 "app.close" = "Close";

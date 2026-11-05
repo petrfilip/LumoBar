@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Salir de LampControl";
+"adaptive.paused.by.scene" = "Iluminación adaptativa desactivada para mantener la escena.";
 "setup.providers.connected" = "Conectado: %@";
 "setup.providers.none" = "Conecte al menos un proveedor de lámparas.";
 "app.close" = "Cerrar";
