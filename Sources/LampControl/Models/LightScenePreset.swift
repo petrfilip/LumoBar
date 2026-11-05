@@ -13,6 +13,60 @@ struct LightScenePreset: Identifiable, Hashable {
         LightScenePreset(id: "neon",  title: NSLocalizedString("scene.neon",  comment: ""), icon: "sparkles",        color: HSVColor(h: 278, s: 860, v: 1000)),
         LightScenePreset(id: "night", title: NSLocalizedString("scene.night", comment: ""), icon: "bed.double.fill", color: HSVColor(h: 220, s: 720, v: 320)),
     ]
+
+    static func preset(id: String) -> LightScenePreset? {
+        presets.first { $0.id == id }
+    }
+
+    /// A regular, editable scene carrying this preset's definition. The
+    /// `presetId` is what lets shortcuts / automations keep resolving it.
+    func makeScene(sceneId: UUID = UUID()) -> UserLightScene {
+        UserLightScene(id: sceneId, title: title, icon: icon, color: color, presetId: id)
+    }
+}
+
+/// Pure list transformations for the built-in presets that live in the user's
+/// scene list (kept free of I/O so they can be unit-tested).
+enum PresetScenes {
+    /// First launch with editable presets: put every built-in in front of the
+    /// user's own scenes. Built-ins already present (by `presetId`) are kept.
+    static func seeded(_ existing: [UserLightScene], presets: [LightScenePreset] = LightScenePreset.presets) -> [UserLightScene] {
+        let present = Set(existing.compactMap(\.presetId))
+        let missing = presets.filter { !present.contains($0.id) }.map { $0.makeScene() }
+        return missing + existing
+    }
+
+    /// "Restore default scenes": every built-in is back at its definition (a
+    /// modified one is reset in place, keeping its UUID so references stay
+    /// valid; a deleted one is re-added). Built-ins come first, in default
+    /// order; the user's own scenes keep their order after them.
+    static func restored(_ existing: [UserLightScene], presets: [LightScenePreset] = LightScenePreset.presets) -> [UserLightScene] {
+        var head: [UserLightScene] = []
+        for preset in presets {
+            if var scene = existing.first(where: { $0.presetId == preset.id }) {
+                scene.title = preset.title
+                scene.icon = preset.icon
+                scene.color = preset.color
+                scene.snapshots = nil
+                head.append(scene)
+            } else {
+                head.append(preset.makeScene())
+            }
+        }
+        let known = Set(presets.map(\.id))
+        let rest = existing.filter { scene in
+            guard let pid = scene.presetId else { return true }
+            return !known.contains(pid)
+        }
+        return head + rest
+    }
+
+    /// The scene a built-in id ("focus"...) resolves to: the user's (possibly
+    /// edited) scene if it still exists, otherwise nil so the caller falls
+    /// back to the hard-coded preset.
+    static func scene(forPresetId id: String, in scenes: [UserLightScene]) -> UserLightScene? {
+        scenes.first { $0.presetId == id }
+    }
 }
 
 /// Snapshot of a single lamp's state, used by capture-type scenes.
@@ -37,6 +91,9 @@ struct UserLightScene: Identifiable, Codable, Hashable {
     var color: HSVColor
     var snapshots: [LampSnapshot]?
     var createdAt: Date
+    /// Id of the built-in preset this scene was seeded from ("white", "focus"...).
+    /// Optional so scenes saved by older versions still decode.
+    var presetId: String?
 
     var isCapture: Bool { snapshots != nil }
 
@@ -46,7 +103,8 @@ struct UserLightScene: Identifiable, Codable, Hashable {
         icon: String,
         color: HSVColor,
         snapshots: [LampSnapshot]? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        presetId: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -54,5 +112,6 @@ struct UserLightScene: Identifiable, Codable, Hashable {
         self.color = color
         self.snapshots = snapshots
         self.createdAt = createdAt
+        self.presetId = presetId
     }
 }

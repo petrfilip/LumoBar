@@ -347,24 +347,19 @@ private struct ScenePresetBar: View {
         VStack(spacing: 8) {
             ScrollView(.horizontal) {
                 HStack(spacing: 7) {
-                    ForEach(LightScenePreset.presets) { preset in
+                    // Built-in presets are regular scenes now (seeded first in the list),
+                    // so they get the same Edit / Delete menu as the user's own.
+                    ForEach(appState.userScenes) { scene in
                         // No dimming while busy: every click dimmed and restored all
                         // chips, which read as flicker.
-                        Button { Task { await appState.applyScene(preset, byUser: true) } } label: {
-                            SceneChip(title: preset.title, icon: preset.icon, color: preset.color)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(appState.isBusy)
-                        .help(L10n.sceneApplyPreset(preset.title))
-                    }
-
-                    ForEach(appState.userScenes) { scene in
                         Button { Task { await appState.applyScene(scene, byUser: true) } } label: {
                             SceneChip(title: scene.title, icon: scene.icon, color: scene.color, isCapture: scene.isCapture)
                         }
                         .buttonStyle(.plain)
                         .disabled(appState.isBusy)
-                        .help(scene.isCapture ? L10n.sceneApplyCapture(scene.title) : L10n.sceneApplyAmbiance(scene.title))
+                        .help(scene.isCapture ? L10n.sceneApplyCapture(scene.title)
+                              : scene.presetId != nil ? L10n.sceneApplyPreset(scene.title)
+                              : L10n.sceneApplyAmbiance(scene.title))
                         .contextMenu {
                             Button("lamps.scene.edit") { beginEditing(scene) }
                             Button("lamps.scene.delete", role: .destructive) { appState.deleteUserScene(scene) }

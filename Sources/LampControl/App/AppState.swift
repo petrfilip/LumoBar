@@ -85,6 +85,8 @@ final class AppState: ObservableObject {
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
+    /// Set once the built-in presets have been seeded into `userScenes`.
+    static let presetsSeededKey = "LampControl.scenes.presetsSeeded.v1"
 
     init() {
         configureYeelightLiveSync()
@@ -186,7 +188,7 @@ final class AppState: ObservableObject {
     }
 
     func applyScene(_ scene: UserLightScene, toRoomId roomId: String, byUser: Bool = false) async {
-        guard licenseState.entitlements.canUseCustomScenes else {
+        guard canApply(scene) else {
             message = L10n.premiumScenes
             return
         }
@@ -813,8 +815,28 @@ final class AppState: ObservableObject {
         await applyScene(title: preset.title, color: preset.color, byUser: byUser)
     }
 
+    /// Built-in presets were always free; now that they live in the scene list
+    /// as regular scenes, applying an (unmodified-kind) preset-derived scene
+    /// stays free too. Everything else needs custom-scene entitlement.
+    private func canApply(_ scene: UserLightScene) -> Bool {
+        let e = licenseState.entitlements
+        if e.canUseCustomScenes { return true }
+        return scene.presetId != nil && !scene.isCapture && e.canUseScenePresets
+    }
+
+    /// Applies a built-in by id ("focus", "relax"...): the user's (possibly
+    /// edited) scene when it still exists, else the hard-coded definition, so
+    /// shortcuts and automations keep working even if the scene was deleted.
+    func applyPreset(id: String, byUser: Bool = false) async {
+        if let scene = PresetScenes.scene(forPresetId: id, in: userScenes) {
+            await applyScene(scene, byUser: byUser)
+        } else if let preset = LightScenePreset.preset(id: id) {
+            await applyScene(preset, byUser: byUser)
+        }
+    }
+
     func applyScene(_ scene: UserLightScene, byUser: Bool = false) async {
-        guard licenseState.entitlements.canUseCustomScenes else {
+        guard canApply(scene) else {
             message = L10n.premiumScenes
             return
         }
@@ -1283,14 +1305,10 @@ final class AppState: ObservableObject {
             switch action {
             case .powerOffAll:     await applyPowerAll(false)
             case .powerOnAll:      await applyPowerAll(true)
-            case .applySceneFocus:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "focus" }) { await applyScene(p, byUser: true) }
-            case .applySceneRelax:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "relax" }) { await applyScene(p, byUser: true) }
-            case .applySceneNeon:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "neon" })  { await applyScene(p, byUser: true) }
-            case .applySceneNight:
-                if let p = LightScenePreset.presets.first(where: { $0.id == "night" }) { await applyScene(p, byUser: true) }
+            case .applySceneFocus: await applyPreset(id: "focus", byUser: true)
+            case .applySceneRelax: await applyPreset(id: "relax", byUser: true)
+            case .applySceneNeon:  await applyPreset(id: "neon",  byUser: true)
+            case .applySceneNight: await applyPreset(id: "night", byUser: true)
             }
         }
     }
@@ -1358,9 +1376,7 @@ final class AppState: ObservableObject {
         case .powerOnAll:
             await applyPowerAll(true)
         case .applyScenePreset(let id):
-            if let preset = LightScenePreset.presets.first(where: { $0.id == id }) {
-                await applyScene(preset)
-            }
+            await applyPreset(id: id)
         case .applyProfile(let id):
             if let scene = userScenes.first(where: { $0.id == id }) {
                 await applyScene(scene)
@@ -1469,6 +1485,7 @@ final class AppState: ObservableObject {
     private func loadScenes() {
         do {
             userScenes = try sceneStore.load()
+            seedPresetScenesIfNeeded()
         } catch {
             showError(L10n.scenesUnreadable)
         }
@@ -1504,6 +1521,22 @@ final class AppState: ObservableObject {
         } catch {
             licenseState = .earlyAccess
             showError(L10n.licenseUnreadable)
+        }
+    }
+
+    /// One-time migration: the built-in presets become regular scenes in the
+    /// user's list. The flag is stored in UserDefaults so a preset the user
+    /// later deletes is not seeded again on the next launch; only an explicit
+    /// "Restore default scenes" (or a full reset) brings it back. Not run when
+    /// scenes.json was unreadable, so a corrupt file is never overwritten.
+    private func seedPresetScenesIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: Self.presetsSeededKey) else { return }
+        userScenes = PresetScenes.seeded(userScenes)
+        do {
+            try sceneStore.save(userScenes)
+            UserDefaults.standard.set(true, forKey: Self.presetsSeededKey)
+        } catch {
+            showError(error)
         }
     }
 
