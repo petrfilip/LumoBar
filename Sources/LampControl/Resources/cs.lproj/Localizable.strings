@@ -540,3 +540,12 @@
 "login.item.open.settings" = "Otevřít Položky po přihlášení";
 "login.item.error.register" = "Spouštění po přihlášení se nepodařilo zapnout: %@";
 "login.item.error.unregister" = "Spouštění po přihlášení se nepodařilo vypnout: %@";
+
+/* Yeelight live sync & discovery */
+"yeelight.search.button" = "Hledat v síti";
+"yeelight.search.searching" = "Hledání…";
+"yeelight.search.help" = "Vyhledat žárovky Yeelight v místní síti (musí být zapnuté LAN Control)";
+"yeelight.search.none" = "Nebyla nalezena žádná žárovka Yeelight. Zkontrolujte, že je zapnuté LAN Control a že je Mac ve stejné síti jako žárovka.";
+"yeelight.search.added" = "Přidáno";
+"yeelight.search.add.help" = "Přidat tuto žárovku";
+"error.yeelight.search.failed" = "Hledání v síti selhalo. Zkontrolujte, že má LampControl povolený přístup k místní síti v Nastavení systému → Soukromí a zabezpečení → Místní síť.";
