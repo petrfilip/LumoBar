@@ -610,9 +610,15 @@ final class AppState: ObservableObject {
         // (rooms, expanded rows, scene editor).
         case .lamps:    height = lampsPopoverHeight
         }
-        let screenMax = (NSScreen.main?.visibleFrame.height ?? 900) - 80
+        let screenMax = (popoverScreenVisibleHeight ?? NSScreen.main?.visibleFrame.height ?? 900) - 80
         return min(max(height, 360), screenMax)
     }
+
+    /// Visible height of the display the popover opens on. `NSScreen.main` is
+    /// the display with the key window — often the *other* monitor — so a
+    /// popover sized for a taller screen did not fit and AppKit shifted it
+    /// away from the menu bar icon.
+    @Published var popoverScreenVisibleHeight: CGFloat?
 
     private var lampsPopoverHeight: CGFloat {
         // Quiet Glass v2: tab strip removed (gear/back lives in the header).

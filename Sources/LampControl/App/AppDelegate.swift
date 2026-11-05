@@ -199,8 +199,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             popover.performClose(nil)
         } else {
             let (view, rect) = popoverAnchor(for: button)
-            popover.show(relativeTo: rect, of: view, preferredEdge: .minY)
+            // Size for the display the popover will open on *before* showing
+            // it: resizing right after `show` made it jump / reposition.
+            if let screen = view.window?.screen,
+               appState.popoverScreenVisibleHeight != screen.visibleFrame.height {
+                appState.popoverScreenVisibleHeight = screen.visibleFrame.height
+            }
             updatePopoverSize(animated: false)
+            popover.show(relativeTo: rect, of: view, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
     }
