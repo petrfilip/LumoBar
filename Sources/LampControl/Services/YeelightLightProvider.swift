@@ -7,6 +7,9 @@ final class YeelightLightProvider: LightProvider {
     // push updates, from the main actor — guard them with a lock.
     private let cacheLock = NSLock()
     private var lamps: [String: LampDevice] = [:]
+    /// When each cached lamp was last changed by one of *our* commands. A poll that started
+    /// before that moment describes the bulb before the command and must not overwrite it.
+    private var commandedAt: [String: Date] = [:]
     private var bulbsById: [String: YeelightBulb] = [:]
 
     let kind: LightProviderKind = .yeelight
@@ -24,6 +27,7 @@ final class YeelightLightProvider: LightProvider {
             throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
         }
 
+        let pollStart = Date()
         var mapped: [LampDevice] = []
         let byId = Dictionary(uniqueKeysWithValues: settings.bulbs.map { ($0.id, $0) })
         cacheLock.withLock { bulbsById = byId }
@@ -41,7 +45,13 @@ final class YeelightLightProvider: LightProvider {
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         let byNative = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
-        cacheLock.withLock { lamps = byNative }
+        cacheLock.withLock {
+            var next = byNative
+            for (id, at) in commandedAt where at > pollStart {
+                if let current = lamps[id] { next[id] = current }
+            }
+            lamps = next
+        }
         return mapped
     }
 
@@ -226,7 +236,10 @@ final class YeelightLightProvider: LightProvider {
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
         var lamp = try requireLamp(deviceId)
         mutate(&lamp)
-        cacheLock.withLock { lamps[deviceId] = lamp }
+        cacheLock.withLock {
+            lamps[deviceId] = lamp
+            commandedAt[deviceId] = Date()
+        }
         return lamp
     }
 }

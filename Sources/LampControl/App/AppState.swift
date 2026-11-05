@@ -85,6 +85,9 @@ final class AppState: ObservableObject {
     /// Lamps that were off when the user started adjusting their color: the first command
     /// must switch them on (many bulbs reject color commands while off).
     private var lampsNeedingPowerOn = Set<String>()
+    /// Keeps the user's value on screen while they adjust a lamp (see `LampInteractionGuard`).
+    private var interactionGuard = LampInteractionGuard()
+    private var holdExpiryTasks: [String: Task<Void, Never>] = [:]
     private var lastYeelightDiscovery: Date?
     private var isRecoveringYeelight = false
     /// Minimum delay between automatic (background) network searches.
@@ -564,6 +567,8 @@ final class AppState: ObservableObject {
 
         if silent {
             guard !isBusy && !isAutoSyncing else { return }
+            // Don't poll bulbs while the user is adjusting one: the reply would be stale on arrival.
+            guard !interactionGuard.isAnyHolding(now: Date()), commandQueue.isAllIdle else { return }
             isAutoSyncing = true
             defer { isAutoSyncing = false }
 
@@ -615,33 +620,97 @@ final class AppState: ObservableObject {
     // follows while the user is still dragging. `commit*` runs once on release with the final
     // value, which always goes out. Providers without a policy only receive the final value.
 
+    /// The user grabbed a control of `lamp`: from now on state coming from elsewhere is
+    /// ignored for it until they are done (see `LampInteractionGuard`).
+    func beginAdjusting(_ lamp: LampDevice) {
+        interactionGuard.beginDrag(lamp.id, now: Date())
+        scheduleHoldExpiry(for: lamp.id)
+    }
+
     func previewBrightness(_ lamp: LampDevice, value: Int) {
+        noteUserActivity(lamp.id)
         updateLamp(lamp.withBrightness(value))
         enqueue(.brightness(value), for: lamp, isFinal: false)
     }
 
     func commitBrightness(_ lamp: LampDevice, value: Int) async {
+        endUserActivity(lamp.id)
         enqueue(.brightness(value), for: lamp, isFinal: true)
     }
 
     func previewTemperature(_ lamp: LampDevice, value: Int) {
+        noteUserActivity(lamp.id)
         updateLamp(lamp.withTemperature(value))
         enqueue(.temperature(value), for: lamp, isFinal: false)
     }
 
     func commitTemperature(_ lamp: LampDevice, value: Int) async {
+        endUserActivity(lamp.id)
         enqueue(.temperature(value), for: lamp, isFinal: true)
     }
 
     func previewColor(_ lamp: LampDevice, color: HSVColor) {
+        noteUserActivity(lamp.id)
         if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
         updateLamp(lamp.previewingColor(color))
         enqueue(.color(color), for: lamp, isFinal: false)
     }
 
     func commitColor(_ lamp: LampDevice, color: HSVColor) async {
+        endUserActivity(lamp.id)
         if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
         enqueue(.color(color), for: lamp, isFinal: true)
+    }
+
+    // MARK: - Stale update protection
+
+    private func isHolding(_ lampID: String) -> Bool {
+        interactionGuard.isHolding(lampID, now: Date(), commandsPending: !commandQueue.isIdle(lampID))
+    }
+
+    private func noteUserActivity(_ lampID: String) {
+        interactionGuard.touch(lampID, now: Date())
+        scheduleHoldExpiry(for: lampID)
+    }
+
+    private func endUserActivity(_ lampID: String) {
+        interactionGuard.endDrag(lampID, now: Date())
+        scheduleHoldExpiry(for: lampID)
+    }
+
+    /// Waits for the user's window on `lampID` to close (it keeps getting pushed out by new
+    /// activity and by command replies), then reconciles with what the bulb really reports.
+    private func scheduleHoldExpiry(for lampID: String) {
+        guard holdExpiryTasks[lampID] == nil else { return }
+        holdExpiryTasks[lampID] = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                guard let end = self.interactionGuard.holdEnd(lampID) else { break }
+                let remaining = end.timeIntervalSinceNow
+                if remaining > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000) + 50_000_000)
+                    continue
+                }
+                if !self.commandQueue.isIdle(lampID) {
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                    continue
+                }
+                self.interactionGuard.clear(lampID)
+                self.reconcileAfterInteraction(lampID)
+                break
+            }
+            self?.holdExpiryTasks[lampID] = nil
+        }
+    }
+
+    /// The window closed: show the bulb's own latest state (this also corrects the UI if a
+    /// command was lost). Other providers have no push channel; their next poll does it.
+    private func reconcileAfterInteraction(_ lampID: String) {
+        guard let lamp = lamps.first(where: { $0.id == lampID }), lamp.providerID == .yeelight,
+              let bulb = yeelightSettings.bulbs.first(where: { $0.id == lamp.nativeID }),
+              let live = yeelightLiveSync.liveProperties(for: bulb.id)
+        else { return }
+        applyYeelightLiveState(bulb: bulb, properties: live, online: true)
     }
 
     private func enqueue(_ command: LampCommand, for lamp: LampDevice, isFinal: Bool) {
@@ -655,8 +724,16 @@ final class AppState: ObservableObject {
             guard let self else { return nil }
             return try await self.perform(command, lampID: lampID, transition: transition)
         }
-        queue.onApplied = { [weak self] _, lamp in
-            self?.updateLamp(lamp)
+        queue.onApplied = { [weak self] lampID, lamp in
+            guard let self else { return }
+            self.interactionGuard.touch(lampID, now: Date())
+            self.updateLamp(lamp)
+        }
+        queue.onIdle = { [weak self] lampID in
+            guard let self else { return }
+            // The grace period counts from the last command's reply.
+            self.interactionGuard.touch(lampID, now: Date())
+            self.scheduleHoldExpiry(for: lampID)
         }
         queue.onFailure = { [weak self] lampID, error in
             guard let self else { return }
@@ -1679,6 +1756,10 @@ final class AppState: ObservableObject {
     private func applyYeelightLiveState(bulb: YeelightBulb, properties: [String: String], online: Bool) {
         let next = YeelightLightProvider.makeLamp(bulb: bulb, properties: properties, online: online)
         guard let current = lamps.first(where: { $0.id == next.id }), current != next else { return }
+        // A push describing an older state than the user's latest value (echo of an earlier
+        // command, a smooth transition's intermediate step) must not move their slider back.
+        // The live-sync keeps the latest properties; they are applied when the window closes.
+        if online, isHolding(next.id) { return }
         (lightProviders[.yeelight] as? YeelightLightProvider)?.noteExternalState(next)
         updateLamp(next)
     }
@@ -1693,7 +1774,16 @@ final class AppState: ObservableObject {
             else { return lamp }
             return YeelightLightProvider.makeLamp(bulb: bulb, properties: live, online: true)
         }
-        if lamps != merged { lamps = merged }
+        // A poll that was already running when the user started adjusting a lamp returns the
+        // state from before their value: keep what is on screen for lamps being adjusted.
+        let now = Date()
+        let guarded = merged.map { lamp -> LampDevice in
+            LampInteractionGuard.resolve(
+                incoming: lamp,
+                current: lamps.first { $0.id == lamp.id },
+                holding: interactionGuard.isHolding(lamp.id, now: now, commandsPending: !commandQueue.isIdle(lamp.id)))
+        }
+        if lamps != guarded { lamps = guarded }
     }
 
     // MARK: - Yeelight discovery & IP following

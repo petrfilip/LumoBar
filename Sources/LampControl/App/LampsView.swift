@@ -912,7 +912,7 @@ private struct LampRow: View {
                         in: Double(brightness.min)...Double(brightness.max),
                         step: Double(brightness.step),
                         onEditingChanged: { editing in
-                            guard !editing else { return }
+                            if editing { appState.beginAdjusting(lamp); return }
                             Task { await appState.commitBrightness(lamp, value: brightnessValue(for: brightness)) }
                         }
                     )
@@ -942,7 +942,7 @@ private struct LampRow: View {
                         in: Double(temperature.min)...Double(temperature.max),
                         step: Double(temperature.step),
                         onEditingChanged: { editing in
-                            guard !editing else { return }
+                            if editing { appState.beginAdjusting(lamp); return }
                             Task { await appState.commitTemperature(lamp, value: temperatureValue(for: temperature)) }
                         }
                     )
@@ -1001,7 +1001,9 @@ private struct LampRow: View {
                             let hsv = newColor.withValue(currentColorValue)
                             appState.previewColor(lamp, color: hsv)
                         }
-                    ), onCommit: { finalColor in
+                    ), onBegin: {
+                        appState.beginAdjusting(lamp)
+                    }, onCommit: { finalColor in
                         let hsv = finalColor.withValue(currentColorValue)
                         Task { await appState.commitColor(lamp, color: hsv) }
                     })
@@ -1197,6 +1199,7 @@ private struct ColorSpectrumPicker: View {
     /// lamp shows, so a thumb on it would look like a color is selected.
     var showsThumb = true
     @Binding var color: HSVColor
+    var onBegin: (() -> Void)? = nil
     var onCommit: ((HSVColor) -> Void)? = nil
     /// The thumb follows the pointer through this local value while dragging instead of
     /// round-tripping through the store, so nothing a bulb pushes back can make it jump.
@@ -1241,6 +1244,7 @@ private struct ColorSpectrumPicker: View {
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
                         let picked = color(at: value.location, in: size)
+                        if dragColor == nil { onBegin?() }
                         dragColor = picked
                         color = picked
                     }
