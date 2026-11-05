@@ -7,6 +7,7 @@ struct LightScenePreset: Identifiable, Hashable {
     let color: HSVColor
 
     static let presets: [LightScenePreset] = [
+        LightScenePreset(id: "white", title: NSLocalizedString("scene.white", comment: ""), icon: "lightbulb.fill",  color: HSVColor.white),
         LightScenePreset(id: "focus", title: NSLocalizedString("scene.focus", comment: ""), icon: "sun.max.fill",    color: HSVColor(h: 42,  s: 360, v: 1000)),
         LightScenePreset(id: "relax", title: NSLocalizedString("scene.relax", comment: ""), icon: "moon.fill",       color: HSVColor(h: 24,  s: 760, v: 780)),
         LightScenePreset(id: "neon",  title: NSLocalizedString("scene.neon",  comment: ""), icon: "sparkles",        color: HSVColor(h: 278, s: 860, v: 1000)),
@@ -24,6 +25,9 @@ struct LampSnapshot: Codable, Equatable, Hashable {
     var brightness: Int?
     var temperature: Int?
     var color: HSVColor?
+    /// "white" when captured in color-temperature mode. Optional so scenes
+    /// saved by older versions still decode.
+    var workMode: String?
 }
 
 struct UserLightScene: Identifiable, Codable, Hashable {

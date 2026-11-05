@@ -2,6 +2,8 @@
 
 /* App */
 "app.quit" = "Quit LampControl";
+"scene.white" = "White";
+"lamps.color.white" = "White";
 "error.invalid.response" = "Invalid response from the device.";
 "action.save" = "Save";
 

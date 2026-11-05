@@ -104,17 +104,21 @@ struct HSVColor: Codable, Equatable, Hashable {
         )
     }
 
+    // Saturation is kept as picked: the spectrum picker fades to white at the
+    // top, and forcing a minimum saturation made white impossible to select.
     func vivid() -> HSVColor {
-        HSVColor(h: h, s: max(650, s), v: HSVColor.defaultColorValue)
-    }
-
-    func vividSaturation() -> HSVColor {
-        HSVColor(h: h, s: max(650, s), v: v)
+        HSVColor(h: h, s: s, v: HSVColor.defaultColorValue)
     }
 
     func withValue(_ value: Int) -> HSVColor {
-        HSVColor(h: h, s: max(650, s), v: min(1000, max(10, value)))
+        HSVColor(h: h, s: s, v: min(1000, max(10, value)))
     }
+
+    static let white = HSVColor(h: 0, s: 0, v: 1000)
+
+    /// Below ~6 % saturation a color reads as white; lamps with a white
+    /// channel render that far better in color-temperature mode.
+    var isNearWhite: Bool { s < 60 }
 }
 
 struct TuyaEnvelope<Result: Decodable>: Decodable {

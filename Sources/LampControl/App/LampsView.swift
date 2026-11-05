@@ -463,7 +463,7 @@ private struct ScenePresetBar: View {
                 HStack(spacing: 8) {
                     ColorSpectrumPicker(color: Binding(
                         get: { draftColor },
-                        set: { draftColor = $0.withValue(draftColor.v).vividSaturation() }
+                        set: { draftColor = $0.withValue(draftColor.v) }
                     ))
                     .frame(height: 50)
 
@@ -973,7 +973,7 @@ private struct LampRow: View {
 
                         ForEach(HSVColor.quickColors, id: \.self) { color in
                             Button {
-                                let hsv = color.withValue(currentColorValue).vividSaturation()
+                                let hsv = color.withValue(currentColorValue)
                                 appState.previewColor(lamp, color: hsv)
                                 Task { await appState.commitColor(lamp, color: hsv) }
                             } label: {
@@ -981,23 +981,25 @@ private struct LampRow: View {
                                     .fill(Color(hsv: color))
                                     .frame(width: 16, height: 16)
                                     .overlay(Circle().stroke(Color.white.opacity(0.72), lineWidth: 0.8))
+                                    .overlay(Circle().stroke(Color.black.opacity(0.18), lineWidth: 0.5))
                                     .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
                                     .frame(width: 24, height: 24)
                                     .contentShape(Circle())
                             }
                             .buttonStyle(.plain)
                             .disabled(!lamp.online)
+                            .help(color == HSVColor.white ? L10n.colorWhite : "")
                         }
                     }
 
                     ColorSpectrumPicker(color: Binding(
                         get: { lamp.color ?? .warm },
                         set: { newColor in
-                            let hsv = newColor.withValue(currentColorValue).vividSaturation()
+                            let hsv = newColor.withValue(currentColorValue)
                             appState.previewColor(lamp, color: hsv)
                         }
                     ), onCommit: { finalColor in
-                        let hsv = finalColor.withValue(currentColorValue).vividSaturation()
+                        let hsv = finalColor.withValue(currentColorValue)
                         Task { await appState.commitColor(lamp, color: hsv) }
                     })
                     .frame(height: 62)
@@ -1056,10 +1058,10 @@ private struct LampRow: View {
     }
 
     private func temperatureKelvin(for capability: NumericCapability) -> Int {
-        // Map capability range to Kelvin range (typically 2700K to 6500K)
-        // Most devices report temperature as a value in their capability range
-        // We'll map min -> 2700K, max -> 6500K as a reasonable default
         let tempValue = temperatureValue(for: capability)
+        // Ranges starting at 1000+ are already Kelvin (Yeelight 1700–6500 K, LIFX, …).
+        if capability.min >= 1000 { return tempValue }
+        // Otherwise map the vendor scale onto 2700–6500 K as a reasonable default.
         let minValue = capability.min
         let maxValue = capability.max
         let range = max(1, maxValue - minValue)
@@ -1121,6 +1123,7 @@ private struct LampReorderDropDelegate: DropDelegate {
 
 extension HSVColor {
     static let quickColors: [HSVColor] = [
+        HSVColor.white,
         HSVColor(h: 0, s: 900, v: 1000),
         HSVColor(h: 38, s: 850, v: 1000),
         HSVColor(h: 120, s: 850, v: 850),

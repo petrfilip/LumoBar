@@ -40,6 +40,7 @@ enum L10n {
 
     // MARK: - Sync
 
+    static var colorWhite: String   { NSLocalizedString("lamps.color.white", comment: "") }
     static var syncUpdating: String { NSLocalizedString("lamps.sync.updating", comment: "") }
     static var syncAuto: String     { NSLocalizedString("lamps.sync.auto", comment: "") }
     static var syncNever: String    { NSLocalizedString("sync.never", comment: "") }

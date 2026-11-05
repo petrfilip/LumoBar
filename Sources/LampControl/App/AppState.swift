@@ -526,7 +526,7 @@ final class AppState: ObservableObject {
 
     func commitColor(_ lamp: LampDevice, color: HSVColor) async {
         do {
-            let updated = try await makeLightProvider(for: lamp).setColor(deviceId: lamp.nativeID, color: color)
+            let updated = try await applyColor(color, to: lamp)
             updateLamp(updated)
         } catch {
             message = error.localizedDescription
@@ -659,7 +659,7 @@ final class AppState: ObservableObject {
             return
         }
 
-        let targets = lamps.filter { selectedLampIds.contains($0.id) && $0.capabilities.colorCode != nil }
+        let targets = lamps.filter { selectedLampIds.contains($0.id) && canShow(groupColor, on: $0) }
         guard !targets.isEmpty else {
             message = "Sélectionnez au moins une lampe RGB."
             return
@@ -668,7 +668,7 @@ final class AppState: ObservableObject {
         await runBusy {
             var updated: [LampDevice] = []
             for lamp in targets {
-                updated.append(try await makeLightProvider(for: lamp).setColor(deviceId: lamp.nativeID, color: groupColor))
+                updated.append(try await applyColor(groupColor, to: lamp))
             }
             for lamp in updated {
                 updateLamp(lamp)
@@ -727,7 +727,8 @@ final class AppState: ObservableObject {
                 power: lamp.power,
                 brightness: lamp.brightness,
                 temperature: lamp.temperature,
-                color: lamp.color
+                color: lamp.color,
+                workMode: lamp.workMode
             )
         }
     }
@@ -739,7 +740,12 @@ final class AppState: ObservableObject {
             for snap in snapshots {
                 guard let lamp = lamps.first(where: { $0.id == snap.lampId && $0.online }) else { continue }
                 let provider = try makeLightProvider(for: lamp)
-                if let color = snap.color, lamp.capabilities.colorCode != nil {
+                if snap.workMode == "white", let temp = snap.temperature, lamp.capabilities.temperature != nil {
+                    updated.append(try await provider.setTemperature(deviceId: lamp.nativeID, value: temp))
+                    if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
+                        updated.append(try await provider.setBrightness(deviceId: lamp.nativeID, value: brightness))
+                    }
+                } else if let color = snap.color, lamp.capabilities.colorCode != nil {
                     updated.append(try await provider.setColor(deviceId: lamp.nativeID, color: color))
                 } else if let brightness = snap.brightness, lamp.capabilities.brightness != nil {
                     updated.append(try await provider.setBrightness(deviceId: lamp.nativeID, value: brightness))
@@ -769,10 +775,10 @@ final class AppState: ObservableObject {
 
     private func applyScene(title: String, color: HSVColor) async {
         let selectedTargets = lamps.filter {
-            selectedLampIds.contains($0.id) && $0.online && $0.capabilities.colorCode != nil
+            selectedLampIds.contains($0.id) && $0.online && canShow(color, on: $0)
         }
         let targets = selectedTargets.isEmpty
-            ? lamps.filter { $0.online && $0.capabilities.colorCode != nil }
+            ? lamps.filter { $0.online && canShow(color, on: $0) }
             : selectedTargets
 
         guard !targets.isEmpty else {
@@ -785,7 +791,7 @@ final class AppState: ObservableObject {
         await runBusy {
             var updated: [LampDevice] = []
             for lamp in targets {
-                updated.append(try await makeLightProvider(for: lamp).setColor(deviceId: lamp.nativeID, color: color))
+                updated.append(try await applyColor(color, to: lamp))
             }
             for lamp in updated {
                 updateLamp(lamp)
@@ -878,6 +884,43 @@ final class AppState: ObservableObject {
             lightProviders[.philipsHue] = nil
             message = "Bridge Philips Hue connecté."
         }
+    }
+
+    // MARK: - White handling
+
+    /// Whether `color` can be rendered on `lamp`: RGB lamps take any color,
+    /// white-only (tunable) lamps take near-white colors via color temperature.
+    private func canShow(_ color: HSVColor, on lamp: LampDevice) -> Bool {
+        lamp.capabilities.colorCode != nil || (color.isNearWhite && lamp.capabilities.temperature != nil)
+    }
+
+    /// Sends `color` to `lamp`. Near-white colors are sent as a neutral color
+    /// temperature when the lamp supports it: RGB "white" (saturation 0) looks
+    /// dim and bluish on most bulbs, while CT mode uses the dedicated white LEDs.
+    private func applyColor(_ color: HSVColor, to lamp: LampDevice) async throws -> LampDevice {
+        let provider = try makeLightProvider(for: lamp)
+        guard color.isNearWhite, let temperature = lamp.capabilities.temperature else {
+            return try await provider.setColor(deviceId: lamp.nativeID, color: color)
+        }
+
+        var updated = try await provider.setTemperature(
+            deviceId: lamp.nativeID,
+            value: Self.neutralWhite(for: temperature)
+        )
+        if let brightness = lamp.capabilities.brightness {
+            let fraction = Double(min(1000, max(10, color.v))) / 1000.0
+            let value = brightness.min + Int(round(fraction * Double(brightness.max - brightness.min)))
+            updated = try await provider.setBrightness(deviceId: lamp.nativeID, value: value)
+        }
+        return updated
+    }
+
+    /// Neutral white (~4000 K) in the lamp's own temperature scale. Ranges
+    /// starting at 1000+ are Kelvin (Yeelight, LIFX, WiZ, Govee); others are
+    /// vendor-relative scales where the midpoint is a neutral white.
+    private static func neutralWhite(for capability: NumericCapability) -> Int {
+        let raw = capability.min >= 1000 ? 4000 : (capability.min + capability.max) / 2
+        return min(capability.max, max(capability.min, raw))
     }
 
     func quit() {
