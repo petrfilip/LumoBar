@@ -630,7 +630,7 @@ final class AppState: ObservableObject {
     }
 
     func previewColor(_ lamp: LampDevice, color: HSVColor) {
-        updateLamp(lamp.withColor(color))
+        updateLamp(lamp.previewingColor(color))
     }
 
     func commitColor(_ lamp: LampDevice, color: HSVColor) async {
@@ -1075,22 +1075,13 @@ final class AppState: ObservableObject {
 
         var updated = try await provider.setTemperature(
             deviceId: lamp.nativeID,
-            value: Self.neutralWhite(for: temperature)
+            value: LampDevice.neutralWhite(for: temperature)
         )
         if let brightness = lamp.capabilities.brightness {
-            let fraction = Double(min(1000, max(10, color.v))) / 1000.0
-            let value = brightness.min + Int(round(fraction * Double(brightness.max - brightness.min)))
+            let value = LampDevice.brightness(forColorValue: color.v, capability: brightness)
             updated = try await provider.setBrightness(deviceId: lamp.nativeID, value: value)
         }
         return updated
-    }
-
-    /// Neutral white (~4000 K) in the lamp's own temperature scale. Ranges
-    /// starting at 1000+ are Kelvin (Yeelight, LIFX, WiZ, Govee); others are
-    /// vendor-relative scales where the midpoint is a neutral white.
-    private static func neutralWhite(for capability: NumericCapability) -> Int {
-        let raw = capability.min >= 1000 ? 4000 : (capability.min + capability.max) / 2
-        return min(capability.max, max(capability.min, raw))
     }
 
     /// Closes the menu-bar popover without quitting. Set by `AppDelegate`.

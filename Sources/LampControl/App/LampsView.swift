@@ -793,10 +793,10 @@ private struct LampRow: View {
         .background(alignment: .top) {
             if lamp.power {
                 Rectangle()
-                    .fill(lamp.color.map { Color(hsv: $0) } ?? Color(red: 0.96, green: 0.77, blue: 0.26))
+                    .fill(displayColor ?? Color(red: 0.96, green: 0.77, blue: 0.26))
                     .frame(height: 2)
                     .clipShape(Capsule())
-                    .shadow(color: (lamp.color.map { Color(hsv: $0) } ?? Color.orange).opacity(0.55), radius: 4, y: 0)
+                    .shadow(color: (displayColor ?? Color.orange).opacity(0.55), radius: 4, y: 0)
                     .padding(.horizontal, LCSpacing.md)
             }
         }
@@ -851,8 +851,8 @@ private struct LampRow: View {
 
             Spacer(minLength: LCSpacing.xs)
 
-            if let color = lamp.color, lamp.capabilities.colorCode != nil {
-                ColorSwatch(color: color, size: 20)
+            if lamp.capabilities.colorCode != nil, let color = displayColor {
+                ColorSwatch(fill: color, size: 20)
             }
 
             if let brightness = brightnessCapability {
@@ -964,7 +964,7 @@ private struct LampRow: View {
                             .frame(width: 14)
                             .help("help.color")
 
-                        ColorSwatch(color: lamp.color ?? .warm, size: 22)
+                        ColorSwatch(fill: displayColor ?? Color(hsv: .warm), size: 22)
 
                         Spacer()
 
@@ -979,6 +979,12 @@ private struct LampRow: View {
                                     .frame(width: 16, height: 16)
                                     .overlay(Circle().stroke(Color.white.opacity(0.72), lineWidth: 0.8))
                                     .overlay(Circle().stroke(Color.black.opacity(0.18), lineWidth: 0.5))
+                                    .overlay(
+                                        Circle()
+                                            .stroke(accent, lineWidth: 1.5)
+                                            .frame(width: 22, height: 22)
+                                            .opacity(isSelectedQuickColor(color) ? 1 : 0)
+                                    )
                                     .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
                                     .frame(width: 24, height: 24)
                                     .contentShape(Circle())
@@ -989,7 +995,7 @@ private struct LampRow: View {
                         }
                     }
 
-                    ColorSpectrumPicker(color: Binding(
+                    ColorSpectrumPicker(showsThumb: !lamp.isWhiteMode, color: Binding(
                         get: { lamp.color ?? .warm },
                         set: { newColor in
                             let hsv = newColor.withValue(currentColorValue)
@@ -1005,6 +1011,23 @@ private struct LampRow: View {
                 }
             }
         }
+    }
+
+    /// What the lamp is emitting, for swatches and the glow line. In white mode this is the
+    /// tint of the color temperature — never the stale hue/saturation the bulb still reports.
+    private var displayColor: Color? {
+        if lamp.isWhiteMode {
+            guard let temperature = lamp.temperature, let capability = lamp.capabilities.temperature else { return nil }
+            let kelvin = StatusItemIcon.kelvin(temperature, capability: capability)
+            return Color(nsColor: StatusItemIcon.kelvinColor(kelvin))
+        }
+        return lamp.color.map { Color(hsv: $0) }
+    }
+
+    /// Only "white" has a persistent identity: it is a mode (color temperature), whereas
+    /// the other quick colors are just presets of the color picker.
+    private func isSelectedQuickColor(_ color: HSVColor) -> Bool {
+        color == .white && lamp.isWhiteMode
     }
 
     private var compactStatus: String {
@@ -1147,12 +1170,22 @@ extension Color {
 }
 
 private struct ColorSwatch: View {
-    let color: HSVColor
+    let fill: Color
     var size: CGFloat = 24
+
+    init(color: HSVColor, size: CGFloat = 24) {
+        self.fill = Color(hsv: color)
+        self.size = size
+    }
+
+    init(fill: Color, size: CGFloat = 24) {
+        self.fill = fill
+        self.size = size
+    }
 
     var body: some View {
         Circle()
-            .fill(Color(hsv: color))
+            .fill(fill)
             .frame(width: size, height: size)
             .overlay(Circle().stroke(Color.white.opacity(0.55), lineWidth: 1.5))
             .shadow(color: Color.black.opacity(0.12), radius: 5, x: 0, y: 2)
@@ -1160,6 +1193,9 @@ private struct ColorSwatch: View {
 }
 
 private struct ColorSpectrumPicker: View {
+    /// Hidden while the lamp is in white mode: the stored hue/saturation is not what the
+    /// lamp shows, so a thumb on it would look like a color is selected.
+    var showsThumb = true
     @Binding var color: HSVColor
     var onCommit: ((HSVColor) -> Void)? = nil
 
@@ -1194,6 +1230,7 @@ private struct ColorSpectrumPicker: View {
                     .frame(width: 18, height: 18)
                     .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 2)
                     .offset(x: min(max(0, x), size.width) - 9, y: min(max(0, y), size.height) - 9)
+                    .opacity(showsThumb ? 1 : 0)
             }
             .contentShape(Rectangle())
             .gesture(

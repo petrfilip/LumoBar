@@ -68,7 +68,9 @@ final class YeelightLightProvider: LightProvider {
         return try update(deviceId: deviceId) {
             $0.power = true
             $0.temperature = safeValue
-            $0.color = nil
+            // `color` is kept: the bulb keeps reporting its last hue/sat while in CT mode, so
+            // clearing it here made the next push flip the picker between "no color" and a
+            // stale one. The UI decides what is shown from `workMode`, not from `color`.
             $0.workMode = "white"
         }
     }
@@ -97,6 +99,17 @@ final class YeelightLightProvider: LightProvider {
         Dictionary(uniqueKeysWithValues: zip(propertyKeys, values))
     }
 
+    /// Yeelight `color_mode`: 1 = RGB, 2 = color temperature, 3 = HSV. Both RGB and HSV render a
+    /// color (`set_hsv` leaves the bulb in mode 3), so they are "colour"; only mode 2 is "white".
+    /// Anything else (property missing from a partial reply) stays unknown.
+    static func workMode(forColorMode colorMode: String?) -> String? {
+        switch colorMode {
+        case "1", "3": return "colour"
+        case "2": return "white"
+        default: return nil
+        }
+    }
+
     /// Single source of truth mapping raw Yeelight properties (from `get_prop` or merged `props`
     /// push notifications) onto a `LampDevice`.
     static func makeLamp(bulb: YeelightBulb, properties dict: [String: String], online: Bool) -> LampDevice {
@@ -115,12 +128,7 @@ final class YeelightLightProvider: LightProvider {
             )
         }
 
-        let workMode: String?
-        switch dict["color_mode"] {
-        case "1": workMode = "colour"
-        case "2": workMode = "white"
-        default: workMode = nil
-        }
+        let workMode = Self.workMode(forColorMode: dict["color_mode"])
 
         return LampDevice(
             id: "\(LightProviderKind.yeelight.rawValue):\(bulb.id)",

@@ -50,7 +50,7 @@ enum StatusItemIcon {
 
     /// Same convention as the lamp row label: ranges starting at 1000+ are
     /// Kelvin, other vendor scales are mapped onto 2700–6500 K.
-    private static func kelvin(_ value: Int, capability: NumericCapability) -> Int {
+    static func kelvin(_ value: Int, capability: NumericCapability) -> Int {
         let clamped = min(capability.max, max(capability.min, value))
         if capability.min >= 1000 { return clamped }
         let range = max(1, capability.max - capability.min)

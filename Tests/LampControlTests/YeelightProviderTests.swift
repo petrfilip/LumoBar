@@ -55,12 +55,12 @@ final class YeelightProviderTests: XCTestCase {
         XCTAssertEqual(lamp.color, HSVColor(h: 120, s: 850, v: 500))
     }
 
-    func testHSVModeLampHasColorButNoWorkMode() {
+    func testHSVModeLampIsColourMode() {
         let lamp = YeelightLightProvider.makeLamp(
             bulb: bulb,
             properties: ["power": "on", "bright": "100", "color_mode": "3", "hue": "200", "sat": "60"],
             online: true)
-        XCTAssertNil(lamp.workMode)
+        XCTAssertEqual(lamp.workMode, "colour")
         XCTAssertEqual(lamp.color, HSVColor(h: 200, s: 600, v: 1000))
     }
 
