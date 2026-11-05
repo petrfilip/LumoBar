@@ -1559,12 +1559,17 @@ final class AppState: ObservableObject {
         // which used to dim the UI and resize the popover on every tick.
         for lamp in targets {
             guard let provider = try? makeLightProvider(for: lamp) else { continue }
-            if circadianSettings.applyBrightness, lamp.capabilities.brightness != nil,
-               let updated = try? await provider.setBrightness(deviceId: lamp.nativeID, value: brightness) {
+            // Providers take each lamp's native range: convert from % / Kelvin.
+            if circadianSettings.applyBrightness, let capability = lamp.capabilities.brightness,
+               let updated = try? await provider.setBrightness(
+                   deviceId: lamp.nativeID,
+                   value: LampScale.nativeBrightness(percent: brightness, capability: capability)) {
                 updateLamp(updated)
             }
-            if circadianSettings.applyTemperature, lamp.capabilities.temperature != nil,
-               let updated = try? await provider.setTemperature(deviceId: lamp.nativeID, value: temperature) {
+            if circadianSettings.applyTemperature, let capability = lamp.capabilities.temperature,
+               let updated = try? await provider.setTemperature(
+                   deviceId: lamp.nativeID,
+                   value: LampScale.nativeTemperature(kelvin: temperature, capability: capability)) {
                 updateLamp(updated)
             }
         }

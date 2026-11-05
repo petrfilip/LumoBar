@@ -16,7 +16,7 @@ enum StatusItemIcon {
             )
         }
         if let temperature = lamp.temperature, let capability = lamp.capabilities.temperature {
-            return kelvinColor(kelvin(temperature, capability: capability))
+            return kelvinColor(LampScale.kelvin(native: temperature, capability: capability))
         }
         return nil
     }
@@ -46,16 +46,6 @@ enum StatusItemIcon {
             rect.fill(using: .sourceAtop)
             return true
         }
-    }
-
-    /// Same convention as the lamp row label: ranges starting at 1000+ are
-    /// Kelvin, other vendor scales are mapped onto 2700–6500 K.
-    static func kelvin(_ value: Int, capability: NumericCapability) -> Int {
-        let clamped = min(capability.max, max(capability.min, value))
-        if capability.min >= 1000 { return clamped }
-        let range = max(1, capability.max - capability.min)
-        let normalized = Double(clamped - capability.min) / Double(range)
-        return Int(round(2700.0 + normalized * (6500.0 - 2700.0)))
     }
 
     /// Approximate RGB of a black-body radiator (Tanner Helland's fit).

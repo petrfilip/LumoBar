@@ -1020,7 +1020,7 @@ private struct LampRow: View {
     private var displayColor: Color? {
         if lamp.isWhiteMode {
             guard let temperature = lamp.temperature, let capability = lamp.capabilities.temperature else { return nil }
-            let kelvin = StatusItemIcon.kelvin(temperature, capability: capability)
+            let kelvin = LampScale.kelvin(native: temperature, capability: capability)
             return Color(nsColor: StatusItemIcon.kelvinColor(kelvin))
         }
         return lamp.color.map { Color(hsv: $0) }
