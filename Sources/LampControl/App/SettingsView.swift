@@ -509,9 +509,11 @@ struct SettingsView: View {
 
                 Button {
                     Task {
-                        await appState.addYeelightBulb(host: newYeelightHost, name: newYeelightName)
-                        newYeelightHost = ""
-                        newYeelightName = ""
+                        // Keep what was typed when the add was rejected so it can be corrected.
+                        if await appState.addYeelightBulb(host: newYeelightHost, name: newYeelightName) {
+                            newYeelightHost = ""
+                            newYeelightName = ""
+                        }
                     }
                 } label: {
                     Label("device.add.sync", systemImage: "plus.circle.fill")

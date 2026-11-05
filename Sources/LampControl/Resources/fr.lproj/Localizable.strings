@@ -442,6 +442,7 @@
 "status.lifx.connected" = "LIFX connecté. %ld lampe(s) synchronisée(s).";
 "status.govee.connected" = "Govee connecté. %ld lampe(s) synchronisée(s).";
 "status.yeelight.ip.required" = "Adresse IP Yeelight requise.";
+"status.yeelight.already.added" = "Cette ampoule Yeelight est déjà ajoutée.";
 "status.yeelight.added" = "Yeelight ajoutée. %ld lampe(s) synchronisée(s).";
 "status.yeelight.removed" = "Yeelight retirée.";
 "status.nanoleaf.ip.required" = "Adresse IP Nanoleaf requise.";

@@ -442,6 +442,7 @@
 "status.lifx.connected" = "LIFX je připojen. Synchronizované žárovky: %ld.";
 "status.govee.connected" = "Govee je připojen. Synchronizované žárovky: %ld.";
 "status.yeelight.ip.required" = "Vyžadována IP adresa Yeelight.";
+"status.yeelight.already.added" = "Tato žárovka Yeelight už je přidána.";
 "status.yeelight.added" = "Žárovka Yeelight přidána. Synchronizované žárovky: %ld.";
 "status.yeelight.removed" = "Žárovka Yeelight odebrána.";
 "status.nanoleaf.ip.required" = "Vyžadována IP adresa Nanoleaf.";

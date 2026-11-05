@@ -480,11 +480,14 @@ final class AppState: ObservableObject {
         }
     }
 
-    func addYeelightBulb(host: String, name: String, deviceId: String? = nil) async {
+    /// Returns true when the bulb was saved (the form may then be cleared); false when it was
+    /// rejected (invalid address, duplicate) or saving failed, after surfacing the reason.
+    @discardableResult
+    func addYeelightBulb(host: String, name: String, deviceId: String? = nil) async -> Bool {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanHost.isEmpty else {
             showError(L10n.yeelightIPRequired)
-            return
+            return false
         }
 
         let hostOnly: String
@@ -493,7 +496,7 @@ final class AppState: ObservableObject {
             (hostOnly, port) = try YeelightAddress.parse(cleanHost)
         } catch {
             showError(error)
-            return
+            return false
         }
 
         var next = yeelightSettings
@@ -501,22 +504,28 @@ final class AppState: ObservableObject {
         if next.bulbs.contains(where: { existing in
             (normalizedID != nil && existing.deviceId == normalizedID) || (existing.host == hostOnly && existing.port == port)
         }) {
-            return
+            showError(L10n.yeelightAlreadyAdded)
+            return false
         }
         let bulb = YeelightBulb(host: hostOnly, port: port, name: name.trimmingCharacters(in: .whitespacesAndNewlines), deviceId: deviceId)
         next.bulbs.append(bulb)
 
+        var saved = false
         await runBusy {
             yeelightSettings = try yeelightSettingsStore.save(next)
+            saved = true
             lightProviders[.yeelight] = nil
+            // Right after the save: a failing unrelated provider in the sync below must not
+            // leave the new bulb without its push listener.
+            reconcileYeelightLiveSync()
             let synced = try await syncConfiguredProviders()
             setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
             message = L10n.yeelightAdded(synced.count)
-            reconcileYeelightLiveSync()
         }
+        return saved
     }
 
     func removeYeelightBulb(_ bulb: YeelightBulb) async {
@@ -526,13 +535,13 @@ final class AppState: ObservableObject {
         await runBusy {
             yeelightSettings = try yeelightSettingsStore.save(next)
             lightProviders[.yeelight] = nil
+            reconcileYeelightLiveSync()
             let synced = try await syncConfiguredProviders()
             setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
             message = L10n.yeelightRemoved
-            reconcileYeelightLiveSync()
         }
     }
 

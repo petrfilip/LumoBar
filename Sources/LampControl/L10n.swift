@@ -281,6 +281,7 @@ enum L10n {
         String(format: s("status.govee.connected"), count)
     }
     static var yeelightIPRequired: String { s("status.yeelight.ip.required") }
+    static var yeelightAlreadyAdded: String { s("status.yeelight.already.added") }
     static func yeelightAdded(_ count: Int) -> String {
         String(format: s("status.yeelight.added"), count)
     }
