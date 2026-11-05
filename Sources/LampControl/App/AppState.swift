@@ -718,6 +718,21 @@ final class AppState: ObservableObject {
 
     /// The window closed: show the bulb's own latest state (this also corrects the UI if a
     /// command was lost). Other providers have no push channel; their next poll does it.
+    /// Initial cache of a freshly created Yeelight provider. The provider skips commands that
+    /// match what its cache says the bulb shows, so the cache must describe the *bulb*, never
+    /// the optimistic value on screen: prefer the state the bulb pushed, and leave out lamps the
+    /// user is adjusting (their on-screen value has not reached the bulb yet).
+    private func yeelightProviderSeed() -> [LampDevice] {
+        lamps.compactMap { lamp in
+            guard lamp.providerID == .yeelight else { return nil }
+            if let bulb = yeelightSettings.bulbs.first(where: { $0.id == lamp.nativeID }),
+               let live = yeelightLiveSync.liveProperties(for: bulb.id) {
+                return YeelightLightProvider.makeLamp(bulb: bulb, properties: live, online: true)
+            }
+            return isHolding(lamp.id) ? nil : lamp
+        }
+    }
+
     private func reconcileAfterInteraction(_ lampID: String) {
         guard let lamp = lamps.first(where: { $0.id == lampID }), lamp.providerID == .yeelight,
               let bulb = yeelightSettings.bulbs.first(where: { $0.id == lamp.nativeID }),
@@ -1282,7 +1297,7 @@ final class AppState: ObservableObject {
             guard yeelightSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
             }
-            provider = YeelightLightProvider(settings: yeelightSettings, initialLamps: lamps)
+            provider = YeelightLightProvider(settings: yeelightSettings, initialLamps: yeelightProviderSeed())
         case .nanoleaf:
             guard nanoleafSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))
