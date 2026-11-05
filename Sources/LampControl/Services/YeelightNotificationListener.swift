@@ -42,6 +42,8 @@ final class YeelightNotificationListener {
     private var connection: NWConnection?
     private var generation = 0
     private var isReady = false
+    /// True once this connection delivered a snapshot, i.e. it was really healthy.
+    private var gotSnapshot = false
     private var buffer = Data()
     private var failures = 0
     private var backoff: TimeInterval = 1
@@ -110,6 +112,7 @@ final class YeelightNotificationListener {
         generation += 1
         let gen = generation
         isReady = false
+        gotSnapshot = false
         buffer.removeAll(keepingCapacity: true)
 
         let tcp = NWProtocolTCP.Options()
@@ -209,12 +212,16 @@ final class YeelightNotificationListener {
             let values = result.map { Self.stringify($0) }
             failures = 0
             backoff = 1
+            gotSnapshot = true
             onEvent(.snapshot(YeelightLightProvider.propertyDictionary(fromGetProp: values)))
         }
     }
 
     private func connectionLost() {
-        let wasReady = isReady
+        // Only a connection that delivered data counts as healthy: a bulb that
+        // accepts and immediately closes (e.g. all 4 connection slots taken)
+        // must back off instead of being retried every second forever.
+        let wasReady = isReady && gotSnapshot
         teardown()
         guard running else { return }
 
