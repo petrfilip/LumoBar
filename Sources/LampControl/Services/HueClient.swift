@@ -63,7 +63,7 @@ final class HueClient {
             if case .error = $0 { return true }
             return false
         }) {
-            throw LampControlError.tuya("Hue: \(error.description)")
+            throw LampControlError.device("Hue: \(error.description)")
         }
     }
 

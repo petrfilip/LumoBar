@@ -100,7 +100,7 @@ final class LifxLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya(NSLocalizedString("error.lifx.unknown", comment: ""))
+            throw LampControlError.device(NSLocalizedString("error.lifx.unknown", comment: ""))
         }
 
         return lamp

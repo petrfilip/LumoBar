@@ -73,7 +73,7 @@ final class GoveeLightProvider: LightProvider {
 
     private func sendCommand(deviceId: String, name: String, value: GoveeCommandValue) async throws {
         guard let model = models[deviceId] else {
-            throw LampControlError.tuya(NSLocalizedString("error.govee.model.unknown", comment: ""))
+            throw LampControlError.device(NSLocalizedString("error.govee.model.unknown", comment: ""))
         }
 
         let body = GoveeControlBody(device: deviceId, model: model, cmd: GoveeCommand(name: name, value: value))
@@ -171,7 +171,7 @@ final class GoveeLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya(NSLocalizedString("error.govee.unknown", comment: ""))
+            throw LampControlError.device(NSLocalizedString("error.govee.unknown", comment: ""))
         }
         return lamp
     }

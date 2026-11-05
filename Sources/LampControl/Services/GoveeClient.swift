@@ -75,7 +75,7 @@ final class GoveeClient {
         guard (200..<300).contains(httpResponse.statusCode) else {
             let decoded = try? JSONDecoder().decode(GoveeErrorResponse.self, from: data)
             let message = decoded?.message ?? NSLocalizedString("error.http.refused", comment: "")
-            throw LampControlError.tuya("Govee HTTP \(httpResponse.statusCode): \(message)")
+            throw LampControlError.device("Govee HTTP \(httpResponse.statusCode): \(message)")
         }
 
         return try JSONDecoder().decode(Response.self, from: data)

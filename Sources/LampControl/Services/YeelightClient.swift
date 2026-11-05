@@ -46,7 +46,7 @@ final class YeelightClient {
         else { return .ignore }
 
         if let error = decoded.error {
-            return .failure(LampControlError.tuya("Yeelight: \(error.message) (\(error.code))"))
+            return .failure(LampControlError.yeelight("Yeelight: \(error.message) (\(error.code))"))
         }
         if let result = decoded.result {
             return .result(result)
@@ -81,7 +81,7 @@ final class YeelightClient {
             func receiveNext() {
                 connection.receive(minimumIncompleteLength: 1, maximumLength: 8192) { data, _, isComplete, receiveError in
                     if let receiveError {
-                        finish(.failure(LampControlError.tuya("Yeelight: \(receiveError.localizedDescription)")))
+                        finish(.failure(LampControlError.yeelight("Yeelight: \(receiveError.localizedDescription)")))
                         return
                     }
                     if let data {
@@ -126,13 +126,13 @@ final class YeelightClient {
                     let payload = command.data(using: .utf8) ?? Data()
                     connection.send(content: payload, completion: .contentProcessed { sendError in
                         if let sendError {
-                            finish(.failure(LampControlError.tuya("Yeelight: \(sendError.localizedDescription)")))
+                            finish(.failure(LampControlError.yeelight("Yeelight: \(sendError.localizedDescription)")))
                             return
                         }
                         receiveNext()
                     })
                 case .failed(let error):
-                    finish(.failure(LampControlError.tuya("Yeelight: \(error.localizedDescription)")))
+                    finish(.failure(LampControlError.yeelight("Yeelight: \(error.localizedDescription)")))
                 case .cancelled:
                     finish(.failure(LampControlError.offline))
                 default:
@@ -141,7 +141,7 @@ final class YeelightClient {
             }
 
             DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
-                finish(.failure(LampControlError.tuya(NSLocalizedString("error.yeelight.timeout", comment: ""))))
+                finish(.failure(LampControlError.yeelight(NSLocalizedString("error.yeelight.timeout", comment: ""))))
             }
 
             connection.start(queue: .global())

@@ -134,14 +134,14 @@ final class YeelightLightProvider: LightProvider {
 
     private func requireBulb(_ deviceId: String) throws -> YeelightBulb {
         guard let bulb = bulbsById[deviceId] else {
-            throw LampControlError.tuya(NSLocalizedString("error.yeelight.unknown", comment: ""))
+            throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
         return bulb
     }
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya(NSLocalizedString("error.yeelight.unknown", comment: ""))
+            throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
         return lamp
     }
