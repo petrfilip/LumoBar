@@ -451,7 +451,7 @@ final class AppState: ObservableObject {
 
         // Apply custom ordering
         if !lampOrderIds.isEmpty {
-            let orderIndex = Dictionary(uniqueKeysWithValues: lampOrderIds.enumerated().map { ($1, $0) })
+            let orderIndex = Dictionary(lampOrderIds.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
             filtered.sort { a, b in
                 let aIndex = orderIndex[a.id] ?? Int.max
                 let bIndex = orderIndex[b.id] ?? Int.max

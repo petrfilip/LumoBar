@@ -216,6 +216,12 @@ struct LampsView: View {
                                     draggedLampID = lamp.id
                                     return NSItemProvider(object: lamp.id as NSString)
                                 }
+                                .onDrop(of: [.text], delegate: LampReorderDropDelegate(
+                                    targetLamp: lamp,
+                                    draggedLampID: $draggedLampID,
+                                    appState: appState,
+                                    canReorder: canReorderLamps
+                                ))
                         }
                     }
                 }
@@ -1141,17 +1147,11 @@ private struct LampReorderDropDelegate: DropDelegate {
               draggedLampID != targetLamp.id
         else { return }
 
-        var updatedOrder = appState.lampOrderIds
-        if updatedOrder.isEmpty {
-            updatedOrder = appState.lamps.map(\.id)
-        }
-
-        guard let movingIndex = updatedOrder.firstIndex(of: draggedLampID),
-              let dropIndex = updatedOrder.firstIndex(of: targetLamp.id) else { return }
-
-        let item = updatedOrder.remove(at: movingIndex)
-        let destination = movingIndex < dropIndex ? dropIndex - 1 : dropIndex
-        updatedOrder.insert(item, at: max(0, destination))
+        // Lamps added after the order was saved are not in it yet: normalise first so they
+        // can be dragged (and dropped on) like any other.
+        guard let updatedOrder = LampOrder.moving(
+            draggedLampID, onto: targetLamp.id,
+            in: appState.lampOrderIds, knownIds: appState.lamps.map(\.id)) else { return }
         appState.updateLampOrder(updatedOrder)
     }
 
