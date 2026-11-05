@@ -80,6 +80,11 @@ final class AppState: ObservableObject {
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
     private let yeelightLiveSync = YeelightLiveSync()
+    /// Coalesces and paces what sliders / the color picker stream while the user drags.
+    private lazy var commandQueue: LampCommandQueue = makeCommandQueue()
+    /// Lamps that were off when the user started adjusting their color: the first command
+    /// must switch them on (many bulbs reject color commands while off).
+    private var lampsNeedingPowerOn = Set<String>()
     private var lastYeelightDiscovery: Date?
     private var isRecoveringYeelight = false
     /// Minimum delay between automatic (background) network searches.
@@ -603,42 +608,75 @@ final class AppState: ObservableObject {
         }
     }
 
+    // MARK: - Live adjustments (sliders, color picker)
+    //
+    // `preview*` runs on every drag event: it updates the UI immediately and, for providers
+    // that declare a `liveUpdatePolicy`, hands the value to the coalescing queue so the lamp
+    // follows while the user is still dragging. `commit*` runs once on release with the final
+    // value, which always goes out. Providers without a policy only receive the final value.
+
     func previewBrightness(_ lamp: LampDevice, value: Int) {
         updateLamp(lamp.withBrightness(value))
+        enqueue(.brightness(value), for: lamp, isFinal: false)
     }
 
     func commitBrightness(_ lamp: LampDevice, value: Int) async {
-        do {
-            let updated = try await makeLightProvider(for: lamp).setBrightness(deviceId: lamp.nativeID, value: value)
-            updateLamp(updated)
-        } catch {
-            showError(error)
-        }
+        enqueue(.brightness(value), for: lamp, isFinal: true)
     }
 
     func previewTemperature(_ lamp: LampDevice, value: Int) {
         updateLamp(lamp.withTemperature(value))
+        enqueue(.temperature(value), for: lamp, isFinal: false)
     }
 
     func commitTemperature(_ lamp: LampDevice, value: Int) async {
-        do {
-            let updated = try await makeLightProvider(for: lamp).setTemperature(deviceId: lamp.nativeID, value: value)
-            updateLamp(updated)
-        } catch {
-            showError(error)
-        }
+        enqueue(.temperature(value), for: lamp, isFinal: true)
     }
 
     func previewColor(_ lamp: LampDevice, color: HSVColor) {
+        if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
         updateLamp(lamp.previewingColor(color))
+        enqueue(.color(color), for: lamp, isFinal: false)
     }
 
     func commitColor(_ lamp: LampDevice, color: HSVColor) async {
-        do {
-            let updated = try await applyColor(color, to: lamp)
-            updateLamp(updated)
-        } catch {
-            showError(error)
+        if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
+        enqueue(.color(color), for: lamp, isFinal: true)
+    }
+
+    private func enqueue(_ command: LampCommand, for lamp: LampDevice, isFinal: Bool) {
+        let policy = (try? makeLightProvider(for: lamp))?.liveUpdatePolicy
+        guard isFinal || policy != nil else { return }
+        commandQueue.submit(lampID: lamp.id, command: command, isFinal: isFinal, policy: policy)
+    }
+
+    private func makeCommandQueue() -> LampCommandQueue {
+        let queue = LampCommandQueue { [weak self] lampID, command, transition in
+            guard let self else { return nil }
+            return try await self.perform(command, lampID: lampID, transition: transition)
+        }
+        queue.onApplied = { [weak self] _, lamp in
+            self?.updateLamp(lamp)
+        }
+        queue.onFailure = { [weak self] lampID, error in
+            guard let self else { return }
+            self.lampsNeedingPowerOn.remove(lampID)
+            self.showError(error)
+        }
+        return queue
+    }
+
+    private func perform(_ command: LampCommand, lampID: String, transition: TimeInterval) async throws -> LampDevice? {
+        guard var lamp = lamps.first(where: { $0.id == lampID }) else { return nil }
+        if lampsNeedingPowerOn.remove(lampID) != nil { lamp.power = false }
+        let provider = try makeLightProvider(for: lamp)
+        switch command {
+        case .brightness(let value):
+            return try await provider.setBrightness(deviceId: lamp.nativeID, value: value, transition: transition)
+        case .temperature(let value):
+            return try await provider.setTemperature(deviceId: lamp.nativeID, value: value, transition: transition)
+        case .color(let color):
+            return try await applyColor(color, to: lamp, transition: transition)
         }
     }
 
@@ -1062,7 +1100,7 @@ final class AppState: ObservableObject {
     /// Sends `color` to `lamp`. Near-white colors are sent as a neutral color
     /// temperature when the lamp supports it: RGB "white" (saturation 0) looks
     /// dim and bluish on most bulbs, while CT mode uses the dedicated white LEDs.
-    private func applyColor(_ color: HSVColor, to lamp: LampDevice) async throws -> LampDevice {
+    private func applyColor(_ color: HSVColor, to lamp: LampDevice, transition: TimeInterval = 0.2) async throws -> LampDevice {
         let provider = try makeLightProvider(for: lamp)
         // Many bulbs (e.g. Yeelight) reject color/CT/brightness commands while
         // off; applying a color implies the lamp should light up.
@@ -1070,16 +1108,17 @@ final class AppState: ObservableObject {
             _ = try await provider.setPower(deviceId: lamp.nativeID, value: true)
         }
         guard color.isNearWhite, let temperature = lamp.capabilities.temperature else {
-            return try await provider.setColor(deviceId: lamp.nativeID, color: color)
+            return try await provider.setColor(deviceId: lamp.nativeID, color: color, transition: transition)
         }
 
         var updated = try await provider.setTemperature(
             deviceId: lamp.nativeID,
-            value: LampDevice.neutralWhite(for: temperature)
+            value: LampDevice.neutralWhite(for: temperature),
+            transition: transition
         )
         if let brightness = lamp.capabilities.brightness {
             let value = LampDevice.brightness(forColorValue: color.v, capability: brightness)
-            updated = try await provider.setBrightness(deviceId: lamp.nativeID, value: value)
+            updated = try await provider.setBrightness(deviceId: lamp.nativeID, value: value, transition: transition)
         }
         return updated
     }

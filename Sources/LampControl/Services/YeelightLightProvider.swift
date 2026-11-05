@@ -51,20 +51,51 @@ final class YeelightLightProvider: LightProvider {
         return try update(deviceId: deviceId) { $0.power = value }
     }
 
+    /// Intermediate commands of a drag are paced to this (see `LiveUpdatePolicy.yeelight`).
+    var liveUpdatePolicy: LiveUpdatePolicy? { .yeelight }
+
+    static let defaultTransition: TimeInterval = 0.2
+
+    /// `smooth` duration in ms; the protocol's minimum is 30.
+    static func smoothMilliseconds(_ transition: TimeInterval) -> Int {
+        min(5000, max(30, Int((transition * 1000).rounded())))
+    }
+
     func setBrightness(deviceId: String, value: Int) async throws -> LampDevice {
+        try await setBrightness(deviceId: deviceId, value: value, transition: Self.defaultTransition)
+    }
+
+    func setTemperature(deviceId: String, value: Int) async throws -> LampDevice {
+        try await setTemperature(deviceId: deviceId, value: value, transition: Self.defaultTransition)
+    }
+
+    func setColor(deviceId: String, color: HSVColor) async throws -> LampDevice {
+        try await setColor(deviceId: deviceId, color: color, transition: Self.defaultTransition)
+    }
+
+    func setBrightness(deviceId: String, value: Int, transition: TimeInterval) async throws -> LampDevice {
         let bulb = try requireBulb(deviceId)
         let safeValue = min(100, max(1, value))
-        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_bright", params: [safeValue, "smooth", 200])
+        // Commands are quota-limited: never repeat what the bulb already shows.
+        if let cached = cachedLamp(deviceId), cached.power, cached.brightness == safeValue {
+            return cached
+        }
+        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_bright",
+                                         params: [safeValue, "smooth", Self.smoothMilliseconds(transition)])
         return try update(deviceId: deviceId) {
             $0.power = true
             $0.brightness = safeValue
         }
     }
 
-    func setTemperature(deviceId: String, value: Int) async throws -> LampDevice {
+    func setTemperature(deviceId: String, value: Int, transition: TimeInterval) async throws -> LampDevice {
         let bulb = try requireBulb(deviceId)
         let safeValue = min(6500, max(1700, value))
-        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_ct_abx", params: [safeValue, "smooth", 200])
+        if let cached = cachedLamp(deviceId), cached.power, cached.isWhiteMode, cached.temperature == safeValue {
+            return cached
+        }
+        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_ct_abx",
+                                         params: [safeValue, "smooth", Self.smoothMilliseconds(transition)])
         return try update(deviceId: deviceId) {
             $0.power = true
             $0.temperature = safeValue
@@ -75,19 +106,35 @@ final class YeelightLightProvider: LightProvider {
         }
     }
 
-    func setColor(deviceId: String, color: HSVColor) async throws -> LampDevice {
+    func setColor(deviceId: String, color: HSVColor, transition: TimeInterval) async throws -> LampDevice {
         let bulb = try requireBulb(deviceId)
         let hue = min(359, max(0, color.h))
         let sat = min(100, max(0, color.s / 10))
         let bri = min(100, max(1, color.v / 10))
-        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_hsv", params: [hue, sat, "smooth", 200])
-        _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_bright", params: [bri, "smooth", 200])
+        let smooth = Self.smoothMilliseconds(transition)
+        let cached = cachedLamp(deviceId)
+
+        let colorUnchanged = cached.map {
+            $0.power && $0.workMode == "colour" && $0.color.map { $0.h == hue && $0.s / 10 == sat } == true
+        } ?? false
+        if !colorUnchanged {
+            _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_hsv", params: [hue, sat, "smooth", smooth])
+        }
+        // Brightness is shared with white mode: while dragging across the palette it does
+        // not change, so it costs nothing after the first command.
+        if cached?.brightness != bri {
+            _ = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "set_bright", params: [bri, "smooth", smooth])
+        }
         return try update(deviceId: deviceId) {
             $0.power = true
             $0.brightness = bri
             $0.color = color
             $0.workMode = "colour"
         }
+    }
+
+    private func cachedLamp(_ deviceId: String) -> LampDevice? {
+        cacheLock.withLock { lamps[deviceId] }
     }
 
     private func lamp(from bulb: YeelightBulb, properties: [String], online: Bool) -> LampDevice {
