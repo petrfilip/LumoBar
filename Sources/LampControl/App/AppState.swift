@@ -1266,7 +1266,7 @@ final class AppState: ObservableObject {
             guard yeelightSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
             }
-            provider = YeelightLightProvider(settings: yeelightSettings)
+            provider = YeelightLightProvider(settings: yeelightSettings, initialLamps: lamps)
         case .nanoleaf:
             guard nanoleafSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))

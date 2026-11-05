@@ -17,9 +17,16 @@ final class YeelightLightProvider: LightProvider {
 
     static let propertyKeys = ["power", "bright", "ct", "rgb", "hue", "sat", "color_mode", "name"]
 
-    init(client: YeelightClient = YeelightClient(), settings: YeelightSettings) {
+    /// The bulb table is derived from `settings` up front so commands work before the first
+    /// `syncLights()` (e.g. right after discovery replaced the provider). `initialLamps` carries
+    /// the last known state so the first command result keeps brightness/colour/etc.
+    init(client: YeelightClient = YeelightClient(), settings: YeelightSettings, initialLamps: [LampDevice] = []) {
         self.client = client
         self.settings = settings
+        self.bulbsById = Dictionary(settings.bulbs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        for lamp in initialLamps where lamp.providerID == .yeelight && bulbsById[lamp.nativeID] != nil {
+            lamps[lamp.nativeID] = lamp
+        }
     }
 
     func syncLights() async throws -> [LampDevice] {
@@ -219,7 +226,7 @@ final class YeelightLightProvider: LightProvider {
 
     private func requireBulb(_ deviceId: String) throws -> YeelightBulb {
         cacheLock.lock(); defer { cacheLock.unlock() }
-        guard let bulb = bulbsById[deviceId] else {
+        guard let bulb = bulbsById[deviceId] ?? settings.bulbs.first(where: { $0.id == deviceId }) else {
             throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
         return bulb
@@ -227,10 +234,12 @@ final class YeelightLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         cacheLock.lock(); defer { cacheLock.unlock() }
-        guard let lamp = lamps[deviceId] else {
+        if let lamp = lamps[deviceId] { return lamp }
+        // Not polled yet: start from what the settings know about the bulb.
+        guard let bulb = bulbsById[deviceId] ?? settings.bulbs.first(where: { $0.id == deviceId }) else {
             throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
-        return lamp
+        return Self.makeLamp(bulb: bulb, properties: [:], online: true)
     }
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {

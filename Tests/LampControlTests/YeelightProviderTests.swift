@@ -1,3 +1,4 @@
+import Network
 import XCTest
 @testable import LampControl
 
@@ -123,6 +124,64 @@ final class YeelightProviderTests: XCTestCase {
         XCTAssertEqual(lamp.workMode, "colour")
         XCTAssertEqual(lamp.color, HSVColor(h: 0, s: 1000, v: 300))
         XCTAssertEqual(lamp.name, "Desk")
+    }
+
+    // MARK: Commands before any sync
+
+    /// Minimal fake bulb on loopback that answers every command with `["ok"]`.
+    private func startFakeBulb() throws -> (NWListener, UInt16) {
+        let listener = try NWListener(using: .tcp, on: .any)
+        listener.newConnectionHandler = { connection in
+            connection.start(queue: .global())
+            connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, _, _ in
+                guard let data,
+                      let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let id = object["id"] as? Int else { connection.cancel(); return }
+                let reply = "{\"id\":\(id),\"result\":[\"ok\"]}\r\n"
+                connection.send(content: Data(reply.utf8), completion: .contentProcessed { _ in connection.cancel() })
+            }
+        }
+        let ready = expectation(description: "listener ready")
+        listener.stateUpdateHandler = { if case .ready = $0 { ready.fulfill() } }
+        listener.start(queue: .global())
+        wait(for: [ready], timeout: 5)
+        return (listener, try XCTUnwrap(listener.port?.rawValue))
+    }
+
+    func testCommandsWorkOnFreshProviderWithoutSync() async throws {
+        let (listener, port) = try startFakeBulb()
+        defer { listener.cancel() }
+        let local = YeelightBulb(id: "bulb-x", host: "127.0.0.1", port: Int(port), name: "Fake")
+        let provider = YeelightLightProvider(client: YeelightClient(timeout: 2), settings: YeelightSettings(bulbs: [local]))
+
+        let updated = try await provider.setPower(deviceId: "bulb-x", value: true)
+        XCTAssertTrue(updated.power)
+        XCTAssertEqual(updated.nativeID, "bulb-x")
+    }
+
+    func testFreshProviderKeepsSeededLampState() async throws {
+        let (listener, port) = try startFakeBulb()
+        defer { listener.cancel() }
+        let local = YeelightBulb(id: "bulb-x", host: "127.0.0.1", port: Int(port), name: "Fake")
+        let known = YeelightLightProvider.makeLamp(
+            bulb: local, properties: ["power": "off", "bright": "42", "ct": "3000", "color_mode": "2"], online: true)
+        let provider = YeelightLightProvider(client: YeelightClient(timeout: 2),
+                                             settings: YeelightSettings(bulbs: [local]), initialLamps: [known])
+
+        let updated = try await provider.setPower(deviceId: "bulb-x", value: true)
+        XCTAssertTrue(updated.power)
+        XCTAssertEqual(updated.brightness, 42)
+        XCTAssertEqual(updated.temperature, 3000)
+    }
+
+    func testUnknownBulbStillThrows() async {
+        let provider = YeelightLightProvider(settings: YeelightSettings(bulbs: [bulb]))
+        do {
+            _ = try await provider.setPower(deviceId: "nope", value: true)
+            XCTFail("expected error")
+        } catch {
+            XCTAssertEqual(error.localizedDescription, "error.yeelight.unknown")
+        }
     }
 }
 
