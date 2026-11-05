@@ -93,6 +93,7 @@ final class AppState: ObservableObject {
     private var holdExpiryTasks: [String: Task<Void, Never>] = [:]
     private var lastYeelightDiscovery: Date?
     private var isRecoveringYeelight = false
+    private var yeelightRecoveryTask: Task<Void, Never>?
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
@@ -315,6 +316,7 @@ final class AppState: ObservableObject {
 
     // MARK: Focus automation (URL scheme)
 
+    private static let resetLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "Reset")
     private static let focusLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "FocusAutomation")
     private var isFocusAutomationReady = false
     private var pendingFocusURLs: [URL] = []
@@ -1119,6 +1121,7 @@ final class AppState: ObservableObject {
     func activateLicense(_ licenseKey: String, email: String?) async {
         await runBusy {
             let next = try await licenseActivationService.activate(licenseKey: licenseKey, expectedEmail: email)
+            guard !isResettingApp else { return }
             licenseState = next
             try licenseStore.save(next)
             message = L10n.premiumPurchaseRegistered
@@ -1128,6 +1131,7 @@ final class AppState: ObservableObject {
     func validateLicense() async {
         await runBusy {
             let next = try await licenseActivationService.validate(licenseState)
+            guard !isResettingApp else { return }
             licenseState = next
             try licenseStore.save(next)
             message = next.tier == .premium ? L10n.premiumActivated : L10n.premiumNotDetected
@@ -1140,6 +1144,7 @@ final class AppState: ObservableObject {
                 try await licenseActivationService.deactivate(licenseState)
             }
 
+            guard !isResettingApp else { return }
             licenseState = .earlyAccess
             try licenseStore.save(licenseState)
             message = L10n.localStateReset
@@ -1170,7 +1175,9 @@ final class AppState: ObservableObject {
                 throw LampControlError.configuration(L10n.hueBridgeRequired)
             }
 
-            hueSettings.username = try await hueClient.createUser(bridgeIP: bridgeIP)
+            let username = try await hueClient.createUser(bridgeIP: bridgeIP)
+            guard !isResettingApp else { return }
+            hueSettings.username = username
             hueSettings = try hueSettingsStore.save(hueSettings)
             lightProviders[.philipsHue] = nil
             message = L10n.hueBridgeConnected
@@ -1463,6 +1470,7 @@ final class AppState: ObservableObject {
     // MARK: - Automations
 
     func saveAutomation(_ automation: Automation) {
+        guard !isResettingApp else { return }
         guard licenseState.entitlements.canUseAutomations else {
             message = L10n.premiumAutomations
             return
@@ -1478,6 +1486,7 @@ final class AppState: ObservableObject {
     }
 
     func deleteAutomation(_ automation: Automation) {
+        guard !isResettingApp else { return }
         automations.removeAll { $0.id == automation.id }
         try? automationStore.save(automations)
         automationScheduler.update(automations: automations)
@@ -1485,6 +1494,7 @@ final class AppState: ObservableObject {
     }
 
     func toggleAutomation(_ automation: Automation) {
+        guard !isResettingApp else { return }
         guard let idx = automations.firstIndex(where: { $0.id == automation.id }) else { return }
         automations[idx].isEnabled.toggle()
         try? automationStore.save(automations)
@@ -1538,6 +1548,7 @@ final class AppState: ObservableObject {
     }
 
     func setAdaptiveLighting(enabled: Bool) async {
+        guard !isResettingApp else { return }
         guard licenseState.entitlements.canUseAdaptiveLighting || !enabled else {
             message = L10n.premiumAdaptive
             return
@@ -1553,6 +1564,7 @@ final class AppState: ObservableObject {
 
     func saveCircadianSettings(_ settings: CircadianSettings) async {
         await runBusy {
+            guard !isResettingApp else { return }
             circadianSettings = try circadianSettingsStore.save(settings)
             circadianService.start(with: circadianSettings)
             message = L10n.adaptiveSaved
@@ -1656,7 +1668,7 @@ final class AppState: ObservableObject {
             }
             await MainActor.run {
                 // The user activated / reset a license meanwhile: don't clobber it.
-                guard self.licenseState == cached else { return }
+                guard !self.isResettingApp, self.licenseState == cached else { return }
                 switch LicenseValidationPolicy.outcome(for: result) {
                 case .adopt(let validated):
                     self.licenseNeedsRevalidation = false
@@ -1706,6 +1718,8 @@ final class AppState: ObservableObject {
     func resetAllSettings() {
         isResettingApp = true
         autoSyncTask?.cancel()
+        yeelightRecoveryTask?.cancel()
+        yeelightRecoveryTask = nil
         automationScheduler.stop()
         circadianService.stop()
         yeelightLiveSync.stopAll()
@@ -1732,12 +1746,22 @@ final class AppState: ObservableObject {
 
     /// Starts a fresh instance of this app and quits the current one. The new
     /// instance is forced (`createsNewApplicationInstance`) because LaunchServices
-    /// would otherwise just re-activate the running one.
+    /// would otherwise just re-activate the running one. If the new instance could
+    /// not be started the app keeps running (quitting would leave the user with no
+    /// app at all) and tells them to relaunch manually; the data is already wiped
+    /// and `isResettingApp` stays set so nothing writes it back.
     private func relaunchApp() {
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { _, _ in
-            DispatchQueue.main.async { NSApplication.shared.terminate(nil) }
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { [weak self] _, error in
+            DispatchQueue.main.async {
+                if let error {
+                    Self.resetLog.error("Relaunch failed after reset: \(error.localizedDescription, privacy: .public)")
+                    self?.showError(L10n.resetRelaunchFailed)
+                } else {
+                    NSApplication.shared.terminate(nil)
+                }
+            }
         }
     }
 
@@ -1773,7 +1797,8 @@ final class AppState: ObservableObject {
             self?.applyYeelightLiveState(bulb: bulb, properties: properties, online: online)
         }
         yeelightLiveSync.onRepeatedFailure = { [weak self] _ in
-            Task { @MainActor in await self?.recoverYeelightAddressesIfNeeded() }
+            guard let self else { return }
+            self.yeelightRecoveryTask = Task { @MainActor in await self.recoverYeelightAddressesIfNeeded() }
         }
 
         // Sockets die with the process anyway; closing them politely frees the bulb's
@@ -1789,7 +1814,7 @@ final class AppState: ObservableObject {
 
     private func scheduleYeelightRecovery() {
         guard yeelightSettings.isConfigured else { return }
-        Task { await recoverYeelightAddressesIfNeeded() }
+        yeelightRecoveryTask = Task { await recoverYeelightAddressesIfNeeded() }
     }
 
     /// Starts/stops/re-points one listener per configured bulb.
@@ -1842,6 +1867,7 @@ final class AppState: ObservableObject {
 
         do {
             let found = try await YeelightDiscovery.search()
+            guard !isResettingApp else { return }
             lastYeelightDiscovery = Date()
             discoveredYeelightBulbs = found
             yeelightSearchCompleted = true
@@ -1864,7 +1890,7 @@ final class AppState: ObservableObject {
     /// Background recovery: when a bulb is unreachable (poll or listener failures), or some
     /// bulbs still lack a device id, run a rate-limited discovery and follow address changes.
     func recoverYeelightAddressesIfNeeded() async {
-        guard yeelightSettings.isConfigured, !isRecoveringYeelight, !isSearchingYeelight else { return }
+        guard !isResettingApp, yeelightSettings.isConfigured, !isRecoveringYeelight, !isSearchingYeelight else { return }
 
         let unreachableNativeIDs = Set(lamps.filter { $0.providerID == .yeelight && !$0.online }.map(\.nativeID))
         let needsRecovery = yeelightSettings.bulbs.contains { bulb in
@@ -1877,7 +1903,7 @@ final class AppState: ObservableObject {
         isRecoveringYeelight = true
         defer { isRecoveringYeelight = false }
 
-        guard let found = try? await YeelightDiscovery.search() else { return }
+        guard let found = try? await YeelightDiscovery.search(), !Task.isCancelled, !isResettingApp else { return }
         if await applyYeelightDiscovery(found) {
             // A bulb moved: retry the poll against the new address.
             await syncLamps(silent: true)
@@ -1889,6 +1915,8 @@ final class AppState: ObservableObject {
     /// the affected listeners. Returns true when an address changed.
     @discardableResult
     private func applyYeelightDiscovery(_ found: [YeelightDiscoveredBulb]) async -> Bool {
+        // A search that was in flight when "reset all settings" ran must not rewrite the wiped file.
+        guard !isResettingApp else { return false }
         var next = yeelightSettings
         var changed = false
         var moved = false

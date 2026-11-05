@@ -442,6 +442,7 @@
 "status.lifx.connected" = "LIFX je připojen. Synchronizované žárovky: %ld.";
 "status.govee.connected" = "Govee je připojen. Synchronizované žárovky: %ld.";
 "status.yeelight.ip.required" = "Vyžadována IP adresa Yeelight.";
+"status.reset.relaunch.failed" = "Nastavení bylo smazáno, ale LampControl se nepodařilo restartovat. Ukončete aplikaci a otevřete ji ručně znovu.";
 "status.yeelight.already.added" = "Tato žárovka Yeelight už je přidána.";
 "status.yeelight.added" = "Žárovka Yeelight přidána. Synchronizované žárovky: %ld.";
 "status.yeelight.removed" = "Žárovka Yeelight odebrána.";

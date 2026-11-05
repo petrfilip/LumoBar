@@ -442,6 +442,7 @@
 "status.lifx.connected" = "LIFX connecté. %ld lampe(s) synchronisée(s).";
 "status.govee.connected" = "Govee connecté. %ld lampe(s) synchronisée(s).";
 "status.yeelight.ip.required" = "Adresse IP Yeelight requise.";
+"status.reset.relaunch.failed" = "Les réglages ont été effacés, mais LampControl n'a pas pu se relancer. Quittez puis rouvrez l'app manuellement.";
 "status.yeelight.already.added" = "Cette ampoule Yeelight est déjà ajoutée.";
 "status.yeelight.added" = "Yeelight ajoutée. %ld lampe(s) synchronisée(s).";
 "status.yeelight.removed" = "Yeelight retirée.";
