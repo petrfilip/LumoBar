@@ -166,6 +166,8 @@ struct SettingsView: View {
                     tint: Color.blue.opacity(0.10)
                 )
 
+                launchAtLoginRow
+
                 settingsLink(
                     .updates,
                     icon: "arrow.down.circle",
@@ -1620,6 +1622,60 @@ struct SettingsView: View {
         )
     }
 
+    /// Same look as `settingsLink`, with a switch instead of the chevron.
+    private var launchAtLoginRow: some View {
+        VStack(spacing: LCSpacing.xs) {
+            HStack(spacing: LCSpacing.sm) {
+                Image(systemName: "power")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 36, height: 36)
+                    .lcCard(radius: 18, tint: Color.mint.opacity(0.10))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("login.item.title")
+                        .font(LCTypo.bodySemibold())
+                        .foregroundStyle(ink)
+                    Text("login.item.detail")
+                        .font(LCTypo.micro())
+                        .foregroundStyle(muted)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Toggle("login.item.title", isOn: Binding(
+                    get: { appState.isLaunchAtLoginOn },
+                    set: { appState.setLaunchAtLogin($0) }
+                ))
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .tint(accent)
+            }
+            .frame(height: 60)
+
+            if appState.loginItemStatus == .requiresApproval {
+                HStack(spacing: LCSpacing.sm) {
+                    Text("login.item.approval.hint")
+                        .font(LCTypo.micro())
+                        .foregroundStyle(muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 4)
+                    Button("login.item.open.settings") {
+                        appState.openLoginItemsSettings()
+                    }
+                    .font(.system(size: 11, weight: .semibold))
+                    .liquidGlassButtonStyle()
+                }
+                .padding(.bottom, LCSpacing.sm)
+            }
+        }
+        .padding(.horizontal, LCSpacing.sm)
+        .lcCard(radius: LCRadius.card, tint: Color.white.opacity(0.04))
+        .onAppear { appState.refreshLoginItemStatus() }
+    }
+
     private func settingsLink(_ route: SettingsRoute, icon: String, title: String, subtitle: String, tint: Color) -> some View {
         Button {
             withAnimation(LCAnimation.snap) {
@@ -1981,34 +2037,6 @@ struct SettingsView: View {
             if !appState.updateService.isAvailable {
                 hint(NSLocalizedString("updates.unavailable", comment: ""))
             }
-
-            settingsGroup {
-                toggleRow(
-                    title: "login.item.title",
-                    subtitle: "login.item.detail",
-                    isOn: Binding(
-                        get: { appState.isLaunchAtLoginOn },
-                        set: { appState.setLaunchAtLogin($0) }
-                    )
-                )
-
-                if appState.loginItemStatus == .requiresApproval {
-                    hint("login.item.approval.hint")
-
-                    Button {
-                        appState.openLoginItemsSettings()
-                    } label: {
-                        Label("login.item.open.settings", systemImage: "gearshape")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(accent)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 32)
-                    }
-                    .liquidGlassButtonStyle()
-                    .help("login.item.open.settings")
-                }
-            }
-            .onAppear { appState.refreshLoginItemStatus() }
 
             settingsGroup {
                 toggleRow(
