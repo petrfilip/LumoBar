@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Salir de LampControl";
+"app.close" = "Cerrar";
 "updates.unavailable" = "Las actualizaciones automáticas no están disponibles en esta compilación (sin clave de firma — normalmente una compilación desde el código fuente). Actualice recompilando desde el repositorio.";
 "scene.white" = "Blanco";
 "lamps.color.white" = "Blanco";

@@ -1672,6 +1672,17 @@ struct SettingsView: View {
                     .frame(height: 38)
             }
             .liquidGlassButtonStyle()
+
+            Button {
+                appState.quit()
+            } label: {
+                Label("app.quit", systemImage: "power")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(LCPalette.danger)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+            }
+            .liquidGlassButtonStyle()
         }
     }
 

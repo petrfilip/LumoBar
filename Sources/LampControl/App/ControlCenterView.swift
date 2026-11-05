@@ -103,7 +103,9 @@ struct ControlCenterView: View {
                 appState.selectedTab = appState.selectedTab == .settings ? .lamps : .settings
             }
 
-            circleIconButton(icon: "xmark", help: "app.quit", action: appState.quit)
+            // Closes the popover only; quitting lives in the status-item
+            // right-click menu and in Settings → About.
+            circleIconButton(icon: "xmark", help: "app.close") { appState.closePopover?() }
         }
         .frame(height: 56)
     }

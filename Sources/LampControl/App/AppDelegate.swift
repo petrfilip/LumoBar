@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.animates = false
         popover.delegate = self
         popover.contentViewController = NSHostingController(rootView: ControlCenterView().environmentObject(appState))
+        appState.closePopover = { [weak self] in self?.popover.performClose(nil) }
 
         // PERF: previously we re-ran `updatePopoverSize` on every `objectWillChange`
         // (debounced 180ms). On a live system with sync polling this triggers a

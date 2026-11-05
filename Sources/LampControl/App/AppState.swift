@@ -923,6 +923,9 @@ final class AppState: ObservableObject {
         return min(capability.max, max(capability.min, raw))
     }
 
+    /// Closes the menu-bar popover without quitting. Set by `AppDelegate`.
+    var closePopover: (() -> Void)?
+
     func quit() {
         NSApplication.shared.terminate(nil)
     }
