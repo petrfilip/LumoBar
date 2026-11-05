@@ -61,6 +61,28 @@ enum LampScale {
         return min(hi, max(lo, raw))
     }
 
+    /// The Kelvin span a temperature control covers, lowest (warmest) first. Hue's mirek runs
+    /// the other way round, so the native min is its *coldest* end.
+    static func kelvinRange(of capability: NumericCapability) -> ClosedRange<Int> {
+        let a = kelvin(native: capability.min, capability: capability)
+        let b = kelvin(native: capability.max, capability: capability)
+        return min(a, b)...max(a, b)
+    }
+
+    /// Slider step in Kelvin: the vendor's own for Kelvin lamps, otherwise a fixed 50 K.
+    static func kelvinStep(of capability: NumericCapability) -> Int {
+        temperatureScale(of: capability) == .kelvin ? max(1, capability.step) : 50
+    }
+
+    /// Position on the warm -> cold axis, 0 % = warmest, 100 % = coldest, whatever the
+    /// vendor's native direction is.
+    static func warmToColdPercent(native: Int, capability: NumericCapability) -> Int {
+        let range = kelvinRange(of: capability)
+        let span = max(1, range.upperBound - range.lowerBound)
+        let k = min(range.upperBound, max(range.lowerBound, kelvin(native: native, capability: capability)))
+        return Int((Double(k - range.lowerBound) / Double(span) * 100.0).rounded())
+    }
+
     /// Native value -> Kelvin, using the same rules as `nativeTemperature`.
     static func kelvin(native: Int, capability: NumericCapability) -> Int {
         let lo = min(capability.min, capability.max)

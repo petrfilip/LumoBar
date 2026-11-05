@@ -965,13 +965,16 @@ private struct LampRow: View {
                         .frame(width: 14)
                         .help("help.temperature")
 
+                    // The slider works in Kelvin (warm left, cold right for every provider) and
+                    // converts to the lamp's native scale, which is inverted for Hue mirek.
+                    let kelvinRange = LampScale.kelvinRange(of: temperature)
                     Slider(
                         value: Binding(
-                            get: { Double(temperatureValue(for: temperature)) },
-                            set: { appState.previewTemperature(lamp, value: Int($0)) }
+                            get: { Double(temperatureKelvin(for: temperature)) },
+                            set: { appState.previewTemperature(lamp, value: LampScale.nativeTemperature(kelvin: Int($0.rounded()), capability: temperature)) }
                         ),
-                        in: Double(temperature.min)...Double(temperature.max),
-                        step: Double(temperature.step),
+                        in: Double(kelvinRange.lowerBound)...Double(kelvinRange.upperBound),
+                        step: Double(LampScale.kelvinStep(of: temperature)),
                         onEditingChanged: { editing in
                             if editing { appState.beginAdjusting(lamp); return }
                             Task { await appState.commitTemperature(lamp, value: temperatureValue(for: temperature)) }
@@ -1101,8 +1104,7 @@ private struct LampRow: View {
     }
 
     private func temperaturePercentage(for capability: NumericCapability) -> Int {
-        let range = max(1, capability.max - capability.min)
-        return Int(round(Double(temperatureValue(for: capability) - capability.min) / Double(range) * 100))
+        LampScale.warmToColdPercent(native: temperatureValue(for: capability), capability: capability)
     }
 
     private func temperatureLabel(for capability: NumericCapability) -> String {
@@ -1111,16 +1113,7 @@ private struct LampRow: View {
     }
 
     private func temperatureKelvin(for capability: NumericCapability) -> Int {
-        let tempValue = temperatureValue(for: capability)
-        // Ranges starting at 1000+ are already Kelvin (Yeelight 1700–6500 K, LIFX, …).
-        if capability.min >= 1000 { return tempValue }
-        // Otherwise map the vendor scale onto 2700–6500 K as a reasonable default.
-        let minValue = capability.min
-        let maxValue = capability.max
-        let range = max(1, maxValue - minValue)
-        let normalized = Double(tempValue - minValue) / Double(range)
-        let kelvin = Int(round(2700.0 + normalized * (6500.0 - 2700.0)))
-        return kelvin
+        LampScale.kelvin(native: temperatureValue(for: capability), capability: capability)
     }
 
     private var currentColorValue: Int {

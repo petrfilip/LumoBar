@@ -10,12 +10,10 @@ extension LampDevice {
         workMode == "white" || workMode == "ct"
     }
 
-    /// Neutral white (~4000 K) in the lamp's own temperature scale. Ranges starting at 1000+
-    /// are Kelvin (Yeelight, LIFX, WiZ, Govee); others are vendor-relative scales where the
-    /// midpoint is a neutral white.
+    /// Neutral white (~4000 K) in the lamp's own temperature scale (Kelvin, Hue mirek or a
+    /// vendor-relative range, see `LampScale`).
     static func neutralWhite(for capability: NumericCapability) -> Int {
-        let raw = capability.min >= 1000 ? 4000 : (capability.min + capability.max) / 2
-        return min(capability.max, max(capability.min, raw))
+        LampScale.nativeTemperature(kelvin: 4000, capability: capability)
     }
 
     /// Whether `color` is sent as a color temperature to this lamp rather than as RGB.
