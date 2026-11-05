@@ -183,12 +183,18 @@ final class YeelightLightProvider: LightProvider {
         let bulbName = (dict["name"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let displayName = !bulbName.isEmpty ? bulbName : (bulb.name.isEmpty ? bulb.host : bulb.name)
 
+        // `hue`/`sat` only describe the colour in HSV mode (3). A bulb set through RGB
+        // (color_mode 1: Mi Home, HomeKit, other apps) reports the colour in `rgb` and keeps
+        // stale hue/sat from its last HSV command.
+        let value = min(1000, max(10, (brightness ?? 100) * 10))
         var color: HSVColor?
-        if let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
+        if dict["color_mode"] == "1", let rgb = Int(dict["rgb"] ?? "") {
+            color = HSVColor.fromYeelightRGB(rgb, value: value)
+        } else if let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
             color = HSVColor(
                 h: min(360, max(0, hue)),
                 s: min(1000, max(0, sat * 10)),
-                v: min(1000, max(10, (brightness ?? 100) * 10))
+                v: value
             )
         }
 
