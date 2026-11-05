@@ -38,7 +38,7 @@ final class WizClient {
         let payload = try JSONEncoder().encode(request)
         let host = NWEndpoint.Host(device.host)
         guard let portValue = NWEndpoint.Port(rawValue: UInt16(device.port)) else {
-            throw LampControlError.configuration("Port WiZ invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.wiz.port.invalid", comment: ""))
         }
         let endpoint = NWEndpoint.hostPort(host: host, port: portValue)
         let params = NWParameters.udp

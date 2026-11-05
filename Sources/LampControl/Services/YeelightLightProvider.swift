@@ -18,7 +18,7 @@ final class YeelightLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Aucune lampe Yeelight enregistrée.")
+            throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
         }
 
         var mapped: [LampDevice] = []
@@ -134,14 +134,14 @@ final class YeelightLightProvider: LightProvider {
 
     private func requireBulb(_ deviceId: String) throws -> YeelightBulb {
         guard let bulb = bulbsById[deviceId] else {
-            throw LampControlError.tuya("Lampe Yeelight inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
         return bulb
     }
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya("Lampe Yeelight inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
         return lamp
     }

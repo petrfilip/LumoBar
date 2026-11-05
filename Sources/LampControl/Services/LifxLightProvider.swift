@@ -15,7 +15,7 @@ final class LifxLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Token LIFX manquant.")
+            throw LampControlError.configuration(NSLocalizedString("error.lifx.token.missing", comment: ""))
         }
 
         let lights = try await client.listLights(token: settings.token)
@@ -100,7 +100,7 @@ final class LifxLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya("Lampe LIFX inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.lifx.unknown", comment: ""))
         }
 
         return lamp

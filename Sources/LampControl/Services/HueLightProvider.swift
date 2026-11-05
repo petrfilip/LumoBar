@@ -15,7 +15,7 @@ final class HueLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Bridge Philips Hue non configuré.")
+            throw LampControlError.configuration(NSLocalizedString("error.hue.not.configured", comment: ""))
         }
 
         let lights = try await client.lights(settings: settings)
@@ -99,7 +99,7 @@ final class HueLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya("Lampe Hue inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.hue.unknown", comment: ""))
         }
 
         return lamp

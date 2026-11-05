@@ -50,7 +50,7 @@ final class LifxClient {
 
         guard (200..<300).contains(httpResponse.statusCode) else {
             let decoded = try? JSONDecoder().decode(LifxErrorResponse.self, from: data)
-            throw LampControlError.tuya("LIFX HTTP \(httpResponse.statusCode): \(decoded?.error ?? "requête refusée")")
+            throw LampControlError.tuya("LIFX HTTP \(httpResponse.statusCode): \(decoded?.error ?? NSLocalizedString("error.http.refused", comment: ""))")
         }
 
         return try JSONDecoder().decode(Response.self, from: data)

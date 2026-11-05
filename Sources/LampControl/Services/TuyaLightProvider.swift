@@ -15,7 +15,7 @@ final class TuyaLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard !uid.isEmpty else {
-            throw LampControlError.configuration("UID Tuya manquant. Renseignez-le dans les réglages.")
+            throw LampControlError.configuration(NSLocalizedString("error.tuya.uid.missing", comment: ""))
         }
 
         let devices: [TuyaDeviceDTO] = try await client.get("/v1.0/users/\(urlPath(uid))/devices")
@@ -27,7 +27,7 @@ final class TuyaLightProvider: LightProvider {
     func setPower(deviceId: String, value: Bool) async throws -> LampDevice {
         let lamp = try requireLamp(deviceId)
         guard let switchCode = lamp.capabilities.switchCode else {
-            throw LampControlError.tuya("Cette lampe ne déclare pas de commande ON/OFF.")
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.no.power", comment: ""))
         }
 
         try await sendCommand(deviceId: deviceId, code: switchCode, value: .bool(value))
@@ -40,7 +40,7 @@ final class TuyaLightProvider: LightProvider {
             if lamp.capabilities.colorCode != nil {
                 return try await setColorBrightness(deviceId: deviceId, value: value)
             }
-            throw LampControlError.tuya("Cette lampe ne déclare pas de réglage de luminosité.")
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.no.brightness", comment: ""))
         }
 
         let safeValue = min(brightness.max, max(brightness.min, value))
@@ -76,7 +76,7 @@ final class TuyaLightProvider: LightProvider {
     func setTemperature(deviceId: String, value: Int) async throws -> LampDevice {
         let lamp = try requireLamp(deviceId)
         guard let temperature = lamp.capabilities.temperature else {
-            throw LampControlError.tuya("Cette lampe ne déclare pas de réglage blanc chaud/froid.")
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.no.colortemp", comment: ""))
         }
 
         let safeValue = min(temperature.max, max(temperature.min, value))
@@ -101,7 +101,7 @@ final class TuyaLightProvider: LightProvider {
     func setColor(deviceId: String, color: HSVColor) async throws -> LampDevice {
         let lamp = try requireLamp(deviceId)
         guard let colorCode = lamp.capabilities.colorCode else {
-            throw LampControlError.tuya("Cette lampe ne déclare pas de réglage couleur RGB.")
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.no.color", comment: ""))
         }
 
         var commands: [TuyaCommand] = []
@@ -195,13 +195,13 @@ final class TuyaLightProvider: LightProvider {
             let _: EmptyTuyaResult = try await client.post("/v1.0/devices/\(urlPath(deviceId))/commands", body: body)
         } catch {
             let codes = commands.map(\.code).joined(separator: ", ")
-            throw LampControlError.tuya("\(error.localizedDescription) — commandes: \(codes)")
+            throw LampControlError.tuya(String(format: NSLocalizedString("error.tuya.command.failed", comment: ""), error.localizedDescription, codes))
         }
     }
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya("Lampe inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.unknown", comment: ""))
         }
 
         return lamp

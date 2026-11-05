@@ -9,7 +9,7 @@ final class HueClient {
 
     func discoverBridges() async throws -> [HueBridge] {
         guard let url = URL(string: "https://discovery.meethue.com/") else {
-            throw LampControlError.configuration("Endpoint de découverte Hue invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.hue.discovery.invalid", comment: ""))
         }
 
         let (data, response) = try await session.data(from: url)
@@ -75,11 +75,11 @@ final class HueClient {
         body: Body?
     ) async throws -> Response {
         guard var components = URLComponents(string: "http://\(bridgeIP)") else {
-            throw LampControlError.configuration("Adresse du bridge Hue invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.hue.bridge.address.invalid", comment: ""))
         }
         components.path = path
         guard let url = components.url else {
-            throw LampControlError.configuration("URL Hue invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.hue.url.invalid", comment: ""))
         }
 
         var request = URLRequest(url: url)

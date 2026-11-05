@@ -16,7 +16,7 @@ final class GoveeLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Clé API Govee manquante.")
+            throw LampControlError.configuration(NSLocalizedString("error.govee.apikey.missing", comment: ""))
         }
 
         let devices = try await client.listDevices(apiKey: settings.apiKey)
@@ -73,7 +73,7 @@ final class GoveeLightProvider: LightProvider {
 
     private func sendCommand(deviceId: String, name: String, value: GoveeCommandValue) async throws {
         guard let model = models[deviceId] else {
-            throw LampControlError.tuya("Modèle Govee inconnu. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.govee.model.unknown", comment: ""))
         }
 
         let body = GoveeControlBody(device: deviceId, model: model, cmd: GoveeCommand(name: name, value: value))
@@ -171,7 +171,7 @@ final class GoveeLightProvider: LightProvider {
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.tuya("Lampe Govee inconnue. Lancez une synchronisation.")
+            throw LampControlError.tuya(NSLocalizedString("error.govee.unknown", comment: ""))
         }
         return lamp
     }

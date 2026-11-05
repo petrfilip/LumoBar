@@ -13,7 +13,7 @@ final class TuyaClient {
         self.accessId = accessId
         self.accessSecret = accessSecret
         guard let endpointURL = URL(string: endpoint) else {
-            throw LampControlError.configuration("Endpoint Tuya invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.tuya.endpoint.invalid", comment: ""))
         }
         self.endpoint = endpointURL
         self.session = session
@@ -43,7 +43,7 @@ final class TuyaClient {
         let sign = hmacHex("\(accessId)\(tokenPart)\(timestamp)\(nonce)\(stringToSign)")
 
         guard let url = URL(string: urlPath, relativeTo: endpoint)?.absoluteURL else {
-            throw LampControlError.configuration("Endpoint Tuya invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.tuya.endpoint.invalid", comment: ""))
         }
 
         var request = URLRequest(url: url)
@@ -69,7 +69,7 @@ final class TuyaClient {
         let envelope = try JSONDecoder().decode(TuyaEnvelope<Result>.self, from: data)
         guard envelope.success else {
             let details = envelope.code.map { " (code \($0.description))" } ?? ""
-            throw LampControlError.tuya((envelope.msg ?? "Réponse Tuya invalide.") + details)
+            throw LampControlError.tuya((envelope.msg ?? NSLocalizedString("error.tuya.invalid.response", comment: "")) + details)
         }
 
         guard let result = envelope.result else {

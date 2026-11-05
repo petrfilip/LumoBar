@@ -9,7 +9,7 @@ final class NanoleafClient {
 
     func pairDevice(host: String, port: Int = 16021) async throws -> String {
         guard let url = URL(string: "http://\(host):\(port)/api/v1/new") else {
-            throw LampControlError.configuration("Adresse Nanoleaf invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.address.invalid", comment: ""))
         }
 
         var request = URLRequest(url: url)
@@ -22,7 +22,7 @@ final class NanoleafClient {
         }
 
         if httpResponse.statusCode == 403 {
-            throw LampControlError.configuration("Maintenez le bouton power de votre Nanoleaf 5-7s, puis réessayez.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.pairing", comment: ""))
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
@@ -35,7 +35,7 @@ final class NanoleafClient {
 
     func fetchState(device: NanoleafDevice) async throws -> NanoleafStateResponse {
         guard let url = URL(string: "\(device.baseURL)/\(device.authToken)") else {
-            throw LampControlError.configuration("URL Nanoleaf invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.url.invalid", comment: ""))
         }
 
         var request = URLRequest(url: url)
@@ -72,7 +72,7 @@ final class NanoleafClient {
 
     private func putState<Body: Encodable>(device: NanoleafDevice, body: Body) async throws {
         guard let url = URL(string: "\(device.baseURL)/\(device.authToken)/state") else {
-            throw LampControlError.configuration("URL Nanoleaf invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.url.invalid", comment: ""))
         }
 
         var request = URLRequest(url: url)

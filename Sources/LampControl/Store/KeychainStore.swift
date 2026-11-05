@@ -26,11 +26,11 @@ final class KeychainStore {
         }
 
         guard status == errSecSuccess else {
-            throw LampControlError.keychain("Lecture Keychain impossible (\(status)).")
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.read", comment: ""), status))
         }
 
         guard let data = result as? Data, let secret = String(data: data, encoding: .utf8) else {
-            throw LampControlError.keychain("Secret Keychain illisible.")
+            throw LampControlError.keychain(NSLocalizedString("error.keychain.unreadable", comment: ""))
         }
 
         return secret
@@ -47,13 +47,13 @@ final class KeychainStore {
         }
 
         if updateStatus != errSecItemNotFound {
-            throw LampControlError.keychain("Mise à jour Keychain impossible (\(updateStatus)).")
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.update", comment: ""), updateStatus))
         }
 
         query[kSecValueData as String] = data
         let addStatus = SecItemAdd(query as CFDictionary, nil)
         guard addStatus == errSecSuccess else {
-            throw LampControlError.keychain("Enregistrement Keychain impossible (\(addStatus)).")
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.save", comment: ""), addStatus))
         }
     }
 

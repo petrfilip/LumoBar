@@ -15,7 +15,7 @@ final class WizLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Aucune ampoule WiZ enregistrée.")
+            throw LampControlError.configuration(NSLocalizedString("error.wiz.none", comment: ""))
         }
 
         var mapped: [LampDevice] = []
@@ -74,10 +74,10 @@ final class WizLightProvider: LightProvider {
 
     private func requireDevice(_ deviceId: String) throws -> (WizDevice, LampDevice) {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.configuration("Ampoule WiZ inconnue. Synchronisez.")
+            throw LampControlError.configuration(NSLocalizedString("error.wiz.unknown.sync", comment: ""))
         }
         guard let device = settings.devices.first(where: { nativeID(for: $0) == deviceId }) else {
-            throw LampControlError.configuration("Ampoule WiZ introuvable dans les réglages.")
+            throw LampControlError.configuration(NSLocalizedString("error.wiz.not.in.settings", comment: ""))
         }
         guard lamp.online else { throw LampControlError.offline }
         return (device, lamp)
@@ -85,7 +85,7 @@ final class WizLightProvider: LightProvider {
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
         guard var lamp = lamps[deviceId] else {
-            throw LampControlError.configuration("Ampoule WiZ inconnue.")
+            throw LampControlError.configuration(NSLocalizedString("error.wiz.unknown", comment: ""))
         }
         mutate(&lamp)
         lamps[deviceId] = lamp

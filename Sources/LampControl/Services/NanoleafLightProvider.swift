@@ -15,7 +15,7 @@ final class NanoleafLightProvider: LightProvider {
 
     func syncLights() async throws -> [LampDevice] {
         guard settings.isConfigured else {
-            throw LampControlError.configuration("Aucun panneau Nanoleaf enregistré.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))
         }
 
         var mapped: [LampDevice] = []
@@ -78,10 +78,10 @@ final class NanoleafLightProvider: LightProvider {
 
     private func requireDevice(_ deviceId: String) throws -> (NanoleafDevice, LampDevice) {
         guard let lamp = lamps[deviceId] else {
-            throw LampControlError.configuration("Panneau Nanoleaf inconnu. Synchronisez.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.unknown.sync", comment: ""))
         }
         guard let device = settings.devices.first(where: { nativeID(for: $0) == deviceId }) else {
-            throw LampControlError.configuration("Panneau Nanoleaf introuvable dans les réglages.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.not.in.settings", comment: ""))
         }
         guard lamp.online else { throw LampControlError.offline }
         return (device, lamp)
@@ -89,7 +89,7 @@ final class NanoleafLightProvider: LightProvider {
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
         guard var lamp = lamps[deviceId] else {
-            throw LampControlError.configuration("Panneau Nanoleaf inconnu.")
+            throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.unknown", comment: ""))
         }
         mutate(&lamp)
         lamps[deviceId] = lamp

@@ -56,7 +56,7 @@ final class YeelightClient {
 
     private func exchange(host: String, port: Int, command: String, requestID: Int) async throws -> [String] {
         guard let nwPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
-            throw LampControlError.configuration("Port Yeelight invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.yeelight.port.invalid", comment: ""))
         }
 
         let connection = NWConnection(host: NWEndpoint.Host(host), port: nwPort, using: .tcp)
@@ -141,7 +141,7 @@ final class YeelightClient {
             }
 
             DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
-                finish(.failure(LampControlError.tuya("Yeelight: délai dépassé. Vérifiez que LAN Control est activé.")))
+                finish(.failure(LampControlError.tuya(NSLocalizedString("error.yeelight.timeout", comment: ""))))
             }
 
             connection.start(queue: .global())

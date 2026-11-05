@@ -25,7 +25,7 @@ final class GoveeClient {
             URLQueryItem(name: "model", value: model)
         ]
         guard let url = components.url else {
-            throw LampControlError.configuration("URL Govee invalide.")
+            throw LampControlError.configuration(NSLocalizedString("error.govee.url.invalid", comment: ""))
         }
 
         let response: GoveeStateResponse = try await request(apiKey: apiKey, method: "GET", url: url, body: Optional<EmptyGoveeBody>.none)
@@ -74,7 +74,7 @@ final class GoveeClient {
 
         guard (200..<300).contains(httpResponse.statusCode) else {
             let decoded = try? JSONDecoder().decode(GoveeErrorResponse.self, from: data)
-            let message = decoded?.message ?? "requête refusée"
+            let message = decoded?.message ?? NSLocalizedString("error.http.refused", comment: "")
             throw LampControlError.tuya("Govee HTTP \(httpResponse.statusCode): \(message)")
         }
 
