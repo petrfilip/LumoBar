@@ -66,7 +66,11 @@ enum YeelightDiscovery {
             let authority = location.dropFirst("yeelight://".count)
             let parts = authority.split(separator: ":", maxSplits: 1)
             if let h = parts.first, !h.isEmpty { host = String(h) }
-            if parts.count == 2, let p = Int(parts[1]) { port = p }
+            if parts.count == 2 {
+                // A reply with an unparsable or out-of-range port is not a usable bulb: drop it.
+                guard let p = Int(parts[1]), YeelightAddress.isValidPort(p) else { return nil }
+                port = p
+            }
         }
         guard let resolvedHost = host, !resolvedHost.isEmpty else { return nil }
 

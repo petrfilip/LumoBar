@@ -49,6 +49,13 @@ final class YeelightDiscoveryTests: XCTestCase {
         XCTAssertEqual(bulb.id, "0xabcdef", "device id is lowercased")
     }
 
+    func testOutOfRangeLocationPortDropsTheReply() {
+        for port in ["70000", "0", "99999999999", "-1", "abc"] {
+            let message = "HTTP/1.1 200 OK\r\nLocation: yeelight://10.0.0.7:\(port)\r\nid: 0xABCDEF\r\n\r\n"
+            XCTAssertNil(YeelightDiscovery.parse(message, senderHost: "192.168.1.1"), "port \(port)")
+        }
+    }
+
     func testFallsBackToSenderHostWithoutLocation() throws {
         let bulb = try XCTUnwrap(YeelightDiscovery.parse("HTTP/1.1 200 OK\r\nid: 0x1\r\n\r\n", senderHost: "192.168.1.50"))
         XCTAssertEqual(bulb.host, "192.168.1.50")

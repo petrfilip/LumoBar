@@ -55,7 +55,7 @@ final class YeelightClient {
     }
 
     private func exchange(host: String, port: Int, command: String, requestID: Int) async throws -> [String] {
-        guard let nwPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
+        guard let rawPort = UInt16(exactly: port), let nwPort = NWEndpoint.Port(rawValue: rawPort) else {
             throw LampControlError.configuration(NSLocalizedString("error.yeelight.port.invalid", comment: ""))
         }
 

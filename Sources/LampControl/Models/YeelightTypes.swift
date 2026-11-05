@@ -37,3 +37,29 @@ struct YeelightErrorPayload: Decodable {
     let code: Int
     let message: String
 }
+
+/// Parsing and validation of a user-entered `host[:port]` Yeelight address.
+enum YeelightAddress {
+    static let defaultPort = 55443
+
+    static func isValidPort(_ port: Int) -> Bool {
+        (1...65535).contains(port)
+    }
+
+    /// Splits `host[:port]`. A missing or non-numeric port suffix means the default port.
+    /// Throws a configuration error when a numeric port is outside 1...65535.
+    static func parse(_ raw: String) throws -> (host: String, port: Int) {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // More than one colon is a bare IPv6 literal, not `host:port`.
+        let colonCount = trimmed.filter { $0 == ":" }.count
+        guard colonCount == 1, let colon = trimmed.lastIndex(of: ":"),
+              let port = Int(trimmed[trimmed.index(after: colon)...]) else {
+            return (trimmed, defaultPort)
+        }
+        guard isValidPort(port) else {
+            throw LampControlError.configuration(NSLocalizedString("error.yeelight.port.invalid", comment: ""))
+        }
+        let host = String(trimmed[..<colon])
+        return host.isEmpty ? (trimmed, defaultPort) : (host, port)
+    }
+}

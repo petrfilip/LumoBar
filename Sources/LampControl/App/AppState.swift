@@ -487,8 +487,14 @@ final class AppState: ObservableObject {
             return
         }
 
-        var (hostOnly, port) = parseYeelightHost(cleanHost)
-        if hostOnly.isEmpty { hostOnly = cleanHost; port = 55443 }
+        let hostOnly: String
+        let port: Int
+        do {
+            (hostOnly, port) = try YeelightAddress.parse(cleanHost)
+        } catch {
+            showError(error)
+            return
+        }
 
         var next = yeelightSettings
         let normalizedID = deviceId?.lowercased()
@@ -528,13 +534,6 @@ final class AppState: ObservableObject {
             message = L10n.yeelightRemoved
             reconcileYeelightLiveSync()
         }
-    }
-
-    private func parseYeelightHost(_ raw: String) -> (host: String, port: Int) {
-        if let colon = raw.lastIndex(of: ":"), let port = Int(raw[raw.index(after: colon)...]) {
-            return (String(raw[..<colon]), port)
-        }
-        return (raw, 55443)
     }
 
     func saveSettings() async {
