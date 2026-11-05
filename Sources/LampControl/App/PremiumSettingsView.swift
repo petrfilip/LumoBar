@@ -103,6 +103,7 @@ struct PremiumSettingsView: View {
                     }
                     .disabled(appState.isBusy)
                     .liquidGlassButtonStyle()
+                    .help("help.license.refresh")
 
                     Button {
                         Task { await appState.deactivateLicense() }
@@ -151,6 +152,7 @@ struct PremiumSettingsView: View {
                     }
                     .disabled(appState.isBusy)
                     .liquidGlassButtonStyle()
+                    .help("help.license.refresh")
                 }
             }
         }

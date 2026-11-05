@@ -44,6 +44,14 @@ enum L10n {
         String(format: NSLocalizedString("setup.providers.connected", comment: ""), names)
     }
     static var colorWhite: String   { NSLocalizedString("lamps.color.white", comment: "") }
+
+    /// Tooltip names for `HSVColor.quickColors`, in the same order.
+    static func quickColorName(_ color: HSVColor) -> String {
+        let keys = ["lamps.color.white", "lamps.color.red", "lamps.color.amber",
+                    "lamps.color.green", "lamps.color.blue", "lamps.color.purple"]
+        guard let index = HSVColor.quickColors.firstIndex(of: color), index < keys.count else { return "" }
+        return NSLocalizedString(keys[index], comment: "")
+    }
     static var syncUpdating: String { NSLocalizedString("lamps.sync.updating", comment: "") }
     static var syncAuto: String     { NSLocalizedString("lamps.sync.auto", comment: "") }
     static var syncNever: String    { NSLocalizedString("sync.never", comment: "") }

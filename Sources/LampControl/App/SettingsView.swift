@@ -534,6 +534,7 @@ struct SettingsView: View {
                                     .frame(width: 28, height: 28)
                             }
                             .liquidGlassButtonStyle()
+                            .help("help.device.remove")
                             .disabled(appState.isBusy)
                         }
                         .padding(.horizontal, 10)
@@ -618,6 +619,7 @@ struct SettingsView: View {
                                     .frame(width: 28, height: 28)
                             }
                             .liquidGlassButtonStyle()
+                            .help("help.device.remove")
                             .disabled(appState.isBusy)
                         }
                         .padding(.horizontal, 10)
@@ -701,6 +703,7 @@ struct SettingsView: View {
                                     .frame(width: 28, height: 28)
                             }
                             .liquidGlassButtonStyle()
+                            .help("help.device.remove")
                             .disabled(appState.isBusy)
                         }
                         .padding(.horizontal, 10)
@@ -787,6 +790,7 @@ struct SettingsView: View {
                                     .frame(width: 26, height: 26)
                             }
                             .liquidGlassButtonStyle()
+                            .help("help.automation.delete")
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
@@ -929,6 +933,7 @@ struct SettingsView: View {
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
+                                    .help("help.focus.edit")
 
                                     Button {
                                         appState.removeFocusMapping(mapping.id)
@@ -940,6 +945,7 @@ struct SettingsView: View {
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
+                                    .help("help.focus.delete")
                                 }
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 6)
@@ -1533,6 +1539,7 @@ struct SettingsView: View {
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                .help("help.room.edit")
 
                                 Button {
                                     var updated = room
@@ -1549,6 +1556,7 @@ struct SettingsView: View {
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                .help("help.room.delete")
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
@@ -1583,6 +1591,7 @@ struct SettingsView: View {
                                                 .foregroundStyle(accent)
                                         }
                                         .menuStyle(BorderlessButtonMenuStyle())
+                                        .help("help.room.assign")
                                     }
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
@@ -1948,6 +1957,7 @@ private struct AutomationEditor: View {
                         .frame(width: 34, height: 34)
                 }
                 .liquidGlassButtonStyle()
+                .help("app.close")
                 .foregroundStyle(LCTheme.muted)
             }
         }

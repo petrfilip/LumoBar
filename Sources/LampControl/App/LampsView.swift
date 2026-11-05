@@ -49,6 +49,7 @@ struct LampsView: View {
                                     .contentShape(Circle())
                             }
                             .buttonStyle(LCPressableButtonStyle())
+                            .help("help.search.clear")
                         }
                     }
                     .padding(.horizontal, LCSpacing.sm)
@@ -158,6 +159,7 @@ struct LampsView: View {
                                         .contentShape(Rectangle())
                                 }
                                 .menuStyle(BorderlessButtonMenuStyle())
+                                .help("help.room.menu")
                                 .menuIndicator(.hidden)
                                 .fixedSize()
                             }
@@ -480,6 +482,7 @@ private struct ScenePresetBar: View {
                 .contentShape(Rectangle())
         }
         .liquidGlassButtonStyle(prominent: true)
+        .help("help.scene.save")
     }
 
     private var cancelButton: some View {
@@ -492,6 +495,7 @@ private struct ScenePresetBar: View {
                 .contentShape(Rectangle())
         }
         .liquidGlassButtonStyle()
+        .help("help.scene.cancel")
         .keyboardShortcut(.cancelAction)
     }
 
@@ -702,6 +706,7 @@ private struct GroupControlPanel: View {
                         .liquidGlassSurface(radius: 14, interactive: true)
                 }
                 .buttonStyle(.plain)
+                .help("help.group.off")
                 .foregroundStyle(muted)
                 .disabled(appState.selectedLampIds.isEmpty || appState.isBusy)
             }
@@ -898,6 +903,7 @@ private struct LampRow: View {
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(muted)
                         .frame(width: 14)
+                        .help("help.brightness")
 
                     Slider(
                         value: Binding(
@@ -927,6 +933,7 @@ private struct LampRow: View {
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(muted)
                         .frame(width: 14)
+                        .help("help.temperature")
 
                     Slider(
                         value: Binding(
@@ -956,6 +963,7 @@ private struct LampRow: View {
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(muted)
                             .frame(width: 14)
+                            .help("help.color")
 
                         ColorSwatch(color: lamp.color ?? .warm, size: 22)
 
@@ -978,7 +986,7 @@ private struct LampRow: View {
                             }
                             .buttonStyle(.plain)
                             .disabled(!lamp.online)
-                            .help(color == HSVColor.white ? L10n.colorWhite : "")
+                            .help(L10n.quickColorName(color))
                         }
                     }
 

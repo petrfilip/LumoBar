@@ -486,3 +486,27 @@
 "status.adaptive.saved" = "Réglages adaptatifs enregistrés.";
 "lamps.room.scenes" = "Scènes";
 "circadian.keyframe.brightness" = "%ld%% lum.";
+
+/* Tooltips */
+"help.search.clear" = "Effacer la recherche";
+"help.room.menu" = "Actions de la pièce";
+"help.scene.save" = "Enregistrer la scène";
+"help.scene.cancel" = "Annuler (Échap)";
+"help.group.off" = "Éteindre les lampes sélectionnées";
+"help.brightness" = "Luminosité";
+"help.temperature" = "Température du blanc";
+"help.color" = "Couleur";
+"lamps.color.red" = "Rouge";
+"lamps.color.amber" = "Ambre";
+"lamps.color.green" = "Vert";
+"lamps.color.blue" = "Bleu";
+"lamps.color.purple" = "Violet";
+"help.device.remove" = "Retirer cet appareil";
+"help.automation.delete" = "Supprimer l'automatisation";
+"help.focus.edit" = "Modifier l'association";
+"help.focus.delete" = "Supprimer l'association";
+"help.room.edit" = "Renommer la pièce";
+"help.room.delete" = "Supprimer la pièce";
+"help.room.assign" = "Déplacer vers une pièce";
+"help.license.refresh" = "Revalider la licence";
+"help.onboarding.back" = "Retour";

@@ -134,6 +134,7 @@ struct OnboardingOverlay: View {
                         .frame(width: 38, height: 38)
                 }
                 .buttonStyle(LCGlassButtonStyle(prominent: false, radius: 19))
+                .help("help.onboarding.back")
             }
 
             if stepIndex < steps.count - 1 {

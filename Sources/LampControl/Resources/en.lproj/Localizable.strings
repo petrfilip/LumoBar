@@ -486,3 +486,27 @@
 "status.adaptive.saved" = "Adaptive settings saved.";
 "lamps.room.scenes" = "Scenes";
 "circadian.keyframe.brightness" = "%ld%% bri.";
+
+/* Tooltips */
+"help.search.clear" = "Clear search";
+"help.room.menu" = "Room actions";
+"help.scene.save" = "Save scene";
+"help.scene.cancel" = "Cancel (Esc)";
+"help.group.off" = "Turn selected lamps off";
+"help.brightness" = "Brightness";
+"help.temperature" = "White color temperature";
+"help.color" = "Color";
+"lamps.color.red" = "Red";
+"lamps.color.amber" = "Amber";
+"lamps.color.green" = "Green";
+"lamps.color.blue" = "Blue";
+"lamps.color.purple" = "Purple";
+"help.device.remove" = "Remove this device";
+"help.automation.delete" = "Delete automation";
+"help.focus.edit" = "Edit mapping";
+"help.focus.delete" = "Delete mapping";
+"help.room.edit" = "Rename room";
+"help.room.delete" = "Delete room";
+"help.room.assign" = "Move to room";
+"help.license.refresh" = "Re-validate license";
+"help.onboarding.back" = "Back";
