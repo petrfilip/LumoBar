@@ -63,6 +63,7 @@ final class YeelightLightProvider: LightProvider {
         return try update(deviceId: deviceId) {
             $0.power = true
             $0.temperature = safeValue
+            $0.color = nil
             $0.workMode = "white"
         }
     }
@@ -90,20 +91,23 @@ final class YeelightLightProvider: LightProvider {
         let bulbName = (dict["name"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let displayName = !bulbName.isEmpty ? bulbName : (bulb.name.isEmpty ? bulb.host : bulb.name)
 
+        // color_mode: 1 = RGB, 2 = color temperature (white), 3 = HSV.
+        let workMode: String?
+        switch dict["color_mode"] {
+        case "1", "3": workMode = "colour"
+        case "2": workMode = "white"
+        default: workMode = nil
+        }
+
+        // The bulb keeps reporting its last hue/sat even in white mode; only
+        // expose a color when it is actually shown, so white stays white in the UI.
         var color: HSVColor?
-        if let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
+        if workMode != "white", let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
             color = HSVColor(
                 h: min(360, max(0, hue)),
                 s: min(1000, max(0, sat * 10)),
                 v: min(1000, max(10, (brightness ?? 100) * 10))
             )
-        }
-
-        let workMode: String?
-        switch dict["color_mode"] {
-        case "1": workMode = "colour"
-        case "2": workMode = "white"
-        default: workMode = nil
         }
 
         return LampDevice(

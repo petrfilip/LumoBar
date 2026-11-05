@@ -15,7 +15,8 @@ enum LampControlError: LocalizedError {
         case .http(let status):
             return "Tuya HTTP \(status). Vérifiez la région, les identifiants et les services Cloud activés."
         case .invalidResponse:
-            return "Réponse Tuya invalide."
+            // Shared by every provider (Yeelight, Hue, LIFX, …), not only Tuya.
+            return NSLocalizedString("error.invalid.response", comment: "")
         case .offline:
             return "Appareil hors ligne."
         }

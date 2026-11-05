@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Quitter LampControl";
+"error.invalid.response" = "Réponse invalide de l'appareil.";
 "action.save" = "Sauvegarder";
 
 /* Vue Lampes */
