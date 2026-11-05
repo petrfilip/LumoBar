@@ -29,6 +29,12 @@ final class UpdateService: NSObject, ObservableObject {
         }
     }
 
+    /// False when the bundle has no valid Sparkle EdDSA public key — e.g. a
+    /// build from source, where CI never injected `SUPublicEDKey`. Sparkle
+    /// cannot verify updates then and shows "Unable to Check for Updates" on
+    /// every launch, so the updater is not started at all.
+    let isAvailable: Bool
+
     private let updaterController: SPUStandardUpdaterController
     private var syncingFromSparkle = false
     private var cancellables = Set<AnyCancellable>()
@@ -46,20 +52,30 @@ final class UpdateService: NSObject, ObservableObject {
     }
 
     var canCheckForUpdates: Bool {
-        updaterController.updater.canCheckForUpdates
+        isAvailable && updaterController.updater.canCheckForUpdates
+    }
+
+    /// A Sparkle EdDSA public key is a base64-encoded 32-byte Ed25519 key.
+    private static var hasValidPublicKey: Bool {
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String,
+              let data = Data(base64Encoded: key.trimmingCharacters(in: .whitespacesAndNewlines))
+        else { return false }
+        return data.count == 32
     }
 
     override init() {
+        let available = Self.hasValidPublicKey
+        self.isAvailable = available
         let controller = SPUStandardUpdaterController(
-            startingUpdater: true,
+            startingUpdater: available,
             updaterDelegate: nil,
             userDriverDelegate: nil
         )
         self.updaterController = controller
         // Seed the published properties from Sparkle's persisted state so the
         // toggles reflect reality immediately after launch.
-        self.automaticChecksEnabled    = controller.updater.automaticallyChecksForUpdates
-        self.automaticDownloadsEnabled = controller.updater.automaticallyDownloadsUpdates
+        self.automaticChecksEnabled    = available && controller.updater.automaticallyChecksForUpdates
+        self.automaticDownloadsEnabled = available && controller.updater.automaticallyDownloadsUpdates
         super.init()
 
         // Reflect Sparkle's last update check date back into the UI.
@@ -70,6 +86,7 @@ final class UpdateService: NSObject, ObservableObject {
     }
 
     func start() {
+        guard isAvailable else { return }
         // The updater is already running (started in init via `startingUpdater: true`).
         // If automatic checks are enabled, kick off one check now so the user gets
         // an answer when they open the popover after launch — the daily Sparkle
@@ -81,6 +98,7 @@ final class UpdateService: NSObject, ObservableObject {
     }
 
     func checkForUpdates() {
+        guard isAvailable else { return }
         updaterController.checkForUpdates(nil)
         lastCheckedAt = Date()
     }

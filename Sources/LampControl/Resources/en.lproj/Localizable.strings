@@ -2,6 +2,7 @@
 
 /* App */
 "app.quit" = "Quit LampControl";
+"updates.unavailable" = "Automatic updates are unavailable in this build (no update signing key — typically a build from source). Update by rebuilding from the repository.";
 "scene.white" = "White";
 "lamps.color.white" = "White";
 "error.invalid.response" = "Invalid response from the device.";

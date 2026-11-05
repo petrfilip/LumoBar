@@ -1610,12 +1610,18 @@ struct SettingsView: View {
 
     private var updatesSettings: some View {
         VStack(spacing: 12) {
+            if !appState.updateService.isAvailable {
+                hint(NSLocalizedString("updates.unavailable", comment: ""))
+            }
+
             settingsGroup {
                 toggleRow(
                     title: "updates.auto.check",
                     subtitle: "updates.auto.check.detail",
                     isOn: $appState.updateService.automaticChecksEnabled
                 )
+                .disabled(!appState.updateService.isAvailable)
+                .opacity(appState.updateService.isAvailable ? 1 : 0.5)
 
                 toggleRow(
                     title: "updates.auto.install",
