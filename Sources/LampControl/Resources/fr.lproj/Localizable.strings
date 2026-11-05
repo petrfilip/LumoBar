@@ -520,3 +520,13 @@
 "focus.mode.donotdisturb" = "Ne pas déranger";
 "focus.mode.focus" = "Concentration";
 "focus.mode.sleep" = "Sommeil";
+
+/* Adaptive lighting schedule editor */
+"circadian.schedule" = "Programme quotidien";
+"circadian.schedule.hint" = "Cliquez sur un point pour le modifier. Les valeurs entre les points sont interpolées ; appuyez sur Enregistrer pour appliquer.";
+"circadian.now" = "Maintenant : %ld %% · %ld K";
+"circadian.keyframe.add" = "Ajouter un point";
+"circadian.keyframe.delete" = "Supprimer";
+"circadian.keyframe.edit" = "Modifier ce point";
+"circadian.keyframe.time" = "Heure";
+"circadian.reset" = "Valeurs par défaut";

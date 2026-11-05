@@ -343,6 +343,10 @@ enum L10n {
     static var adaptiveSaved: String { s("status.adaptive.saved") }
 
     // Views
+    static func circadianNow(brightness: Int, temperature: Int) -> String {
+        String(format: s("circadian.now"), brightness, temperature)
+    }
+
     static func circadianKeyframeBrightness(_ percent: Int) -> String {
         String(format: s("circadian.keyframe.brightness"), percent)
     }
