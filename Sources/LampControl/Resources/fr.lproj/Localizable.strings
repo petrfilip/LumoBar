@@ -540,3 +540,12 @@
 "login.item.open.settings" = "Ouvrir les éléments de connexion";
 "login.item.error.register" = "Impossible d'activer l'ouverture à la connexion : %@";
 "login.item.error.unregister" = "Impossible de désactiver l'ouverture à la connexion : %@";
+
+/* Yeelight live sync & discovery */
+"yeelight.search.button" = "Rechercher sur le réseau";
+"yeelight.search.searching" = "Recherche en cours…";
+"yeelight.search.help" = "Rechercher les lampes Yeelight sur votre réseau local (LAN Control doit être activé)";
+"yeelight.search.none" = "Aucune lampe Yeelight trouvée. Vérifiez que LAN Control est activé et que votre Mac est sur le même réseau que la lampe.";
+"yeelight.search.added" = "Ajoutée";
+"yeelight.search.add.help" = "Ajouter cette lampe";
+"error.yeelight.search.failed" = "La recherche réseau a échoué. Vérifiez que LampControl est autorisé à accéder au réseau local dans Réglages Système → Confidentialité et sécurité → Réseau local.";

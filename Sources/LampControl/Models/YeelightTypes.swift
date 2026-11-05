@@ -13,12 +13,17 @@ struct YeelightBulb: Codable, Equatable, Identifiable, Hashable {
     var host: String
     var port: Int
     var name: String
+    /// Yeelight's own device id (e.g. `0x000000000015243f`, lowercased), learned from SSDP
+    /// discovery. Stable across IP changes, used to follow the bulb when its address changes.
+    /// Optional so settings files written before this field existed still decode.
+    var deviceId: String?
 
-    init(id: String = UUID().uuidString, host: String, port: Int = 55443, name: String = "") {
+    init(id: String = UUID().uuidString, host: String, port: Int = 55443, name: String = "", deviceId: String? = nil) {
         self.id = id
         self.host = host
         self.port = port
         self.name = name.isEmpty ? host : name
+        self.deviceId = deviceId?.lowercased()
     }
 }
 

@@ -540,3 +540,12 @@
 "login.item.open.settings" = "Abrir ítems de inicio";
 "login.item.error.register" = "No se pudo activar el inicio al iniciar sesión: %@";
 "login.item.error.unregister" = "No se pudo desactivar el inicio al iniciar sesión: %@";
+
+/* Yeelight live sync & discovery */
+"yeelight.search.button" = "Buscar en la red";
+"yeelight.search.searching" = "Buscando…";
+"yeelight.search.help" = "Buscar lámparas Yeelight en tu red local (LAN Control debe estar activado)";
+"yeelight.search.none" = "No se encontró ninguna lámpara Yeelight. Comprueba que LAN Control esté activado y que tu Mac esté en la misma red que la lámpara.";
+"yeelight.search.added" = "Añadida";
+"yeelight.search.add.help" = "Añadir esta lámpara";
+"error.yeelight.search.failed" = "La búsqueda en la red falló. Comprueba que LampControl tenga permiso para acceder a la red local en Ajustes del Sistema → Privacidad y seguridad → Red local.";

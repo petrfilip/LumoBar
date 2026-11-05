@@ -10,6 +10,10 @@ final class AppState: ObservableObject {
     @Published var lifxSettings = LifxSettings()
     @Published var goveeSettings = GoveeSettings()
     @Published var yeelightSettings = YeelightSettings()
+    @Published var discoveredYeelightBulbs: [YeelightDiscoveredBulb] = []
+    @Published var isSearchingYeelight = false
+    /// True once a manual network search finished (so the UI can say "none found").
+    @Published var yeelightSearchCompleted = false
     @Published var nanoleafSettings = NanoleafSettings()
     @Published var wizSettings = WizSettings()
     @Published var shortcutSettings = ShortcutSettings.default
@@ -76,6 +80,10 @@ final class AppState: ObservableObject {
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
     private let yeelightLiveSync = YeelightLiveSync()
+    private var lastYeelightDiscovery: Date?
+    private var isRecoveringYeelight = false
+    /// Minimum delay between automatic (background) network searches.
+    private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
 
     init() {
@@ -455,7 +463,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    func addYeelightBulb(host: String, name: String) async {
+    func addYeelightBulb(host: String, name: String, deviceId: String? = nil) async {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanHost.isEmpty else {
             showError(L10n.yeelightIPRequired)
@@ -466,7 +474,13 @@ final class AppState: ObservableObject {
         if hostOnly.isEmpty { hostOnly = cleanHost; port = 55443 }
 
         var next = yeelightSettings
-        let bulb = YeelightBulb(host: hostOnly, port: port, name: name.trimmingCharacters(in: .whitespacesAndNewlines))
+        let normalizedID = deviceId?.lowercased()
+        if next.bulbs.contains(where: { existing in
+            (normalizedID != nil && existing.deviceId == normalizedID) || (existing.host == hostOnly && existing.port == port)
+        }) {
+            return
+        }
+        let bulb = YeelightBulb(host: hostOnly, port: port, name: name.trimmingCharacters(in: .whitespacesAndNewlines), deviceId: deviceId)
         next.bulbs.append(bulb)
 
         await runBusy {
@@ -549,6 +563,7 @@ final class AppState: ObservableObject {
                 expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
                 lastSyncDate = Date()
                 persistWidgetSnapshot()
+                scheduleYeelightRecovery()
             } catch {
                 // Silent refresh should not interrupt normal use.
             }
@@ -564,6 +579,7 @@ final class AppState: ObservableObject {
             lastSyncDate = Date()
             message = synced.isEmpty ? L10n.lampsNoneFound : L10n.lampsSynced(synced.count)
             persistWidgetSnapshot()
+            scheduleYeelightRecovery()
         }
     }
 
@@ -1499,6 +1515,9 @@ final class AppState: ObservableObject {
         yeelightLiveSync.onUpdate = { [weak self] bulb, properties, online in
             self?.applyYeelightLiveState(bulb: bulb, properties: properties, online: online)
         }
+        yeelightLiveSync.onRepeatedFailure = { [weak self] _ in
+            Task { @MainActor in await self?.recoverYeelightAddressesIfNeeded() }
+        }
 
         // Sockets die with the process anyway; closing them politely frees the bulb's
         // (max 4) connection slots immediately.
@@ -1509,6 +1528,11 @@ final class AppState: ObservableObject {
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.yeelightLiveSync.reconnectAll() }
         }
+    }
+
+    private func scheduleYeelightRecovery() {
+        guard yeelightSettings.isConfigured else { return }
+        Task { await recoverYeelightAddressesIfNeeded() }
     }
 
     /// Starts/stops/re-points one listener per configured bulb.
@@ -1536,6 +1560,95 @@ final class AppState: ObservableObject {
             return YeelightLightProvider.makeLamp(bulb: bulb, properties: live, online: true)
         }
         if lamps != merged { lamps = merged }
+    }
+
+    // MARK: - Yeelight discovery & IP following
+
+    /// User-triggered network search from Settings.
+    func searchYeelightBulbs() async {
+        guard !isSearchingYeelight else { return }
+        isSearchingYeelight = true
+        defer { isSearchingYeelight = false }
+
+        do {
+            let found = try await YeelightDiscovery.search()
+            lastYeelightDiscovery = Date()
+            discoveredYeelightBulbs = found
+            yeelightSearchCompleted = true
+            await applyYeelightDiscovery(found)
+        } catch {
+            discoveredYeelightBulbs = []
+            yeelightSearchCompleted = false
+            showError(error)
+        }
+    }
+
+    func addDiscoveredYeelightBulb(_ found: YeelightDiscoveredBulb) async {
+        await addYeelightBulb(host: found.address, name: found.displayName, deviceId: found.id)
+    }
+
+    func isYeelightBulbAdded(_ found: YeelightDiscoveredBulb) -> Bool {
+        yeelightSettings.bulbs.contains { $0.deviceId == found.id || ($0.host == found.host && $0.port == found.port) }
+    }
+
+    /// Background recovery: when a bulb is unreachable (poll or listener failures), or some
+    /// bulbs still lack a device id, run a rate-limited discovery and follow address changes.
+    func recoverYeelightAddressesIfNeeded() async {
+        guard yeelightSettings.isConfigured, !isRecoveringYeelight, !isSearchingYeelight else { return }
+
+        let unreachableNativeIDs = Set(lamps.filter { $0.providerID == .yeelight && !$0.online }.map(\.nativeID))
+        let needsRecovery = yeelightSettings.bulbs.contains { bulb in
+            bulb.deviceId == nil || unreachableNativeIDs.contains(bulb.id)
+        }
+        guard needsRecovery else { return }
+
+        if let last = lastYeelightDiscovery, Date().timeIntervalSince(last) < yeelightDiscoveryInterval { return }
+        lastYeelightDiscovery = Date()
+        isRecoveringYeelight = true
+        defer { isRecoveringYeelight = false }
+
+        guard let found = try? await YeelightDiscovery.search() else { return }
+        if await applyYeelightDiscovery(found) {
+            // A bulb moved: retry the poll against the new address.
+            await syncLamps(silent: true)
+        }
+    }
+
+    /// Backfills missing device ids for bulbs seen at their known host and follows bulbs whose
+    /// known device id now answers from a different address. Persists any change and restarts
+    /// the affected listeners. Returns true when an address changed.
+    @discardableResult
+    private func applyYeelightDiscovery(_ found: [YeelightDiscoveredBulb]) async -> Bool {
+        var next = yeelightSettings
+        var changed = false
+        var moved = false
+
+        for index in next.bulbs.indices {
+            let bulb = next.bulbs[index]
+            if let deviceId = bulb.deviceId {
+                if let match = found.first(where: { $0.id == deviceId }),
+                   match.host != bulb.host || match.port != bulb.port {
+                    next.bulbs[index].host = match.host
+                    next.bulbs[index].port = match.port
+                    changed = true
+                    moved = true
+                }
+            } else if let match = found.first(where: { $0.host == bulb.host }),
+                      !next.bulbs.contains(where: { $0.deviceId == match.id }) {
+                next.bulbs[index].deviceId = match.id
+                changed = true
+            }
+        }
+
+        guard changed else { return false }
+        do {
+            yeelightSettings = try yeelightSettingsStore.save(next)
+        } catch {
+            return false
+        }
+        lightProviders[.yeelight] = nil
+        reconcileYeelightLiveSync()
+        return moved
     }
 
     private func updateLamp(_ next: LampDevice) {

@@ -540,3 +540,12 @@
 "login.item.open.settings" = "Open Login Items";
 "login.item.error.register" = "Couldn't enable launch at login: %@";
 "login.item.error.unregister" = "Couldn't disable launch at login: %@";
+
+/* Yeelight live sync & discovery */
+"yeelight.search.button" = "Search network";
+"yeelight.search.searching" = "Searching…";
+"yeelight.search.help" = "Look for Yeelight lamps on your local network (LAN Control must be enabled)";
+"yeelight.search.none" = "No Yeelight lamp found. Check that LAN Control is enabled and that your Mac is on the same network as the lamp.";
+"yeelight.search.added" = "Added";
+"yeelight.search.add.help" = "Add this lamp";
+"error.yeelight.search.failed" = "Network search failed. Check that LampControl is allowed to access the local network in System Settings → Privacy & Security → Local Network.";

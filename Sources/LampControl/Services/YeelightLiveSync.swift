@@ -12,6 +12,11 @@ final class YeelightLiveSync {
     /// For `online == false` the properties are empty, like a failed poll.
     var onUpdate: ((YeelightBulb, [String: String], Bool) -> Void)?
 
+    /// Called each time a bulb's listener fails to connect `repeatedFailureThreshold` or more
+    /// times in a row (the owner rate-limits whatever expensive recovery it runs).
+    var onRepeatedFailure: ((YeelightBulb) -> Void)?
+    private let repeatedFailureThreshold = 3
+
     private struct Entry {
         var bulb: YeelightBulb
         let listener: YeelightNotificationListener
@@ -98,7 +103,8 @@ final class YeelightLiveSync {
             entries[bulbID] = entry
             onUpdate?(entry.bulb, current, true)
 
-        case .unreachable:
+        case .unreachable(let failures):
+            if failures >= repeatedFailureThreshold { onRepeatedFailure?(entry.bulb) }
             // Report the offline transition once, not on every failed retry.
             guard entry.online != false else { return }
             entry.online = false
