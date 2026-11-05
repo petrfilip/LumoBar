@@ -68,8 +68,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
         // PERF: only refresh status item icon when state truly impacting the icon changes.
         Publishers.MergeMany(
-            appState.$lamps
-                .map { lamps in lamps.contains { $0.power && $0.online } }
+            // Signature of what the icon shows: the leading active lamp and its
+            // color / white temperature, so color changes repaint the icon too.
+            Publishers.CombineLatest(appState.$lamps, appState.$lampOrderIds)
+                // @Published emits before the property is set: use the emitted values.
+                .map { lamps, order -> String in
+                    guard let lamp = Self.leadingActiveLamp(in: lamps, order: order) else { return "off" }
+                    let color = lamp.color.map { "\($0.h),\($0.s)" } ?? "-"
+                    return "\(lamp.id)|\(lamp.workMode ?? "-")|\(color)|\(lamp.temperature ?? -1)"
+                }
                 .removeDuplicates()
                 .map { _ in () }
                 .eraseToAnyPublisher(),
@@ -87,16 +94,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
         .store(in: &cancellables)
     }
-    
+
+    /// First powered-on, online lamp in the user's lamp order.
+    private static func leadingActiveLamp(in lamps: [LampDevice], order: [String]) -> LampDevice? {
+        let active = lamps.filter { $0.power && $0.online }
+        guard !order.isEmpty else { return active.first }
+        let orderIndex = Dictionary(order.enumerated().map { ($1, $0) },
+                                    uniquingKeysWith: { first, _ in first })
+        return active.min { (orderIndex[$0.id] ?? Int.max) < (orderIndex[$1.id] ?? Int.max) }
+    }
+
     private func updateStatusItemIcon(for item: NSStatusItem) {
-        let hasActiveLamp = appState.lamps.contains { $0.power && $0.online }
+        let activeLamp = Self.leadingActiveLamp(in: appState.lamps, order: appState.lampOrderIds)
         let isCircadianActive = appState.circadianSettings.isEnabled
-        
-        let symbolName = hasActiveLamp ? "lightbulb.fill" : "lightbulb"
+
+        // A lit lamp: show a bulb filled with the color it is emitting.
+        if let activeLamp,
+           let tint = StatusItemIcon.tint(for: activeLamp),
+           let image = StatusItemIcon.image(fill: tint) {
+            item.button?.image = image
+            item.button?.contentTintColor = nil
+            return
+        }
+
+        let symbolName = activeLamp != nil ? "lightbulb.fill" : "lightbulb"
         item.button?.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "LampControl")
-        
+
         // Tint color based on state
-        if hasActiveLamp {
+        if activeLamp != nil {
             item.button?.contentTintColor = NSColor(red: 0.96, green: 0.67, blue: 0.16, alpha: 1.0)
         } else if isCircadianActive {
             item.button?.contentTintColor = NSColor(red: 0.96, green: 0.77, blue: 0.26, alpha: 1.0)
