@@ -100,6 +100,8 @@ struct LampsView: View {
 
             if appState.lamps.contains(where: { $0.capabilities.colorCode != nil }) {
                 ScenePresetBar()
+            }
+            if appState.showsGroupControls {
                 GroupControlEntry()
             }
 
@@ -876,25 +878,27 @@ private struct LampRow: View {
 
     private var advancedControls: some View {
         VStack(spacing: 9) {
-            HStack(spacing: 8) {
-                Button {
-                    appState.toggleSelection(lamp)
-                } label: {
-                    Label(
-                        appState.selectedLampIds.contains(lamp.id)
-                            ? NSLocalizedString("lamps.in.group", comment: "")
-                            : NSLocalizedString("lamps.add.to.group", comment: ""),
-                        systemImage: appState.selectedLampIds.contains(lamp.id) ? "checkmark.circle.fill" : "circle"
-                    )
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(appState.selectedLampIds.contains(lamp.id) ? accent : muted)
-                    .padding(.horizontal, 10)
-                    .frame(height: 28)
-                    .liquidGlassSurface(radius: 14, interactive: true)
-                }
-                .buttonStyle(.plain)
+            if appState.showsGroupControls {
+                HStack(spacing: 8) {
+                    Button {
+                        appState.toggleSelection(lamp)
+                    } label: {
+                        Label(
+                            appState.selectedLampIds.contains(lamp.id)
+                                ? NSLocalizedString("lamps.in.group", comment: "")
+                                : NSLocalizedString("lamps.add.to.group", comment: ""),
+                            systemImage: appState.selectedLampIds.contains(lamp.id) ? "checkmark.circle.fill" : "circle"
+                        )
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(appState.selectedLampIds.contains(lamp.id) ? accent : muted)
+                        .padding(.horizontal, 10)
+                        .frame(height: 28)
+                        .liquidGlassSurface(radius: 14, interactive: true)
+                    }
+                    .buttonStyle(.plain)
 
-                Spacer()
+                    Spacer()
+                }
             }
 
             if let brightness = brightnessCapability {

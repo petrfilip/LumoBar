@@ -560,6 +560,12 @@ final class AppState: ObservableObject {
         isGroupPanelExpanded = selectedLampIds.count >= 2
     }
 
+    /// Groups only make sense with at least two color lamps; with a single
+    /// bulb the group bar and the per-lamp "Add to group" toggle were noise.
+    var showsGroupControls: Bool {
+        lamps.lazy.filter { $0.capabilities.colorCode != nil }.prefix(2).count >= 2
+    }
+
     func selectAllRGBLamps() {
         guard licenseState.entitlements.canUseGroups else {
             message = L10n.premiumGroups
@@ -632,6 +638,8 @@ final class AppState: ObservableObject {
 
         if lamps.contains(where: { $0.capabilities.colorCode != nil }) {
             h += 84   // ScenePresetBar
+        }
+        if showsGroupControls {
             h += isGroupPanelExpanded || selectedLampIds.count >= 2 ? 220 : 60
         }
         if hiddenLampCount > 0 { h += 56 }
@@ -653,7 +661,7 @@ final class AppState: ObservableObject {
     private func expandedLampRowHeight(for lamp: LampDevice) -> CGFloat {
         var height: CGFloat = 62
 
-        height += 37
+        if showsGroupControls { height += 37 }   // "Add to group" row
 
         if lamp.capabilities.colorCode != nil || lamp.capabilities.brightness != nil || lamp.capabilities.temperature != nil {
             height += 30
