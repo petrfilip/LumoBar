@@ -477,6 +477,7 @@ private struct ScenePresetBar: View {
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(Color.white)
                 .frame(width: 34, height: captureMode ? 36 : 24)
+                .contentShape(Rectangle())
         }
         .liquidGlassButtonStyle(prominent: true)
     }
@@ -485,10 +486,13 @@ private struct ScenePresetBar: View {
         Button { isEditing = false } label: {
             Image(systemName: "xmark")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(LCTheme.muted)
+                // Was muted grey, which read as a disabled button.
+                .foregroundStyle(LCPalette.ink)
                 .frame(width: 34, height: captureMode ? 36 : 24)
+                .contentShape(Rectangle())
         }
         .liquidGlassButtonStyle()
+        .keyboardShortcut(.cancelAction)
     }
 
     private func modeButton(label: LocalizedStringKey, icon: String, selected: Bool, action: @escaping () -> Void) -> some View {

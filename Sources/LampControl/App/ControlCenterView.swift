@@ -88,9 +88,10 @@ struct ControlCenterView: View {
                 HStack(spacing: LCSpacing.xxs) {
                     LCStatusDot(color: appState.canSync ? Color.blue : LCPalette.muted,
                                 animated: appState.isAutoSyncing)
-                    Text(headerStatusKey)
+                    Text(headerStatus)
                         .font(LCTypo.micro())
                         .foregroundStyle(LCPalette.muted)
+                        .lineLimit(1)
                 }
             }
 
@@ -163,8 +164,13 @@ struct ControlCenterView: View {
 
     // MARK: - Derived
 
-    private var headerStatusKey: LocalizedStringKey {
-        appState.canSync ? "cloud.active" : "config.required"
+    /// Connected providers (e.g. "Yeelight"). Used to say "Cloud active" for
+    /// any provider — a leftover from the Tuya-only days, misleading for
+    /// local-network vendors such as Yeelight or WiZ.
+    private var headerStatus: String {
+        let providers = appState.configuredProviderKinds
+        guard !providers.isEmpty else { return NSLocalizedString("config.required", comment: "") }
+        return providers.map(\.title).joined(separator: " · ")
     }
 
     /// Set explicitly by AppState (`showError`) — guessing from French/English
@@ -268,6 +274,10 @@ extension View {
     func liquidGlassButtonStyle(prominent: Bool = false) -> some View {
         self
             .buttonStyle(.plain)
+            // Plain buttons only hit-test the label's opaque pixels; without this
+            // a small glyph in a larger frame (e.g. the scene editor's ✕) only
+            // reacted when clicking exactly on the glyph.
+            .contentShape(RoundedRectangle(cornerRadius: prominent ? 18 : 13, style: .continuous))
             .liquidGlassSurface(
                 radius: prominent ? 18 : 13,
                 tint: prominent ? LCTheme.accent.opacity(0.35) : Color.white.opacity(0.08),
