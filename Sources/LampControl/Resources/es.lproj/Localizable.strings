@@ -533,7 +533,7 @@
 
 /* Focus automation & login item */
 "focus.automation.title" = "Automatización de Atajos";
-"focus.automation.hint" = "macOS no indica a las apps qué modo de enfoque está activo. En Atajos, abre Automatización, crea \"Cuando <Enfoque> se active\" con la acción \"Abrir URLs\" y pega la URL correspondiente de abajo. Añade \"Cuando <Enfoque> se desactive\" con la URL de Enfoque desactivado. Nombra cada mapeo de arriba con el identificador del modo que se muestra aquí.";
+"focus.automation.hint" = "macOS no indica a las apps qué modo de enfoque está activo. En Atajos, abre Automatización, crea \"Cuando <Enfoque> se active\" con la acción \"Abrir URLs\" y pega la URL del mapeo correspondiente de abajo. Añade \"Cuando <Enfoque> se desactive\" con la URL de Enfoque desactivado. Cada mapeo de arriba tiene su propia URL.";
 "focus.automation.off" = "Enfoque desactivado";
 "focus.automation.copy.help" = "Copiar URL";
 "login.item.title" = "Abrir al iniciar sesión";

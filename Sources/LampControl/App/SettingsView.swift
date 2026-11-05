@@ -1057,13 +1057,18 @@ struct SettingsView: View {
 
     /// Setup hint + the exact `lampcontrol://focus?mode=…` URLs to paste in a Shortcuts automation.
     private var focusAutomationGroup: some View {
-        let builtInIds = Set(appState.availableFocusModes.map { $0.identifier.lowercased() })
-        let customRows = appState.focusMappings
+        // Only modes that actually have a mapping get a URL — a URL for an
+        // unmapped mode would silently do nothing.
+        let builtInNames = Dictionary(
+            appState.availableFocusModes.map { ($0.identifier.lowercased(), $0.displayName) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        var seen = Set<String>()
+        let mappedRows: [(title: String, mode: String)] = appState.focusMappings
             .map(\.focusIdentifier)
-            .filter { !builtInIds.contains($0.lowercased()) }
-        let rows: [(title: String, mode: String)] =
-            appState.availableFocusModes.map { ($0.displayName, $0.identifier) }
-            + customRows.map { ($0, $0) }
+            .filter { seen.insert($0.lowercased()).inserted }
+            .map { (builtInNames[$0.lowercased()] ?? $0, $0) }
+        let rows = mappedRows
             + [(NSLocalizedString("focus.automation.off", comment: ""), FocusAutomationURL.offMode)]
 
         return settingsGroup {
