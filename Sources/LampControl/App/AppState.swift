@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import OSLog
 
 @MainActor
 final class AppState: ObservableObject {
@@ -95,7 +96,7 @@ final class AppState: ObservableObject {
             await loadRoomsAndMigrateIfNeeded()
             loadFocusMappings()
             startAutoSync()
-            startFocusMonitoring()
+            finishFocusAutomationSetup()
         }
     }
 
@@ -251,25 +252,60 @@ final class AppState: ObservableObject {
         await applyScene(scene)
     }
 
-    private var focusMonitoringTask: Task<Void, Never>?
+    // MARK: Focus automation (URL scheme)
 
-    private func startFocusMonitoring() {
-        focusMonitoringTask = Task {
-            while !Task.isCancelled {
-                updateCurrentFocus()
-                try? await Task.sleep(nanoseconds: 5_000_000_000) // Check every 5 seconds
+    private static let focusLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "FocusAutomation")
+    private var isFocusAutomationReady = false
+    private var pendingFocusURLs: [URL] = []
+
+    /// Identifiers a `lampcontrol://focus?mode=` URL may activate: the built-in
+    /// modes plus whatever the user typed in a mapping.
+    var knownFocusIdentifiers: [String] {
+        var seen = Set<String>()
+        return (availableFocusModes.map(\.identifier) + focusMappings.map(\.focusIdentifier))
+            .filter { seen.insert($0.lowercased()).inserted }
+    }
+
+    /// Entry point for `lampcontrol://focus?...` URLs (see AppDelegate).
+    func handleFocusURL(_ url: URL) {
+        // A cold launch via URL can arrive before mappings are loaded.
+        guard isFocusAutomationReady else {
+            pendingFocusURLs.append(url)
+            return
+        }
+
+        guard let event = FocusAutomationURL.parse(url) else {
+            Self.focusLog.error("Ignoring malformed focus URL: \(url.absoluteString, privacy: .public)")
+            return
+        }
+
+        guard licenseState.entitlements.canUseFocusMappings else {
+            Self.focusLog.info("Focus automation ignored: Premium feature")
+            return
+        }
+
+        switch event {
+        case .off:
+            currentFocusIdentifier = nil
+        case .activate(let mode):
+            guard let known = knownFocusIdentifiers.first(where: { $0.caseInsensitiveCompare(mode) == .orderedSame }) else {
+                Self.focusLog.error("Ignoring unknown focus mode: \(mode, privacy: .public)")
+                return
             }
+            currentFocusIdentifier = known
+            Task { await applySceneForCurrentFocus() }
         }
     }
 
-    private func updateCurrentFocus() {
-        // Placeholder until we wire the real macOS Focus API.
-        currentFocusIdentifier = nil
+    private func finishFocusAutomationSetup() {
+        isFocusAutomationReady = true
+        let pending = pendingFocusURLs
+        pendingFocusURLs = []
+        pending.forEach(handleFocusURL)
     }
 
     deinit {
         autoSyncTask?.cancel()
-        focusMonitoringTask?.cancel()
     }
 
     var canSync: Bool {

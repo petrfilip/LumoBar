@@ -11,6 +11,17 @@
     <string>es</string>
     <string>cs</string>
   </array>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>fr.hugoinformatique.lampcontrol.focus</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>lampcontrol</string>
+      </array>
+    </dict>
+  </array>
   <key>CFBundleExecutable</key>
   <string>LampControl</string>
   <key>CFBundleIdentifier</key>

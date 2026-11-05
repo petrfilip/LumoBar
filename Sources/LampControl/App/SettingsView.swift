@@ -20,6 +20,7 @@ struct SettingsView: View {
     @State private var newFocusSceneId: UUID?
     @State private var isCreatingFocusMapping = false
     @State private var editingKeyframeId: UUID?
+    @State private var copiedFocusMode: String?
 
     private let ink = LCTheme.ink
     private let muted = LCTheme.muted
@@ -1048,8 +1049,77 @@ struct SettingsView: View {
                         }
                     }
                 }
+
+                focusAutomationGroup
             }
         }
+    }
+
+    /// Setup hint + the exact `lampcontrol://focus?mode=…` URLs to paste in a Shortcuts automation.
+    private var focusAutomationGroup: some View {
+        let builtInIds = Set(appState.availableFocusModes.map { $0.identifier.lowercased() })
+        let customRows = appState.focusMappings
+            .map(\.focusIdentifier)
+            .filter { !builtInIds.contains($0.lowercased()) }
+        let rows: [(title: String, mode: String)] =
+            appState.availableFocusModes.map { ($0.displayName, $0.identifier) }
+            + customRows.map { ($0, $0) }
+            + [(NSLocalizedString("focus.automation.off", comment: ""), FocusAutomationURL.offMode)]
+
+        return settingsGroup {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("focus.automation.title")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(ink)
+
+                hint("focus.automation.hint")
+
+                ForEach(rows, id: \.mode) { row in
+                    focusURLRow(title: row.title, mode: row.mode)
+                }
+            }
+        }
+    }
+
+    private func focusURLRow(title: String, mode: String) -> some View {
+        let url = FocusAutomationURL.urlString(forMode: mode)
+        let didCopy = copiedFocusMode == mode
+
+        return HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 11, weight: .semibold))
+                Text(url)
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(muted)
+                    .textSelection(.enabled)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+
+            Spacer(minLength: 4)
+
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(url, forType: .string)
+                copiedFocusMode = mode
+                Task {
+                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    if copiedFocusMode == mode { copiedFocusMode = nil }
+                }
+            } label: {
+                Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("focus.automation.copy.help")
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .liquidGlassSurface(radius: 10)
     }
 
     // MARK: - Circadian Settings

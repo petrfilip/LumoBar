@@ -21,6 +21,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         appState.startCircadianService()
     }
 
+    /// Handles `lampcontrol://focus?mode=<identifier|off>` (Shortcuts automations).
+    /// Deliberately does not touch the popover or activate the app.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls where url.scheme?.lowercased() == FocusAutomationURL.scheme {
+            appState.handleFocusURL(url)
+        }
+    }
+
     private func configurePopover() {
         popover.contentSize = appState.preferredPopoverSize
         popover.behavior = .transient

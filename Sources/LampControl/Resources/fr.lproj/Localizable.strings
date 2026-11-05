@@ -530,3 +530,9 @@
 "circadian.keyframe.edit" = "Modifier ce point";
 "circadian.keyframe.time" = "Heure";
 "circadian.reset" = "Valeurs par défaut";
+
+/* Focus automation & login item */
+"focus.automation.title" = "Automatisation Raccourcis";
+"focus.automation.hint" = "macOS n'indique pas aux apps quel Focus est actif. Dans Raccourcis, ouvrez Automatisation, créez « Quand <Focus> s'active » avec l'action « Ouvrir les URL », puis collez l'URL correspondante ci-dessous. Ajoutez « Quand <Focus> se désactive » avec l'URL Focus désactivé. Nommez chaque mapping ci-dessus avec l'identifiant du mode affiché ici.";
+"focus.automation.off" = "Focus désactivé";
+"focus.automation.copy.help" = "Copier l'URL";

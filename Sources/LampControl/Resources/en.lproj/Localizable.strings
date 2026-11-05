@@ -530,3 +530,9 @@
 "circadian.keyframe.edit" = "Edit this time point";
 "circadian.keyframe.time" = "Time";
 "circadian.reset" = "Reset to defaults";
+
+/* Focus automation & login item */
+"focus.automation.title" = "Shortcuts automation";
+"focus.automation.hint" = "macOS doesn't tell apps which Focus is active. In Shortcuts, open Automation, create \"When <Focus> turns on\" with the action \"Open URLs\", and paste the matching URL below. Add \"When <Focus> turns off\" with the Focus off URL. Name each mapping above with the mode identifier shown here.";
+"focus.automation.off" = "Focus off";
+"focus.automation.copy.help" = "Copy URL";
