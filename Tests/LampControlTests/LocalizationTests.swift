@@ -104,4 +104,30 @@ final class LocalizationTests: XCTestCase {
         XCTAssertGreaterThan(keys.count, 10)
         XCTAssertEqual(keys.filter { en[$0] == nil }, [])
     }
+
+    /// SwiftUI views take `LocalizedStringKey` literals. A literal that looks like a key (dotted,
+    /// no spaces) but has no entry silently shows up verbatim in the UI, so it must exist in
+    /// every language.
+    func testEveryViewKeyLiteralExistsInAllLanguages() throws {
+        let tables = try Dictionary(uniqueKeysWithValues: Self.languages.map { ($0, try strings($0)) })
+        let regex = try NSRegularExpression(
+            pattern: #"(?:\bhint|\bText|\bButton|\bLabel|\.help)\(\s*"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)""#)
+
+        var found = 0
+        var missing: [String] = []
+        let enumerator = try XCTUnwrap(FileManager.default.enumerator(at: Self.sourcesDir, includingPropertiesForKeys: nil))
+        for case let url as URL in enumerator where url.pathExtension == "swift" {
+            let text = try String(contentsOf: url, encoding: .utf8)
+            let ns = text as NSString
+            for match in regex.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+                let key = ns.substring(with: match.range(at: 1))
+                found += 1
+                for lang in Self.languages where tables[lang]?[key] == nil {
+                    missing.append("\(url.lastPathComponent): \(key) missing in \(lang)")
+                }
+            }
+        }
+        XCTAssertGreaterThan(found, 10, "extractor found suspiciously few view key literals")
+        XCTAssertEqual(missing, [])
+    }
 }

@@ -2117,7 +2117,7 @@ struct SettingsView: View {
     private var updatesSettings: some View {
         VStack(spacing: 12) {
             if !appState.updateService.isAvailable {
-                hint(NSLocalizedString("updates.unavailable", comment: ""))
+                hintText(NSLocalizedString("updates.unavailable", comment: ""))
             }
 
             settingsGroup {
@@ -2155,7 +2155,7 @@ struct SettingsView: View {
             .opacity(appState.updateService.canCheckForUpdates ? 1 : 0.55)
 
             if let date = appState.updateService.lastCheckedAt {
-                hint(L10n.updatesLastCheck(date.formatted(date: .omitted, time: .shortened)))
+                hintText(L10n.updatesLastCheck(date.formatted(date: .omitted, time: .shortened)))
             }
         }
     }
@@ -2301,7 +2301,7 @@ struct SettingsView: View {
         .padding(.horizontal, 3)
     }
 
-    private func hint(_ text: String) -> some View {
+    private func hintText(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 5) {
             Image(systemName: "info.circle")
                 .font(.system(size: 10))
