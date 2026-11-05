@@ -565,3 +565,11 @@
 "settings.reset.confirm.cancel" = "Cancel";
 "status.reset.failed" = "Reset incomplete, could not remove: %@";
 "error.keychain.delete" = "Unable to delete from Keychain (%d).";
+
+/* Added: save/cancel, room lamp counts, focus route subtitle */
+"action.cancel" = "Cancel";
+"room.assign.lamps" = "Assign lamps";
+"room.lamps.count.one" = "%d lamp";
+"room.lamps.count.few" = "%d lamps";
+"room.lamps.count.other" = "%d lamps";
+"route.focus.sub.active" = "%d active";

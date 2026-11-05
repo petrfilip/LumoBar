@@ -565,3 +565,11 @@
 "settings.reset.confirm.cancel" = "Zrušit";
 "status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";
 "error.keychain.delete" = "Nelze smazat z Klíčenky (%d).";
+
+/* Added: save/cancel, room lamp counts, focus route subtitle */
+"action.cancel" = "Zrušit";
+"room.assign.lamps" = "Přiřadit lampy";
+"room.lamps.count.one" = "%d lampa";
+"room.lamps.count.few" = "%d lampy";
+"room.lamps.count.other" = "%d lamp";
+"route.focus.sub.active" = "Aktivní: %d";

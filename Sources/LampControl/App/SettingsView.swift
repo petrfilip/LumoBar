@@ -1029,7 +1029,7 @@ struct SettingsView: View {
                                 .font(.system(size: 11, weight: .medium))
                                 
                                 HStack(spacing: 8) {
-                                    Button("Save") {
+                                    Button(L10n.save) {
                                         let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
                                         guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
                                         let mapping = FocusMapping(focusIdentifier: trimmed, focusDisplayName: trimmed, sceneId: newFocusSceneId)
@@ -1043,7 +1043,7 @@ struct SettingsView: View {
                                     .padding(.vertical, 4)
                                     .liquidGlassButtonStyle(prominent: true)
                                     
-                                    Button("Cancel") {
+                                    Button(L10n.cancel) {
                                         isCreatingFocusMapping = false
                                         newFocusIdentifier = ""
                                         newFocusSceneId = nil
@@ -1074,7 +1074,7 @@ struct SettingsView: View {
                                 .font(.system(size: 11, weight: .medium))
                                 
                                 HStack(spacing: 8) {
-                                    Button("Save") {
+                                    Button(L10n.save) {
                                         let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
                                         guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
                                         var updated = appState.focusMappings[idx]
@@ -1091,7 +1091,7 @@ struct SettingsView: View {
                                     .padding(.vertical, 4)
                                     .liquidGlassButtonStyle(prominent: true)
                                     
-                                    Button("Cancel") {
+                                    Button(L10n.cancel) {
                                         editingFocusMappingId = nil
                                         newFocusIdentifier = ""
                                         newFocusSceneId = nil
@@ -1972,7 +1972,7 @@ struct SettingsView: View {
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(room.name)
                                         .font(.system(size: 11, weight: .semibold))
-                                    Text(L10n.onlineLamps(room.lampIds.count))
+                                    Text(L10n.lampCount(room.lampIds.count))
                                         .font(.system(size: 9, weight: .medium))
                                         .foregroundStyle(muted)
                                 }
@@ -2017,7 +2017,7 @@ struct SettingsView: View {
                         // Lamp assignment
                         if !appState.lamps.isEmpty {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Assign Lamps")
+                                Text("room.assign.lamps")
                                     .font(.system(size: 11, weight: .semibold))
                                     .foregroundStyle(muted)
                                 
@@ -2057,7 +2057,7 @@ struct SettingsView: View {
                                     .font(.system(size: 11, weight: .medium))
                                     .textFieldStyle(.roundedBorder)
                                 
-                                Button("Save") {
+                                Button(L10n.save) {
                                     let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
                                     guard !trimmed.isEmpty else { return }
                                     appState.rooms.append(Room(name: trimmed))
@@ -2070,7 +2070,7 @@ struct SettingsView: View {
                                 .padding(.vertical, 4)
                                 .liquidGlassButtonStyle(prominent: true)
                                 
-                                Button("Cancel") {
+                                Button(L10n.cancel) {
                                     isCreatingRoom = false
                                     newRoomName = ""
                                 }
@@ -2087,7 +2087,7 @@ struct SettingsView: View {
                                     .font(.system(size: 11, weight: .medium))
                                     .textFieldStyle(.roundedBorder)
                                 
-                                Button("Save") {
+                                Button(L10n.save) {
                                     let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
                                     guard !trimmed.isEmpty else { return }
                                     appState.rooms[idx].name = trimmed
@@ -2100,7 +2100,7 @@ struct SettingsView: View {
                                 .padding(.vertical, 4)
                                 .liquidGlassButtonStyle(prominent: true)
                                 
-                                Button("Cancel") {
+                                Button(L10n.cancel) {
                                     editingRoomId = nil
                                     newRoomName = ""
                                 }
@@ -2507,7 +2507,7 @@ private enum SettingsRoute {
         case .focus:
             appState.focusMappings.isEmpty
                 ? L10n.focusEmptyMessage
-                : "\(appState.focusMappings.filter(\.isEnabled).count) active"
+                : L10n.routeFocusActive(appState.focusMappings.filter(\.isEnabled).count)
         case .circadian:
             appState.circadianSettings.isEnabled
                 ? L10n.routeCircadianActive(appState.circadianSettings.keyframes.count)

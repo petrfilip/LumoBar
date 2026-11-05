@@ -14,6 +14,41 @@ enum L10n {
         String(format: NSLocalizedString("lamps.hidden.count", comment: ""), count)
     }
 
+    static var save: String { NSLocalizedString("action.save", comment: "") }
+    static var cancel: String { NSLocalizedString("action.cancel", comment: "") }
+
+    static func routeFocusActive(_ count: Int) -> String {
+        String(format: NSLocalizedString("route.focus.sub.active", comment: ""), count)
+    }
+
+    /// Plural form used for "N lamps": Czech distinguishes 1 / 2-4 / 5+, French treats 0 like 1,
+    /// English and Spanish split 1 / other.
+    enum PluralCategory: String { case one, few, other }
+
+    static func pluralCategory(_ count: Int, language: String) -> PluralCategory {
+        switch language {
+        case "cs":
+            if count == 1 { return .one }
+            return (2...4).contains(count) ? .few : .other
+        case "fr":
+            return (0...1).contains(count) ? .one : .other
+        default:
+            return count == 1 ? .one : .other
+        }
+    }
+
+    /// "3 lamps" (room rows). Not `onlineLamps`, which means "N online".
+    static func lampCount(_ count: Int) -> String {
+        let language = Bundle.main.preferredLocalizations.first ?? "en"
+        let format: String
+        switch pluralCategory(count, language: language) {
+        case .one:   format = NSLocalizedString("room.lamps.count.one", comment: "")
+        case .few:   format = NSLocalizedString("room.lamps.count.few", comment: "")
+        case .other: format = NSLocalizedString("room.lamps.count.other", comment: "")
+        }
+        return String(format: format, count)
+    }
+
     static func onlineLamps(_ count: Int) -> String {
         String(format: NSLocalizedString("lamps.online.count", comment: ""), count)
     }

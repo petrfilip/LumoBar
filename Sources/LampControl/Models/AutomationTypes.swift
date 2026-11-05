@@ -12,7 +12,7 @@ enum AutomationAction: Codable, Equatable, Hashable {
         switch self {
         case .powerOffAll:              return L10n.actionPowerOff
         case .powerOnAll:               return L10n.actionPowerOn
-        case .applyScenePreset(let id): return L10n.actionScene(id.capitalized)
+        case .applyScenePreset(let id): return L10n.actionScene(LightScenePreset.preset(id: id)?.title ?? id.capitalized)
         case .applyProfile:             return L10n.actionApplyProfile
         case .enableAdaptiveLighting:   return L10n.actionEnableAdaptive
         case .disableAdaptiveLighting:  return L10n.actionDisableAdaptive
