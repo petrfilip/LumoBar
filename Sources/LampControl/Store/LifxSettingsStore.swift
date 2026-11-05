@@ -2,8 +2,8 @@ import Foundation
 
 final class LifxSettingsStore {
     private let keychain = KeychainStore()
-    private let keychainService = "LampControl.LIFX"
-    private let keychainAccount = "lifx-token"
+    private let keychainService = KeychainStore.Item.lifx.service
+    private let keychainAccount = KeychainStore.Item.lifx.account
 
     func load() throws -> LifxSettings {
         LifxSettings(token: try keychain.readSecret(service: keychainService, account: keychainAccount))

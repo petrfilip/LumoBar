@@ -166,6 +166,8 @@ struct SettingsView: View {
                     tint: Color.blue.opacity(0.10)
                 )
 
+                restoreScenesRow
+
                 launchAtLoginRow
 
                 settingsLink(
@@ -1622,6 +1624,39 @@ struct SettingsView: View {
         )
     }
 
+    /// Same look as `settingsLink`, with a "Restore" button instead of the chevron.
+    private var restoreScenesRow: some View {
+        HStack(spacing: LCSpacing.sm) {
+            Image(systemName: "arrow.counterclockwise")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(accent)
+                .frame(width: 36, height: 36)
+                .lcCard(radius: 18, tint: Color.pink.opacity(0.10))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("settings.scenes.restore.title")
+                    .font(LCTypo.bodySemibold())
+                    .foregroundStyle(ink)
+                Text("settings.scenes.restore.detail")
+                    .font(LCTypo.micro())
+                    .foregroundStyle(muted)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Button("settings.scenes.restore.button") {
+                appState.restoreDefaultScenes()
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .liquidGlassButtonStyle()
+            .help("help.scenes.restore")
+        }
+        .padding(.horizontal, LCSpacing.sm)
+        .frame(height: 60)
+        .lcCard(radius: LCRadius.card, tint: Color.white.opacity(0.04))
+    }
+
     /// Same look as `settingsLink`, with a switch instead of the chevron.
     private var launchAtLoginRow: some View {
         VStack(spacing: LCSpacing.xs) {
@@ -2098,6 +2133,17 @@ struct SettingsView: View {
             .liquidGlassButtonStyle()
 
             Button {
+                confirmAndResetAllSettings()
+            } label: {
+                Label("settings.reset.button", systemImage: "arrow.counterclockwise.circle")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(LCPalette.danger)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+            }
+            .liquidGlassButtonStyle()
+
+            Button {
                 appState.quit()
             } label: {
                 Label("app.quit", systemImage: "power")
@@ -2107,6 +2153,23 @@ struct SettingsView: View {
                     .frame(height: 38)
             }
             .liquidGlassButtonStyle()
+        }
+    }
+
+    /// A native modal alert: always reliably presented from the menu-bar
+    /// popover (SwiftUI alerts/sheets attach to the popover window, which is
+    /// fragile). The popover may close while the alert is up; that is fine.
+    private func confirmAndResetAllSettings() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = NSLocalizedString("settings.reset.confirm.title", comment: "")
+        alert.informativeText = NSLocalizedString("settings.reset.confirm.message", comment: "")
+        let reset = alert.addButton(withTitle: NSLocalizedString("settings.reset.confirm.action", comment: ""))
+        reset.hasDestructiveAction = true
+        alert.addButton(withTitle: NSLocalizedString("settings.reset.confirm.cancel", comment: ""))
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertFirstButtonReturn {
+            appState.resetAllSettings()
         }
     }
 

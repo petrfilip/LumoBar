@@ -2,8 +2,8 @@ import Foundation
 
 final class GoveeSettingsStore {
     private let keychain = KeychainStore()
-    private let keychainService = "LampControl.Govee"
-    private let keychainAccount = "govee-api-key"
+    private let keychainService = KeychainStore.Item.govee.service
+    private let keychainAccount = KeychainStore.Item.govee.account
 
     func load() throws -> GoveeSettings {
         GoveeSettings(apiKey: try keychain.readSecret(service: keychainService, account: keychainAccount))

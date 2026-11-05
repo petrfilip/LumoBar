@@ -85,8 +85,9 @@ final class AppState: ObservableObject {
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
-    /// Set once the built-in presets have been seeded into `userScenes`.
-    static let presetsSeededKey = "LampControl.scenes.presetsSeeded.v1"
+    /// True while "Reset all settings" runs: blocks background persistence so
+    /// nothing re-creates the files that were just removed.
+    private var isResettingApp = false
 
     init() {
         configureYeelightLiveSync()
@@ -134,6 +135,7 @@ final class AppState: ObservableObject {
     }
 
     func persistRooms() {
+        guard !isResettingApp else { return }
         do {
             try roomStore.saveRooms(rooms)
         } catch {
@@ -230,6 +232,7 @@ final class AppState: ObservableObject {
     }
 
     func persistFocusMappings() {
+        guard !isResettingApp else { return }
         do {
             try focusMappingStore.saveMappings(focusMappings)
         } catch {
@@ -411,6 +414,7 @@ final class AppState: ObservableObject {
 
     func updateLampOrder(_ order: [String]) {
         lampOrderIds = order
+        guard !isResettingApp else { return }
         settingsStore.saveLampOrder(order)
     }
 
@@ -1524,23 +1528,84 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// Settings › "Restore default scenes": re-adds missing built-ins and
+    /// resets modified ones; the user's own scenes are untouched.
+    func restoreDefaultScenes() {
+        userScenes = PresetScenes.restored(userScenes)
+        UserDefaults.standard.set(true, forKey: PresetScenes.seededDefaultsKey)
+        persistScenes()
+        persistWidgetSnapshot()
+        message = L10n.scenesRestored
+    }
+
+    // MARK: - Reset all settings
+
+    /// Wipes every persisted setting (see `AppResetService`) except the license,
+    /// then relaunches the app.
+    ///
+    /// Relaunch instead of an in-process reload: state lives in ~15 `@Published`
+    /// properties, per-provider clients, the shortcut registrations, the
+    /// automation / circadian timers, Yeelight sockets and Sparkle's cached
+    /// preferences. Re-initialising all of that in place is easy to get subtly
+    /// wrong (a stale timer or secret would survive); a fresh process reads the
+    /// now-empty stores and goes through the normal first-launch path
+    /// (seeding presets, onboarding) with nothing left to forget.
+    func resetAllSettings() {
+        isResettingApp = true
+        autoSyncTask?.cancel()
+        automationScheduler.stop()
+        circadianService.stop()
+        yeelightLiveSync.stopAll()
+        // Registered at login by a previous toggle; the default is off.
+        if SMAppService.mainApp.status == .enabled || SMAppService.mainApp.status == .requiresApproval {
+            try? SMAppService.mainApp.unregister()
+        }
+
+        let failures = AppResetService().resetAll()
+        guard failures.isEmpty else {
+            // Nothing was reloaded, so in-memory state is still consistent with
+            // what remains on disk; bring the background services back.
+            isResettingApp = false
+            startAutoSync()
+            reconcileYeelightLiveSync()
+            automationScheduler.start(with: automations)
+            if circadianSettings.isEnabled { circadianService.start(with: circadianSettings) }
+            showError(L10n.resetFailed(failures.joined(separator: ", ")))
+            return
+        }
+
+        relaunchApp()
+    }
+
+    /// Starts a fresh instance of this app and quits the current one. The new
+    /// instance is forced (`createsNewApplicationInstance`) because LaunchServices
+    /// would otherwise just re-activate the running one.
+    private func relaunchApp() {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { _, _ in
+            DispatchQueue.main.async { NSApplication.shared.terminate(nil) }
+        }
+    }
+
     /// One-time migration: the built-in presets become regular scenes in the
     /// user's list. The flag is stored in UserDefaults so a preset the user
     /// later deletes is not seeded again on the next launch; only an explicit
     /// "Restore default scenes" (or a full reset) brings it back. Not run when
     /// scenes.json was unreadable, so a corrupt file is never overwritten.
     private func seedPresetScenesIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: Self.presetsSeededKey) else { return }
+        guard !UserDefaults.standard.bool(forKey: PresetScenes.seededDefaultsKey) else { return }
         userScenes = PresetScenes.seeded(userScenes)
         do {
             try sceneStore.save(userScenes)
-            UserDefaults.standard.set(true, forKey: Self.presetsSeededKey)
+            UserDefaults.standard.set(true, forKey: PresetScenes.seededDefaultsKey)
         } catch {
             showError(error)
         }
     }
 
     private func persistScenes() {
+        guard !isResettingApp else { return }
         do {
             try sceneStore.save(userScenes)
         } catch {
@@ -1752,6 +1817,7 @@ final class AppState: ObservableObject {
     }
 
     private func persistWidgetSnapshot() {
+        guard !isResettingApp else { return }
         let snapshot = WidgetDashboardSnapshot(
             totalLampCount: lamps.count,
             onlineLampCount: lamps.filter(\.online).count,

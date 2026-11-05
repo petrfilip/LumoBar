@@ -549,3 +549,17 @@
 "yeelight.search.added" = "Añadida";
 "yeelight.search.add.help" = "Añadir esta lámpara";
 "error.yeelight.search.failed" = "La búsqueda en la red falló. Comprueba que LampControl tenga permiso para acceder a la red local en Ajustes del Sistema → Privacidad y seguridad → Red local.";
+
+/* Editable presets & reset */
+"settings.scenes.restore.title" = "Restaurar escenas predeterminadas";
+"settings.scenes.restore.detail" = "Recupera las escenas integradas y deshace sus cambios";
+"settings.scenes.restore.button" = "Restaurar";
+"help.scenes.restore" = "Vuelve a añadir las escenas integradas eliminadas y restablece las modificadas. Tus propias escenas se conservan.";
+"status.scenes.restored" = "Escenas predeterminadas restauradas";
+"settings.reset.button" = "Restablecer todos los ajustes";
+"settings.reset.confirm.title" = "¿Restablecer todos los ajustes?";
+"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, atajos, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. Tu licencia se conserva. LampControl se reiniciará con sus ajustes originales.";
+"settings.reset.confirm.action" = "Restablecer y reiniciar";
+"settings.reset.confirm.cancel" = "Cancelar";
+"status.reset.failed" = "Restablecimiento incompleto, no se pudo eliminar: %@";
+"error.keychain.delete" = "No se pudo eliminar del Llavero (%d).";

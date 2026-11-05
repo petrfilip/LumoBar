@@ -318,6 +318,8 @@ enum L10n {
     static func sceneApplied(_ name: String) -> String { String(format: s("status.scene.applied"), name) }
     static var sceneDeleted: String { s("status.scene.deleted") }
     static var scenesUnreadable: String { s("status.scenes.unreadable") }
+    static var scenesRestored: String { s("status.scenes.restored") }
+    static func resetFailed(_ items: String) -> String { String(format: s("status.reset.failed"), items) }
     static var ambianceNoRGB: String { s("status.ambiance.no.rgb") }
     static func ambianceAppliedToAll(_ title: String) -> String {
         String(format: s("status.ambiance.applied.all"), title)

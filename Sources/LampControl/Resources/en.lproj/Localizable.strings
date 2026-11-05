@@ -549,3 +549,17 @@
 "yeelight.search.added" = "Added";
 "yeelight.search.add.help" = "Add this lamp";
 "error.yeelight.search.failed" = "Network search failed. Check that LampControl is allowed to access the local network in System Settings → Privacy & Security → Local Network.";
+
+/* Editable presets & reset */
+"settings.scenes.restore.title" = "Restore default scenes";
+"settings.scenes.restore.detail" = "Bring back the built-in scenes and reset their edits";
+"settings.scenes.restore.button" = "Restore";
+"help.scenes.restore" = "Re-add deleted built-in scenes and reset modified ones to their defaults. Your own scenes are kept.";
+"status.scenes.restored" = "Default scenes restored";
+"settings.reset.button" = "Reset all settings";
+"settings.reset.confirm.title" = "Reset all settings?";
+"settings.reset.confirm.message" = "This permanently removes your scenes, rooms, lamp order, automations, Focus mappings, adaptive lighting schedule, shortcuts, light provider settings (including the secrets stored in the Keychain) and app preferences such as onboarding. Your license is kept. LampControl will restart with its original settings.";
+"settings.reset.confirm.action" = "Reset and restart";
+"settings.reset.confirm.cancel" = "Cancel";
+"status.reset.failed" = "Reset incomplete, could not remove: %@";
+"error.keychain.delete" = "Unable to delete from Keychain (%d).";

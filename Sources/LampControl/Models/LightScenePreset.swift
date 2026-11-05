@@ -28,6 +28,9 @@ struct LightScenePreset: Identifiable, Hashable {
 /// Pure list transformations for the built-in presets that live in the user's
 /// scene list (kept free of I/O so they can be unit-tested).
 enum PresetScenes {
+    /// UserDefaults flag set once the built-ins have been seeded into the scene list.
+    static let seededDefaultsKey = "LampControl.scenes.presetsSeeded.v1"
+
     /// First launch with editable presets: put every built-in in front of the
     /// user's own scenes. Built-ins already present (by `presetId`) are kept.
     static func seeded(_ existing: [UserLightScene], presets: [LightScenePreset] = LightScenePreset.presets) -> [UserLightScene] {

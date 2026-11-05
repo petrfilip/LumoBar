@@ -549,3 +549,17 @@
 "yeelight.search.added" = "Ajoutée";
 "yeelight.search.add.help" = "Ajouter cette lampe";
 "error.yeelight.search.failed" = "La recherche réseau a échoué. Vérifiez que LampControl est autorisé à accéder au réseau local dans Réglages Système → Confidentialité et sécurité → Réseau local.";
+
+/* Editable presets & reset */
+"settings.scenes.restore.title" = "Restaurer les scènes par défaut";
+"settings.scenes.restore.detail" = "Réaffiche les scènes intégrées et annule leurs modifications";
+"settings.scenes.restore.button" = "Restaurer";
+"help.scenes.restore" = "Réajoute les scènes intégrées supprimées et rétablit celles modifiées. Vos propres scènes sont conservées.";
+"status.scenes.restored" = "Scènes par défaut restaurées";
+"settings.reset.button" = "Réinitialiser tous les réglages";
+"settings.reset.confirm.title" = "Réinitialiser tous les réglages ?";
+"settings.reset.confirm.message" = "Cette action supprime définitivement vos scènes, pièces, ordre des lampes, automatisations, associations Focus, plage d'éclairage adaptatif, raccourcis, réglages des fournisseurs de lampes (y compris les secrets stockés dans le Keychain) et les préférences de l'app comme l'accueil. Votre licence est conservée. LampControl redémarrera avec ses réglages d'origine.";
+"settings.reset.confirm.action" = "Réinitialiser et redémarrer";
+"settings.reset.confirm.cancel" = "Annuler";
+"status.reset.failed" = "Réinitialisation incomplète, suppression impossible : %@";
+"error.keychain.delete" = "Suppression Keychain impossible (%d).";

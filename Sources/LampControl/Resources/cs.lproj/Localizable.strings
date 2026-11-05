@@ -549,3 +549,17 @@
 "yeelight.search.added" = "Přidáno";
 "yeelight.search.add.help" = "Přidat tuto žárovku";
 "error.yeelight.search.failed" = "Hledání v síti selhalo. Zkontrolujte, že má LampControl povolený přístup k místní síti v Nastavení systému → Soukromí a zabezpečení → Místní síť.";
+
+/* Editable presets & reset */
+"settings.scenes.restore.title" = "Obnovit výchozí scény";
+"settings.scenes.restore.detail" = "Vrátí vestavěné předvolby a zruší jejich úpravy";
+"settings.scenes.restore.button" = "Obnovit";
+"help.scenes.restore" = "Znovu přidá smazané vestavěné scény a upravené vrátí do výchozího stavu. Vaše vlastní scény zůstanou zachovány.";
+"status.scenes.restored" = "Výchozí scény obnoveny";
+"settings.reset.button" = "Resetovat všechna nastavení";
+"settings.reset.confirm.title" = "Resetovat všechna nastavení?";
+"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, zkratky, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. Licence zůstane zachována. LampControl se restartuje s původním nastavením.";
+"settings.reset.confirm.action" = "Resetovat a restartovat";
+"settings.reset.confirm.cancel" = "Zrušit";
+"status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";
+"error.keychain.delete" = "Nelze smazat z Klíčenky (%d).";

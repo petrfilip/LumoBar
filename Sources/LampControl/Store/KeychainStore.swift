@@ -2,8 +2,22 @@ import Foundation
 import Security
 
 final class KeychainStore {
-    private let defaultService = "LampControl.Tuya"
-    private let defaultAccount = "tuya-access-secret"
+    /// Every Keychain item LampControl creates (single source of truth, also
+    /// used by "Reset all settings").
+    struct Item: Equatable {
+        let service: String
+        let account: String
+
+        static let tuya  = Item(service: "LampControl.Tuya",  account: "tuya-access-secret")
+        static let hue   = Item(service: "LampControl.Hue",   account: "hue-username")
+        static let lifx  = Item(service: "LampControl.LIFX",  account: "lifx-token")
+        static let govee = Item(service: "LampControl.Govee", account: "govee-api-key")
+
+        static let all: [Item] = [.tuya, .hue, .lifx, .govee]
+    }
+
+    private let defaultService = Item.tuya.service
+    private let defaultAccount = Item.tuya.account
 
     func readSecret() throws -> String {
         try readSecret(service: defaultService, account: defaultAccount)
@@ -54,6 +68,14 @@ final class KeychainStore {
         let addStatus = SecItemAdd(query as CFDictionary, nil)
         guard addStatus == errSecSuccess else {
             throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.save", comment: ""), addStatus))
+        }
+    }
+
+    /// Removes the item; "not found" counts as success.
+    func deleteSecret(service: String, account: String) throws {
+        let status = SecItemDelete(baseQuery(service: service, account: account) as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.delete", comment: ""), status))
         }
     }
 

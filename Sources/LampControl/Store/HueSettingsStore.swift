@@ -2,8 +2,8 @@ import Foundation
 
 final class HueSettingsStore {
     private let keychain = KeychainStore()
-    private let keychainService = "LampControl.Hue"
-    private let keychainAccount = "hue-username"
+    private let keychainService = KeychainStore.Item.hue.service
+    private let keychainAccount = KeychainStore.Item.hue.account
 
     func load() throws -> HueSettings {
         guard FileManager.default.fileExists(atPath: settingsURL.path) else {
