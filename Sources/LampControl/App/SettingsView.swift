@@ -20,6 +20,8 @@ struct SettingsView: View {
     @State private var newFocusSceneId: UUID?
     @State private var isCreatingFocusMapping = false
     @State private var editingKeyframeId: UUID?
+    /// Unsaved edits to the adaptive schedule; `nil` = nothing edited.
+    @State private var circadianDraft: CircadianSettings?
     @State private var copiedFocusMode: String?
 
     private let ink = LCTheme.ink
@@ -1213,10 +1215,10 @@ struct SettingsView: View {
                 .liquidGlassSurface(radius: 16)
 
                 HStack(spacing: 10) {
-                    Toggle("circadian.brightness", isOn: $appState.circadianSettings.applyBrightness)
+                    Toggle("circadian.brightness", isOn: circadianDraftBinding.applyBrightness)
                         .font(.system(size: 12, weight: .semibold))
                     Spacer()
-                    Toggle("circadian.temperature", isOn: $appState.circadianSettings.applyTemperature)
+                    Toggle("circadian.temperature", isOn: circadianDraftBinding.applyTemperature)
                         .font(.system(size: 12, weight: .semibold))
                 }
                 .padding(.horizontal, 12)
@@ -1234,10 +1236,12 @@ struct SettingsView: View {
                             .frame(height: 38)
                     }
                     .liquidGlassButtonStyle(prominent: appState.circadianSettings.isEnabled)
-                    .disabled(!appState.circadianSettings.isEnabled || appState.isBusy)
+                    // "Apply now" uses the saved schedule; Save applies the
+                    // edited one immediately, so it waits for Save when dirty.
+                    .disabled(!appState.circadianSettings.isEnabled || appState.isBusy || isCircadianDraftDirty)
 
                     Button {
-                        Task { await appState.saveCircadianSettings(appState.circadianSettings) }
+                        saveCircadianDraft()
                     } label: {
                         Text("action.save")
                             .font(.system(size: 13, weight: .semibold))
@@ -1249,6 +1253,47 @@ struct SettingsView: View {
                 }
             }
         }
+        // Unsaved edits are discarded when leaving the section: the running
+        // service and the stored settings never see them.
+        .onDisappear {
+            circadianDraft = nil
+            editingKeyframeId = nil
+        }
+    }
+
+    // MARK: Adaptive lighting draft
+
+    /// Edits to the schedule live here until Save; `nil` means no edits.
+    private var circadianDraftValue: CircadianSettings {
+        circadianDraft ?? appState.circadianSettings
+    }
+
+    private var circadianDraftBinding: Binding<CircadianSettings> {
+        Binding(get: { circadianDraftValue }, set: { circadianDraft = $0 })
+    }
+
+    private func mutateCircadianDraft(_ change: (inout CircadianSettings) -> Void) {
+        var draft = circadianDraftValue
+        change(&draft)
+        circadianDraft = draft
+    }
+
+    private var isCircadianDraftDirty: Bool {
+        guard let draft = circadianDraft else { return false }
+        return !draft.hasSameContent(as: appState.circadianSettings)
+    }
+
+    private func saveCircadianDraft() {
+        guard var draft = circadianDraft else {
+            Task { await appState.saveCircadianSettings(appState.circadianSettings) }
+            return
+        }
+        // The enable switch is not part of the draft (it saves on its own).
+        draft.isEnabled = appState.circadianSettings.isEnabled
+        Task {
+            await appState.saveCircadianSettings(draft)
+            if appState.circadianSettings == draft { circadianDraft = nil }
+        }
     }
 
     // MARK: - Adaptive lighting schedule
@@ -1256,7 +1301,7 @@ struct SettingsView: View {
     /// Time points of the adaptive curve. They used to be read-only rows, so
     /// nothing about the schedule could actually be configured.
     private var circadianSchedule: some View {
-        let settings = appState.circadianSettings
+        let settings = circadianDraftValue
         let now = Calendar.current.dateComponents([.hour, .minute], from: Date())
         let current = settings.values(at: (now.hour ?? 0) * 60 + (now.minute ?? 0))
 
@@ -1295,7 +1340,7 @@ struct SettingsView: View {
 
                 Button {
                     editingKeyframeId = nil
-                    appState.circadianSettings.keyframes = CircadianSettings.defaultKeyframes
+                    mutateCircadianDraft { $0.keyframes = CircadianSettings.defaultKeyframes }
                 } label: {
                     Label("circadian.reset", systemImage: "arrow.counterclockwise")
                         .font(.system(size: 11, weight: .semibold))
@@ -1387,7 +1432,7 @@ struct SettingsView: View {
                         Spacer()
                         Button(role: .destructive) {
                             editingKeyframeId = nil
-                            appState.circadianSettings.keyframes.removeAll { $0.id == kf.id }
+                            mutateCircadianDraft { $0.keyframes.removeAll { $0.id == kf.id } }
                         } label: {
                             Label("circadian.keyframe.delete", systemImage: "trash")
                                 .font(.system(size: 11, weight: .semibold))
@@ -1397,7 +1442,7 @@ struct SettingsView: View {
                         }
                         .liquidGlassButtonStyle()
                         // The curve needs at least two points to interpolate.
-                        .disabled(appState.circadianSettings.keyframes.count <= 2)
+                        .disabled(circadianDraftValue.keyframes.count <= 2)
                     }
                 }
                 .padding(.top, 2)
@@ -1409,15 +1454,17 @@ struct SettingsView: View {
     }
 
     private func keyframeBinding(_ id: UUID) -> Binding<CircadianKeyframe>? {
-        guard appState.circadianSettings.keyframes.contains(where: { $0.id == id }) else { return nil }
+        guard circadianDraftValue.keyframes.contains(where: { $0.id == id }) else { return nil }
         return Binding(
             get: {
-                appState.circadianSettings.keyframes.first(where: { $0.id == id })
+                circadianDraftValue.keyframes.first(where: { $0.id == id })
                     ?? CircadianKeyframe(hour: 0, minute: 0, brightness: 80, temperature: 4000)
             },
             set: { newValue in
-                if let index = appState.circadianSettings.keyframes.firstIndex(where: { $0.id == id }) {
-                    appState.circadianSettings.keyframes[index] = newValue
+                mutateCircadianDraft { draft in
+                    if let index = draft.keyframes.firstIndex(where: { $0.id == id }) {
+                        draft.keyframes[index] = newValue
+                    }
                 }
             }
         )
@@ -1440,7 +1487,7 @@ struct SettingsView: View {
 
     /// New point in the middle of the largest gap, with interpolated values.
     private func addCircadianKeyframe() {
-        let settings = appState.circadianSettings
+        let settings = circadianDraftValue
         let minutes = settings.keyframes.map(\.minuteOfDay).sorted()
         var target = 12 * 60
         if minutes.count >= 1 {
@@ -1457,7 +1504,7 @@ struct SettingsView: View {
         let values = settings.values(at: target)
         let keyframe = CircadianKeyframe(hour: target / 60, minute: target % 60,
                                          brightness: values.brightness, temperature: values.temperature)
-        appState.circadianSettings.keyframes.append(keyframe)
+        mutateCircadianDraft { $0.keyframes.append(keyframe) }
         editingKeyframeId = keyframe.id
     }
 

@@ -10,7 +10,7 @@ struct CircadianKeyframe: Codable, Identifiable, Equatable {
     var minuteOfDay: Int { hour * 60 + minute }
 }
 
-struct CircadianSettings: Codable {
+struct CircadianSettings: Codable, Equatable {
     var isEnabled: Bool = false
     var applyBrightness: Bool = true
     var applyTemperature: Bool = true
@@ -26,6 +26,14 @@ struct CircadianSettings: Codable {
     ]
 
     static let `default` = CircadianSettings(keyframes: defaultKeyframes)
+
+    /// Equality ignoring the enable switch, which is saved independently of
+    /// the schedule edited in Settings.
+    func hasSameContent(as other: CircadianSettings) -> Bool {
+        var copy = other
+        copy.isEnabled = isEnabled
+        return self == copy
+    }
 
     /// Interpolated brightness + temperature for a given time-of-day in minutes.
     func values(at minuteOfDay: Int) -> (brightness: Int, temperature: Int) {

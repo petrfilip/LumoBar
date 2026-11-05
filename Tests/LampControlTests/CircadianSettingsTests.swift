@@ -122,6 +122,21 @@ final class CircadianSettingsTests: XCTestCase {
         }
     }
 
+    func testHasSameContentIgnoresEnableSwitchOnly() {
+        let saved = CircadianSettings.default
+        var draft = saved
+        draft.isEnabled = true
+        XCTAssertTrue(draft.hasSameContent(as: saved))
+        draft.keyframes[0].brightness += 5
+        XCTAssertFalse(draft.hasSameContent(as: saved))
+        draft = saved
+        draft.applyTemperature = false
+        XCTAssertFalse(draft.hasSameContent(as: saved))
+        draft = saved
+        draft.keyframes.removeLast()
+        XCTAssertFalse(draft.hasSameContent(as: saved))
+    }
+
     func testCodableRoundTrip() throws {
         var s = CircadianSettings.default
         s.isEnabled = true
