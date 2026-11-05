@@ -26,7 +26,7 @@ final class YeelightClient {
     }
 
     /// Outcome of parsing one line received from the bulb.
-    private enum LineOutcome {
+    enum LineOutcome {
         case result([String])
         case failure(Error)
         case ignore
@@ -37,7 +37,7 @@ final class YeelightClient {
     /// connection per command, the first bytes we read are often a notification
     /// triggered by the previous command (e.g. `set_hsv` followed by `set_bright`),
     /// not the reply to ours. Only lines carrying our request id are answers.
-    private static func parse(line: Substring, requestID: Int) -> LineOutcome {
+    static func parse(line: Substring, requestID: Int) -> LineOutcome {
         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
               let data = trimmed.data(using: .utf8),

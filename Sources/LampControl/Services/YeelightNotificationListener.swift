@@ -28,7 +28,7 @@ final class YeelightNotificationListener {
 
     static let maxBackoff: TimeInterval = 60
     private static let connectTimeout: TimeInterval = 8
-    private static let snapshotRequestID = 7_700_001
+    static let snapshotRequestID = 7_700_001
 
     let bulbID: String
 
@@ -196,25 +196,34 @@ final class YeelightNotificationListener {
     }
 
     private func handle(line: Data) {
-        guard !line.isEmpty,
-              let object = try? JSONSerialization.jsonObject(with: line) as? [String: Any]
-        else { return }
-
-        if let method = object["method"] as? String {
-            guard method == "props", let params = object["params"] as? [String: Any] else { return }
-            let converted = Self.stringify(params)
-            if !converted.isEmpty { onEvent(.delta(converted)) }
-            return
-        }
-
-        if let id = object["id"] as? Int, id == Self.snapshotRequestID,
-           let result = object["result"] as? [Any] {
-            let values = result.map { Self.stringify($0) }
+        guard let event = Self.event(fromLine: line) else { return }
+        if case .snapshot = event {
             failures = 0
             backoff = 1
             gotSnapshot = true
-            onEvent(.snapshot(YeelightLightProvider.propertyDictionary(fromGetProp: values)))
         }
+        onEvent(event)
+    }
+
+    /// Pure decoding of one newline-delimited JSON line from the bulb: a `props` notification
+    /// becomes `.delta`, the answer to our snapshot request becomes `.snapshot`; anything else is nil.
+    static func event(fromLine line: Data) -> Event? {
+        guard !line.isEmpty,
+              let object = try? JSONSerialization.jsonObject(with: line) as? [String: Any]
+        else { return nil }
+
+        if let method = object["method"] as? String {
+            guard method == "props", let params = object["params"] as? [String: Any] else { return nil }
+            let converted = stringify(params)
+            return converted.isEmpty ? nil : .delta(converted)
+        }
+
+        if let id = object["id"] as? Int, id == snapshotRequestID,
+           let result = object["result"] as? [Any] {
+            let values = result.map { stringify($0) }
+            return .snapshot(YeelightLightProvider.propertyDictionary(fromGetProp: values))
+        }
+        return nil
     }
 
     private func connectionLost() {
