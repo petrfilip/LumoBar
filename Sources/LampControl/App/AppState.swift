@@ -262,7 +262,8 @@ final class AppState: ObservableObject {
     }
 
     var canSync: Bool {
-        canSyncTuya || hueSettings.isConfigured || lifxSettings.isConfigured || goveeSettings.isConfigured || yeelightSettings.isConfigured
+        // Was missing Nanoleaf and WiZ, so users with only those could not sync.
+        !configuredProviderKinds.isEmpty
     }
 
     var canSyncTuya: Bool {

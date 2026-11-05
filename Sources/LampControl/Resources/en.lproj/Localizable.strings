@@ -2,6 +2,8 @@
 
 /* App */
 "app.quit" = "Quit LampControl";
+"setup.providers.connected" = "Connected: %@";
+"setup.providers.none" = "Connect at least one lamp provider.";
 "app.close" = "Close";
 "updates.unavailable" = "Automatic updates are unavailable in this build (no update signing key — typically a build from source). Update by rebuilding from the repository.";
 "scene.white" = "White";

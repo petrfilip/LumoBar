@@ -103,7 +103,7 @@ struct SettingsView: View {
 
     private var overview: some View {
         VStack(spacing: 12) {
-            setupSummary
+            providersSummary
 
             VStack(spacing: 8) {
                 settingsLink(
@@ -1207,6 +1207,52 @@ struct SettingsView: View {
         }
     }
 
+    /// Overview status: any configured provider counts. (The Tuya-specific
+    /// step summary used to sit here and reported "setup incomplete" to users
+    /// of every other vendor; it now lives in the Tuya section.)
+    private var providersSummary: some View {
+        let connected = appState.configuredProviderKinds
+        let isReady = !connected.isEmpty
+        return Button {
+            if !isReady { withAnimation(LCAnimation.snap) { route = .providers } }
+        } label: {
+            HStack(spacing: LCSpacing.sm) {
+                Image(systemName: isReady ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(isReady ? LCPalette.success : Color.orange)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(isReady ? "setup.complete" : "setup.incomplete")
+                        .font(LCTypo.bodySemibold())
+                        .foregroundStyle(LCPalette.ink)
+                    Text(isReady
+                         ? L10n.providersConnected(connected.map(\.title).joined(separator: ", "))
+                         : NSLocalizedString("setup.providers.none", comment: ""))
+                        .font(LCTypo.micro())
+                        .foregroundStyle(LCPalette.muted)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if !isReady {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(LCPalette.muted)
+                }
+            }
+            .padding(.horizontal, LCSpacing.sm)
+            .padding(.vertical, LCSpacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: LCRadius.card, style: .continuous)
+                    .fill(LCPalette.muted.opacity(0.06))
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isReady)
+    }
+
     private var setupSummary: some View {
         VStack(spacing: LCSpacing.sm) {
             HStack(spacing: LCSpacing.sm) {
@@ -1296,6 +1342,8 @@ struct SettingsView: View {
 
     private var tuyaSettings: some View {
         VStack(spacing: 12) {
+            setupSummary
+
             settingsGroup {
                 formField("tuya.access.id", text: $appState.settings.accessId, icon: "key")
                 secureField

@@ -40,6 +40,9 @@ enum L10n {
 
     // MARK: - Sync
 
+    static func providersConnected(_ names: String) -> String {
+        String(format: NSLocalizedString("setup.providers.connected", comment: ""), names)
+    }
     static var colorWhite: String   { NSLocalizedString("lamps.color.white", comment: "") }
     static var syncUpdating: String { NSLocalizedString("lamps.sync.updating", comment: "") }
     static var syncAuto: String     { NSLocalizedString("lamps.sync.auto", comment: "") }
