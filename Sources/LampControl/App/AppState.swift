@@ -75,9 +75,11 @@ final class AppState: ObservableObject {
     private let licenseActivationService = LicenseActivationService()
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
+    private let yeelightLiveSync = YeelightLiveSync()
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
 
     init() {
+        configureYeelightLiveSync()
         loadLicense()
         loadScenes()
         lampOrderIds = settingsStore.loadLampOrder()
@@ -98,6 +100,7 @@ final class AppState: ObservableObject {
             loadFocusMappings()
             startAutoSync()
             finishFocusAutomationSetup()
+            reconcileYeelightLiveSync()
         }
     }
 
@@ -429,7 +432,7 @@ final class AppState: ObservableObject {
             lifxSettings = try lifxSettingsStore.save(lifxSettings)
             lightProviders[.lifx] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -443,7 +446,7 @@ final class AppState: ObservableObject {
             goveeSettings = try goveeSettingsStore.save(goveeSettings)
             lightProviders[.govee] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -470,11 +473,12 @@ final class AppState: ObservableObject {
             yeelightSettings = try yeelightSettingsStore.save(next)
             lightProviders[.yeelight] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
             message = L10n.yeelightAdded(synced.count)
+            reconcileYeelightLiveSync()
         }
     }
 
@@ -486,11 +490,12 @@ final class AppState: ObservableObject {
             yeelightSettings = try yeelightSettingsStore.save(next)
             lightProviders[.yeelight] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
             message = L10n.yeelightRemoved
+            reconcileYeelightLiveSync()
         }
     }
 
@@ -520,7 +525,7 @@ final class AppState: ObservableObject {
             lightProviders[.tuya] = nil
 
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -539,7 +544,7 @@ final class AppState: ObservableObject {
 
             do {
                 let synced = try await syncConfiguredProviders()
-                lamps = synced
+                setSyncedLamps(synced)
                 selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
                 expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
                 lastSyncDate = Date()
@@ -553,7 +558,7 @@ final class AppState: ObservableObject {
 
         await runBusy {
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -1044,6 +1049,7 @@ final class AppState: ObservableObject {
     var closePopover: (() -> Void)?
 
     func quit() {
+        yeelightLiveSync.stopAll()
         NSApplication.shared.terminate(nil)
     }
 
@@ -1179,7 +1185,7 @@ final class AppState: ObservableObject {
             nanoleafSettings = try nanoleafSettingsStore.save(next)
             lightProviders[.nanoleaf] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -1194,7 +1200,7 @@ final class AppState: ObservableObject {
             nanoleafSettings = try nanoleafSettingsStore.save(next)
             lightProviders[.nanoleaf] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -1221,7 +1227,7 @@ final class AppState: ObservableObject {
             wizSettings = try wizSettingsStore.save(next)
             lightProviders[.wiz] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -1236,7 +1242,7 @@ final class AppState: ObservableObject {
             wizSettings = try wizSettingsStore.save(next)
             lightProviders[.wiz] = nil
             let synced = try await syncConfiguredProviders()
-            lamps = synced
+            setSyncedLamps(synced)
             selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
             expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
             lastSyncDate = Date()
@@ -1485,6 +1491,51 @@ final class AppState: ObservableObject {
         } catch {
             showError(error)
         }
+    }
+
+    // MARK: - Yeelight live sync (push notifications)
+
+    private func configureYeelightLiveSync() {
+        yeelightLiveSync.onUpdate = { [weak self] bulb, properties, online in
+            self?.applyYeelightLiveState(bulb: bulb, properties: properties, online: online)
+        }
+
+        // Sockets die with the process anyway; closing them politely frees the bulb's
+        // (max 4) connection slots immediately.
+        NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.yeelightLiveSync.stopAll() }
+        }
+        // Connections silently go stale across sleep.
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.yeelightLiveSync.reconnectAll() }
+        }
+    }
+
+    /// Starts/stops/re-points one listener per configured bulb.
+    private func reconcileYeelightLiveSync() {
+        yeelightLiveSync.reconcile(bulbs: yeelightSettings.bulbs)
+    }
+
+    /// Maps a pushed (or merged) property set onto the matching lamp with the exact same
+    /// function the polling path uses, publishing only when something actually changed.
+    private func applyYeelightLiveState(bulb: YeelightBulb, properties: [String: String], online: Bool) {
+        let next = YeelightLightProvider.makeLamp(bulb: bulb, properties: properties, online: online)
+        guard let current = lamps.first(where: { $0.id == next.id }), current != next else { return }
+        (lightProviders[.yeelight] as? YeelightLightProvider)?.noteExternalState(next)
+        updateLamp(next)
+    }
+
+    /// Stores a freshly polled lamp list, layering the (newer) live Yeelight state on top and
+    /// avoiding a SwiftUI publish when nothing changed.
+    private func setSyncedLamps(_ synced: [LampDevice]) {
+        let merged = synced.map { lamp -> LampDevice in
+            guard lamp.providerID == .yeelight,
+                  let bulb = yeelightSettings.bulbs.first(where: { $0.id == lamp.nativeID }),
+                  let live = yeelightLiveSync.liveProperties(for: bulb.id)
+            else { return lamp }
+            return YeelightLightProvider.makeLamp(bulb: bulb, properties: live, online: true)
+        }
+        if lamps != merged { lamps = merged }
     }
 
     private func updateLamp(_ next: LampDevice) {

@@ -3,13 +3,16 @@ import Foundation
 final class YeelightLightProvider: LightProvider {
     private let client: YeelightClient
     private let settings: YeelightSettings
+    // Caches are read/written from async provider calls (global executor) and, for live
+    // push updates, from the main actor — guard them with a lock.
+    private let cacheLock = NSLock()
     private var lamps: [String: LampDevice] = [:]
     private var bulbsById: [String: YeelightBulb] = [:]
 
     let kind: LightProviderKind = .yeelight
     let displayName = LightProviderKind.yeelight.title
 
-    private static let propertyKeys = ["power", "bright", "ct", "rgb", "hue", "sat", "color_mode", "name"]
+    static let propertyKeys = ["power", "bright", "ct", "rgb", "hue", "sat", "color_mode", "name"]
 
     init(client: YeelightClient = YeelightClient(), settings: YeelightSettings) {
         self.client = client
@@ -22,7 +25,8 @@ final class YeelightLightProvider: LightProvider {
         }
 
         var mapped: [LampDevice] = []
-        bulbsById = Dictionary(uniqueKeysWithValues: settings.bulbs.map { ($0.id, $0) })
+        let byId = Dictionary(uniqueKeysWithValues: settings.bulbs.map { ($0.id, $0) })
+        cacheLock.withLock { bulbsById = byId }
 
         for bulb in settings.bulbs {
             let lamp: LampDevice
@@ -36,7 +40,8 @@ final class YeelightLightProvider: LightProvider {
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        let byNative = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        cacheLock.withLock { lamps = byNative }
         return mapped
     }
 
@@ -84,25 +89,25 @@ final class YeelightLightProvider: LightProvider {
     }
 
     private func lamp(from bulb: YeelightBulb, properties: [String], online: Bool) -> LampDevice {
-        let dict: [String: String] = Dictionary(uniqueKeysWithValues: zip(Self.propertyKeys, properties + Array(repeating: "", count: max(0, Self.propertyKeys.count - properties.count))))
+        Self.makeLamp(bulb: bulb, properties: Self.propertyDictionary(fromGetProp: properties), online: online)
+    }
+
+    /// Converts a `get_prop` result array (ordered like `propertyKeys`) into a keyed dictionary.
+    static func propertyDictionary(fromGetProp values: [String]) -> [String: String] {
+        Dictionary(uniqueKeysWithValues: zip(propertyKeys, values))
+    }
+
+    /// Single source of truth mapping raw Yeelight properties (from `get_prop` or merged `props`
+    /// push notifications) onto a `LampDevice`.
+    static func makeLamp(bulb: YeelightBulb, properties dict: [String: String], online: Bool) -> LampDevice {
         let power = dict["power"] == "on"
         let brightness = Int(dict["bright"] ?? "")
         let temperature = Int(dict["ct"] ?? "")
         let bulbName = (dict["name"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let displayName = !bulbName.isEmpty ? bulbName : (bulb.name.isEmpty ? bulb.host : bulb.name)
 
-        // color_mode: 1 = RGB, 2 = color temperature (white), 3 = HSV.
-        let workMode: String?
-        switch dict["color_mode"] {
-        case "1", "3": workMode = "colour"
-        case "2": workMode = "white"
-        default: workMode = nil
-        }
-
-        // The bulb keeps reporting its last hue/sat even in white mode; only
-        // expose a color when it is actually shown, so white stays white in the UI.
         var color: HSVColor?
-        if workMode != "white", let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
+        if let hue = Int(dict["hue"] ?? ""), let sat = Int(dict["sat"] ?? "") {
             color = HSVColor(
                 h: min(360, max(0, hue)),
                 s: min(1000, max(0, sat * 10)),
@@ -110,9 +115,16 @@ final class YeelightLightProvider: LightProvider {
             )
         }
 
+        let workMode: String?
+        switch dict["color_mode"] {
+        case "1": workMode = "colour"
+        case "2": workMode = "white"
+        default: workMode = nil
+        }
+
         return LampDevice(
-            id: "\(kind.rawValue):\(bulb.id)",
-            providerID: kind,
+            id: "\(LightProviderKind.yeelight.rawValue):\(bulb.id)",
+            providerID: .yeelight,
             nativeID: bulb.id,
             name: displayName,
             online: online,
@@ -132,7 +144,16 @@ final class YeelightLightProvider: LightProvider {
         )
     }
 
+    /// Keeps the provider's cached lamp in sync with state pushed by the bulb itself, so that
+    /// the next command result is mutated from fresh state rather than the last poll.
+    func noteExternalState(_ lamp: LampDevice) {
+        cacheLock.lock(); defer { cacheLock.unlock() }
+        guard lamps[lamp.nativeID] != nil else { return }
+        lamps[lamp.nativeID] = lamp
+    }
+
     private func requireBulb(_ deviceId: String) throws -> YeelightBulb {
+        cacheLock.lock(); defer { cacheLock.unlock() }
         guard let bulb = bulbsById[deviceId] else {
             throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
@@ -140,6 +161,7 @@ final class YeelightLightProvider: LightProvider {
     }
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
+        cacheLock.lock(); defer { cacheLock.unlock() }
         guard let lamp = lamps[deviceId] else {
             throw LampControlError.yeelight(NSLocalizedString("error.yeelight.unknown", comment: ""))
         }
@@ -149,7 +171,7 @@ final class YeelightLightProvider: LightProvider {
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
         var lamp = try requireLamp(deviceId)
         mutate(&lamp)
-        lamps[deviceId] = lamp
+        cacheLock.withLock { lamps[deviceId] = lamp }
         return lamp
     }
 }
