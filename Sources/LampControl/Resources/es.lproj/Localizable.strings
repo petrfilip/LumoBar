@@ -137,8 +137,6 @@
 
 /* Tuya */
 "tuya.title" = "Cuenta Tuya";
-"tuya.secret.stored" = "Secret guardado en el Keychain";
-"tuya.cred.required" = "Credenciales requeridas";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret guardado";

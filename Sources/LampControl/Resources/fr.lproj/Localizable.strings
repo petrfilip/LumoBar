@@ -137,8 +137,6 @@
 
 /* Tuya */
 "tuya.title" = "Compte Tuya";
-"tuya.secret.stored" = "Secret stocké dans le Keychain";
-"tuya.cred.required" = "Identifiants requis";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret enregistré";

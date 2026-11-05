@@ -120,16 +120,6 @@ struct SettingsView: View {
                 )
 
                 settingsLink(
-                    .tuya,
-                    icon: "lock.shield",
-                    title: NSLocalizedString("route.tuya", comment: ""),
-                    subtitle: appState.hasSecret
-                        ? NSLocalizedString("tuya.secret.stored", comment: "")
-                        : NSLocalizedString("tuya.cred.required", comment: ""),
-                    tint: appState.canSync ? Color.green.opacity(0.12) : Color.orange.opacity(0.12)
-                )
-
-                settingsLink(
                     .shortcuts,
                     icon: "keyboard",
                     title: NSLocalizedString("route.shortcuts", comment: ""),

@@ -137,8 +137,6 @@
 
 /* Tuya */
 "tuya.title" = "Účet Tuya";
-"tuya.secret.stored" = "Secret je uložen v Klíčence";
-"tuya.cred.required" = "Vyžadovány přihlašovací údaje";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret je uložen";
