@@ -48,6 +48,9 @@ final class AppState: ObservableObject {
     @Published var lampOrderIds: [String] = []
     @Published var searchText = ""
     @Published var rooms: [Room] = []
+    /// Rooms the user folded in the lamp list. Persisted: the lamp list is rebuilt on every
+    /// Settings <-> Lamps switch, and rooms are expanded unless listed here.
+    @Published private(set) var collapsedRoomIds: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "LampControl.rooms.collapsed") ?? [])
     @Published var focusMappings: [FocusMapping] = []
     @Published var currentFocusIdentifier: String?
     @Published var availableFocusModes: [FocusMode] = [
@@ -99,6 +102,8 @@ final class AppState: ObservableObject {
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
+    private let collapsedRoomsKey = "LampControl.rooms.collapsed"
+    private let roomsMigratedKey = "LampControl.rooms.migrated"
     /// True while "Reset all settings" runs: blocks background persistence so
     /// nothing re-creates the files that were just removed.
     private var isResettingApp = false
@@ -130,22 +135,37 @@ final class AppState: ObservableObject {
     }
 
     func loadRoomsAndMigrateIfNeeded() async {
-        // Load persisted rooms
-        let loaded = roomStore.loadRooms()
-        if !loaded.isEmpty {
-            rooms = loaded
-            return
+        let defaults = UserDefaults.standard
+        let plan = RoomLayout.migrationPlan(
+            loaded: roomStore.loadRooms(),
+            hasRoomsFile: roomStore.hasRoomsFile,
+            alreadyMigrated: defaults.bool(forKey: roomsMigratedKey),
+            lampIds: lamps.map(\.id),
+            defaultRoomName: NSLocalizedString("rooms.default.name", comment: ""))
+        rooms = plan.rooms
+        if plan.persist {
+            do {
+                try roomStore.saveRooms(rooms)
+            } catch {
+                showError(L10n.roomsSaveFailed)
+                return
+            }
         }
+        if plan.markMigrated && !isResettingApp { defaults.set(true, forKey: roomsMigratedKey) }
+    }
 
-        // Migration: create an 'Unassigned' room containing all known lamp ids
-        let allIds = lamps.map { $0.id }
-        let unassigned = Room(name: "Unassigned", lampIds: allIds)
-        rooms = [unassigned]
-        do {
-            try roomStore.saveRooms(rooms)
-        } catch {
-            showError(L10n.roomsSaveFailed)
+    func isRoomExpanded(_ roomId: String) -> Bool {
+        !collapsedRoomIds.contains(roomId)
+    }
+
+    func toggleRoomExpanded(_ roomId: String) {
+        if collapsedRoomIds.contains(roomId) {
+            collapsedRoomIds.remove(roomId)
+        } else {
+            collapsedRoomIds.insert(roomId)
         }
+        guard !isResettingApp else { return }
+        UserDefaults.standard.set(Array(collapsedRoomIds).sorted(), forKey: collapsedRoomsKey)
     }
 
     func persistRooms() {
@@ -961,7 +981,9 @@ final class AppState: ObservableObject {
         // height) + room headers. Previously capped at 3 rows / 620 pt, so two
         // expanded lamps already did not fit; the screen height is the real
         // limit (see preferredPopoverHeight), the ScrollView absorbs the rest.
-        for lamp in visibleLamps {
+        // Lamps inside a collapsed room are not shown: only their room header counts.
+        let hiddenByCollapse = RoomLayout.lampIdsHiddenByCollapse(rooms: rooms, collapsedRoomIds: collapsedRoomIds)
+        for lamp in visibleLamps where !hiddenByCollapse.contains(lamp.id) {
             h += expandedLampIds.contains(lamp.id) ? expandedLampRowHeight(for: lamp) : 72
         }
 

@@ -574,3 +574,4 @@
 "room.lamps.count.other" = "%d lampes";
 "route.focus.sub.active" = "%d actif(s)";
 "lamps.scene.recapture" = "Recapturer l’état actuel";
+"rooms.default.name" = "Mes lampes";

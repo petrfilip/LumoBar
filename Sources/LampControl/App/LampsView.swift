@@ -4,7 +4,6 @@ import AppKit
 struct LampsView: View {
     @EnvironmentObject private var appState: AppState
     @State private var draggedLampID: String?
-    @State private var expandedRoomIds: Set<String> = []
     private let ink = LCTheme.ink
     private let muted = LCTheme.muted
     private let accent = LCTheme.accent
@@ -120,10 +119,10 @@ struct LampsView: View {
                         VStack(spacing: LCSpacing.xs) {
                             HStack(spacing: LCSpacing.xs) {
                                 Button {
-                                    if expandedRoomIds.contains(room.id) { expandedRoomIds.remove(room.id) } else { expandedRoomIds.insert(room.id) }
+                                    withAnimation(LCAnimation.snap) { appState.toggleRoomExpanded(room.id) }
                                 } label: {
                                     HStack(spacing: 6) {
-                                        Image(systemName: expandedRoomIds.contains(room.id) ? "chevron.down" : "chevron.right")
+                                        Image(systemName: appState.isRoomExpanded(room.id) ? "chevron.down" : "chevron.right")
                                             .font(.system(size: 9, weight: .bold))
                                             .foregroundStyle(muted)
                                             .frame(width: 12)
@@ -132,6 +131,12 @@ struct LampsView: View {
                                             .tracking(0.6)
                                             .foregroundStyle(muted)
                                             .lineLimit(1)
+                                        if !appState.isRoomExpanded(room.id) {
+                                            Text(L10n.lampCount(roomLamps.count))
+                                                .font(LCTypo.micro())
+                                                .foregroundStyle(muted.opacity(0.8))
+                                                .lineLimit(1)
+                                        }
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .contentShape(Rectangle())
@@ -169,7 +174,7 @@ struct LampsView: View {
                             .padding(.top, LCSpacing.sm)
                             .padding(.bottom, LCSpacing.xxs)
 
-                            if expandedRoomIds.contains(room.id) {
+                            if appState.isRoomExpanded(room.id) {
                                 ForEach(roomLamps) { lamp in
                                     LampRow(lamp: lamp)
                                         .opacity(draggedLampID == lamp.id ? 0.72 : 1)

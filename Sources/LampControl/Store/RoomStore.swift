@@ -8,6 +8,11 @@ final class RoomStore {
         try data.write(to: roomsURL, options: .atomic)
     }
 
+    /// Whether rooms were ever saved (even as an empty list).
+    var hasRoomsFile: Bool {
+        FileManager.default.fileExists(atPath: roomsURL.path)
+    }
+
     func loadRooms() -> [Room] {
         guard FileManager.default.fileExists(atPath: roomsURL.path) else { return [] }
         guard let data = try? Data(contentsOf: roomsURL) else { return [] }
