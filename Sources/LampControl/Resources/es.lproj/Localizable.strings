@@ -573,3 +573,4 @@
 "room.lamps.count.few" = "%d lámparas";
 "room.lamps.count.other" = "%d lámparas";
 "route.focus.sub.active" = "%d activo(s)";
+"lamps.scene.recapture" = "Volver a capturar el estado actual";

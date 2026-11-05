@@ -41,3 +41,20 @@ extension LampSnapshot {
         return steps
     }
 }
+
+enum SceneSnapshotChoice {
+    /// Which snapshots a scene is saved with. Editing an existing capture scene (renaming it,
+    /// changing its icon) must not silently replace what it stored with the lamps current
+    /// state: the snapshots are kept unless the user explicitly asks to re-capture.
+    static func snapshots(
+        captureMode: Bool,
+        existing: [LampSnapshot]?,
+        isEditing: Bool,
+        recapture: Bool,
+        capture: () -> [LampSnapshot]
+    ) -> [LampSnapshot]? {
+        guard captureMode else { return nil }
+        if isEditing, let existing, !recapture { return existing }
+        return capture()
+    }
+}

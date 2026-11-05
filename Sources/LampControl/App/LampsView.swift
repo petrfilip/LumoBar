@@ -336,6 +336,8 @@ private struct ScenePresetBar: View {
     @State private var draftIcon = "paintpalette.fill"
     @State private var draftColor = HSVColor.warm
     @State private var captureMode = false
+    /// Editing a capture scene keeps its stored snapshots unless the user opts in to this.
+    @State private var recaptureState = false
 
     private let iconChoices = [
         "paintpalette.fill", "sparkles", "moon.fill", "sun.max.fill",
@@ -432,7 +434,7 @@ private struct ScenePresetBar: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(LCTheme.accent)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(L10n.captureState(appState.lamps.count))
+                        Text(L10n.captureState(keepsStoredSnapshots ? (editedScene?.snapshots?.count ?? 0) : appState.lamps.count))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(LCTheme.ink)
                         Text("lamps.capture.state.detail")
@@ -444,6 +446,16 @@ private struct ScenePresetBar: View {
                 }
                 .padding(10)
                 .liquidGlassSurface(radius: 12, tint: LCTheme.accent.opacity(0.06))
+
+                if editingId != nil {
+                    Toggle(isOn: $recaptureState) {
+                        Text("lamps.scene.recapture")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(LCTheme.ink)
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                }
             } else {
                 HStack(spacing: 8) {
                     ColorSpectrumPicker(color: Binding(
@@ -468,7 +480,12 @@ private struct ScenePresetBar: View {
 
     private var confirmButton: some View {
         Button {
-            let snapshots: [LampSnapshot]? = captureMode ? appState.captureCurrentState() : nil
+            let snapshots = SceneSnapshotChoice.snapshots(
+                captureMode: captureMode,
+                existing: editedScene?.snapshots,
+                isEditing: editingId != nil,
+                recapture: recaptureState,
+                capture: { appState.captureCurrentState() })
             appState.saveUserScene(id: editingId, title: draftTitle, icon: draftIcon, color: draftColor, snapshots: snapshots)
             isEditing = false
         } label: {
@@ -511,14 +528,23 @@ private struct ScenePresetBar: View {
 
     // MARK: - Helpers
 
+    private var editedScene: UserLightScene? {
+        editingId.flatMap { id in appState.userScenes.first { $0.id == id } }
+    }
+
+    /// True while editing a capture scene without having asked to re-capture.
+    private var keepsStoredSnapshots: Bool {
+        editedScene?.snapshots != nil && !recaptureState
+    }
+
     private func beginCreating() {
         editingId = nil; draftTitle = ""; draftIcon = "paintpalette.fill"
-        draftColor = appState.groupColor; captureMode = false; isEditing = true
+        draftColor = appState.groupColor; captureMode = false; recaptureState = false; isEditing = true
     }
 
     private func beginEditing(_ scene: UserLightScene) {
         editingId = scene.id; draftTitle = scene.title; draftIcon = scene.icon
-        draftColor = scene.color; captureMode = scene.isCapture; isEditing = true
+        draftColor = scene.color; captureMode = scene.isCapture; recaptureState = false; isEditing = true
     }
 }
 

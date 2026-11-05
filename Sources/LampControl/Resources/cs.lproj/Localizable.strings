@@ -573,3 +573,4 @@
 "room.lamps.count.few" = "%d lampy";
 "room.lamps.count.other" = "%d lamp";
 "route.focus.sub.active" = "Aktivní: %d";
+"lamps.scene.recapture" = "Znovu zachytit aktuální stav";
