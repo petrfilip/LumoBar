@@ -510,3 +510,13 @@
 "help.room.assign" = "Déplacer vers une pièce";
 "help.license.refresh" = "Revalider la licence";
 "help.onboarding.back" = "Retour";
+
+/* Previously missing keys */
+"settings.title" = "Réglages";
+"premium.license" = "Licence";
+"premium.license.hint" = "Saisissez la clé de licence et l'e-mail utilisé lors de l'achat.";
+"premium.license.email" = "E-mail d'achat";
+"premium.early.access.hint" = "Pendant l’accès anticipé, toutes les fonctions Premium sont débloquées gratuitement.";
+"focus.mode.donotdisturb" = "Ne pas déranger";
+"focus.mode.focus" = "Concentration";
+"focus.mode.sleep" = "Sommeil";

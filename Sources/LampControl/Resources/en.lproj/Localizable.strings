@@ -510,3 +510,13 @@
 "help.room.assign" = "Move to room";
 "help.license.refresh" = "Re-validate license";
 "help.onboarding.back" = "Back";
+
+/* Previously missing keys */
+"settings.title" = "Settings";
+"premium.license" = "License";
+"premium.license.hint" = "Enter the license key and the email you used for the purchase.";
+"premium.license.email" = "Purchase email";
+"premium.early.access.hint" = "During Early Access all Premium features are unlocked for free.";
+"focus.mode.donotdisturb" = "Do Not Disturb";
+"focus.mode.focus" = "Focus";
+"focus.mode.sleep" = "Sleep";
