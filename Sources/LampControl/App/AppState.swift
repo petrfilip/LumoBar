@@ -88,6 +88,8 @@ final class AppState: ObservableObject {
     /// Lamps that were off when the user started adjusting their color: the first command
     /// must switch them on (many bulbs reject color commands while off).
     private var lampsNeedingPowerOn = Set<String>()
+    /// Last known real state of lamps being adjusted, for undoing a preview whose command failed.
+    private var restorePoints = LampRestorePoints()
     /// Keeps the user's value on screen while they adjust a lamp (see `LampInteractionGuard`).
     private var interactionGuard = LampInteractionGuard()
     private var holdExpiryTasks: [String: Task<Void, Never>] = [:]
@@ -665,37 +667,67 @@ final class AppState: ObservableObject {
 
     func previewBrightness(_ lamp: LampDevice, value: Int) {
         noteUserActivity(lamp.id)
-        updateLamp(lamp.withBrightness(value))
+        prepareAdjustment(of: lamp)
+        updateLamp(lamp.withBrightness(value).withPower(true))
         enqueue(.brightness(value), for: lamp, isFinal: false)
     }
 
     func commitBrightness(_ lamp: LampDevice, value: Int) async {
         endUserActivity(lamp.id)
+        prepareAdjustment(of: lamp)
         enqueue(.brightness(value), for: lamp, isFinal: true)
     }
 
     func previewTemperature(_ lamp: LampDevice, value: Int) {
         noteUserActivity(lamp.id)
+        prepareAdjustment(of: lamp)
         updateLamp(lamp.withTemperature(value))
         enqueue(.temperature(value), for: lamp, isFinal: false)
     }
 
     func commitTemperature(_ lamp: LampDevice, value: Int) async {
         endUserActivity(lamp.id)
+        prepareAdjustment(of: lamp)
         enqueue(.temperature(value), for: lamp, isFinal: true)
     }
 
     func previewColor(_ lamp: LampDevice, color: HSVColor) {
         noteUserActivity(lamp.id)
-        if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
-        updateLamp(lamp.previewingColor(color))
+        prepareAdjustment(of: lamp)
+        updateLamp(lamp.previewingColor(color).withPower(true))
         enqueue(.color(color), for: lamp, isFinal: false)
     }
 
     func commitColor(_ lamp: LampDevice, color: HSVColor) async {
         endUserActivity(lamp.id)
-        if !lamp.power { lampsNeedingPowerOn.insert(lamp.id) }
+        prepareAdjustment(of: lamp)
         enqueue(.color(color), for: lamp, isFinal: true)
+    }
+
+    /// Runs before every preview / commit: remembers the real state to fall back to if the
+    /// command fails, and flags a lamp that is off so the first command switches it on (bulbs
+    /// such as Yeelight reject color / temperature / brightness while off). The state is read
+    /// from `lamps`, not from `lamp`: after the first preview the UI already shows it as on.
+    private func prepareAdjustment(of lamp: LampDevice) {
+        let current = lamps.first { $0.id == lamp.id } ?? lamp
+        restorePoints.remember(current)
+        if !current.power { lampsNeedingPowerOn.insert(lamp.id) }
+    }
+
+    /// A command failed: stop showing the unapplied preview. Bulbs that push their state
+    /// (Yeelight) go back to the live one, the others to the state from before the adjustment.
+    private func restoreAfterFailure(_ lampID: String) {
+        lampsNeedingPowerOn.remove(lampID)
+        let restorePoint = restorePoints.take(lampID)
+        var live: LampDevice?
+        if let lamp = lamps.first(where: { $0.id == lampID }), lamp.providerID == .yeelight,
+           let bulb = yeelightSettings.bulbs.first(where: { $0.id == lamp.nativeID }),
+           let props = yeelightLiveSync.liveProperties(for: bulb.id) {
+            live = YeelightLightProvider.makeLamp(bulb: bulb, properties: props, online: true)
+        }
+        guard let restored = LampRestorePoints.restoredState(live: live, restorePoint: restorePoint) else { return }
+        if live != nil { (lightProviders[.yeelight] as? YeelightLightProvider)?.noteExternalState(restored) }
+        updateLamp(restored)
     }
 
     // MARK: - Stale update protection
@@ -778,17 +810,19 @@ final class AppState: ObservableObject {
         queue.onApplied = { [weak self] lampID, lamp in
             guard let self else { return }
             self.interactionGuard.touch(lampID, now: Date())
+            self.restorePoints.confirm(lamp)
             self.updateLamp(lamp)
         }
         queue.onIdle = { [weak self] lampID in
             guard let self else { return }
+            self.restorePoints.discard(lampID)
             // The grace period counts from the last command's reply.
             self.interactionGuard.touch(lampID, now: Date())
             self.scheduleHoldExpiry(for: lampID)
         }
         queue.onFailure = { [weak self] lampID, error in
             guard let self else { return }
-            self.lampsNeedingPowerOn.remove(lampID)
+            self.restoreAfterFailure(lampID)
             self.showError(error)
         }
         return queue
@@ -796,12 +830,16 @@ final class AppState: ObservableObject {
 
     private func perform(_ command: LampCommand, lampID: String, transition: TimeInterval) async throws -> LampDevice? {
         guard var lamp = lamps.first(where: { $0.id == lampID }) else { return nil }
-        if lampsNeedingPowerOn.remove(lampID) != nil { lamp.power = false }
+        // The UI already shows the lamp as on; the bulb may still be off.
+        let wasOff = lampsNeedingPowerOn.remove(lampID) != nil
+        if wasOff { lamp.power = false }
         let provider = try makeLightProvider(for: lamp)
         switch command {
         case .brightness(let value):
+            if wasOff { _ = try await provider.setPower(deviceId: lamp.nativeID, value: true) }
             return try await provider.setBrightness(deviceId: lamp.nativeID, value: value, transition: transition)
         case .temperature(let value):
+            if wasOff { _ = try await provider.setPower(deviceId: lamp.nativeID, value: true) }
             return try await provider.setTemperature(deviceId: lamp.nativeID, value: value, transition: transition)
         case .color(let color):
             return try await applyColor(color, to: lamp, transition: transition)
