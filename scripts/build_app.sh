@@ -93,10 +93,9 @@ install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_DIR/Contents
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$INFO_PLIST_DST"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER_VALUE" "$INFO_PLIST_DST"
 
-# Embed the Sparkle EdDSA public key (release builds). Written to the bundled
-# copy only, so the source Info.plist stays untouched. Without the variable the
-# placeholder from Info.plist is kept, which is fine for local dev builds but
-# means the app cannot verify updates (CI refuses to release in that state).
+# Sparkle EdDSA public key. Info.plist already carries LumoBar's key; setting
+# SPARKLE_PUBLIC_KEY overrides it in the bundled copy only (CI passes the
+# secret, which verify_sparkle_keys.sh checks against the signing key).
 if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
   CLEAN_PUBLIC_KEY="$(printf '%s' "$SPARKLE_PUBLIC_KEY" | tr -d '\r\n\t ')"
   /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $CLEAN_PUBLIC_KEY" "$INFO_PLIST_DST"

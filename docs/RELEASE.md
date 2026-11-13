@@ -58,28 +58,37 @@ cancel a release build. In the rare case where a landing deploy replaces a
 
 ## One-time setup
 
-### 1. Generate the Sparkle EdDSA key pair
+### 1. The Sparkle EdDSA key pair
 
-You only do this once, then you forget about it.
+The LumoBar key pair already exists. The private key lives in the maintainer's
+login Keychain under the account **`lumobar`**, and the public key is committed
+in `Info.plist` (`SUPublicEDKey`):
 
-```bash
-# Use Sparkle's tools. After `swift build` they are available at
-# .build/artifacts/sparkle/Sparkle/bin/ (or: brew install --cask sparkle).
-TOOLS=.build/artifacts/sparkle/Sparkle/bin
-
-# Generate keys (puts them in your Keychain by default)
-$TOOLS/generate_keys
-
-# Print the public key (you'll paste this into GitHub Secrets)
-$TOOLS/generate_keys -p
-
-# Export the private key once for CI
-$TOOLS/generate_keys -x ~/Desktop/sparkle_private_key
+```
+eVOJkb+Tudmc8dCEsD/X68ZVWxw/nYzkJVKjJXB9mvk=
 ```
 
-> The private key file is plain text. Store it somewhere safe (1Password,
-> Bitwarden) and **delete the Desktop copy** as soon as you've added it to
-> GitHub Secrets.
+**Never generate a new pair for LumoBar.** Every installed copy only accepts
+updates signed by this key, so losing it means existing users can never update
+again. Keep an offline backup of the private key (1Password, Bitwarden).
+
+```bash
+# Sparkle's tools. After a `swift build` they are in
+# <scratch-path>/artifacts/sparkle/Sparkle/bin/ (or: brew install --cask sparkle).
+TOOLS=.build/artifacts/sparkle/Sparkle/bin
+
+# Print the public key (must match Info.plist)
+$TOOLS/generate_keys --account lumobar -p
+
+# Export the private key (for the backup and the GitHub secret)
+$TOOLS/generate_keys --account lumobar -x ~/Desktop/sparkle_private_key
+
+# On a new Mac: import it back into the Keychain
+$TOOLS/generate_keys --account lumobar -f ~/Desktop/sparkle_private_key
+```
+
+> The exported file is the plain-text private key. Put it in your password
+> manager and in the GitHub secret, then **delete the Desktop copy**.
 
 ### 2. Add GitHub repository secrets
 
@@ -88,8 +97,8 @@ add:
 
 | Secret | Required | Value |
 | --- | --- | --- |
-| `SPARKLE_PUBLIC_KEY` | **yes** | Output of `generate_keys -p` (44 chars, base64 of 32 bytes) |
-| `SPARKLE_PRIVATE_KEY` | **yes** | Contents of the file you exported with `generate_keys -x` |
+| `SPARKLE_PUBLIC_KEY` | **yes** | Output of `generate_keys --account lumobar -p` (must equal `SUPublicEDKey` in `Info.plist`) |
+| `SPARKLE_PRIVATE_KEY` | **yes** | Contents of the file you exported with `generate_keys --account lumobar -x` |
 | `SIGNING_IDENTITY` | optional | e.g. `Developer ID Application: Your Name (TEAMID)`. See "Code signing" below. |
 | `APPLE_ID` | optional | Apple ID email used for notarisation |
 | `APPLE_APP_PASSWORD` | optional | App-specific password generated at appleid.apple.com |
@@ -103,9 +112,10 @@ file with the private key and verifies it against the public key that will be
 embedded. This guards against shipping a release that no installed copy could
 ever update to.
 
-The public key is embedded into the *bundled* `Info.plist` by
-`scripts/build_app.sh` (from the `SPARKLE_PUBLIC_KEY` environment variable);
-the `Info.plist` in the repository keeps the placeholder.
+The repository's `Info.plist` already carries LumoBar's public key, so local
+builds can verify updates too. In CI, `scripts/build_app.sh` writes the
+`SPARKLE_PUBLIC_KEY` secret into the *bundled* `Info.plist`; since the secret
+must equal the committed key, this changes nothing but is verified first.
 
 The four optional secrets enable real Developer ID signing + notarisation.
 Without them, the workflow falls back to ad-hoc signing: releases still build
@@ -196,7 +206,7 @@ unlocked for `codesign`) ahead of "Build, bundle and sign app".
 
 Read the error: it says which secret is missing or unusable, or that the
 public and private keys do not match. Re-export the pair from the same
-Keychain item (`generate_keys -p` and `generate_keys -x`) and update both
+Keychain item (`generate_keys --account lumobar -p` and `-x`) and update both
 secrets. Regenerating one without the other instantly breaks all
 already-installed clients, which will refuse the next update.
 
