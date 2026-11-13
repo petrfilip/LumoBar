@@ -46,3 +46,50 @@ final class RoomLayoutTests: XCTestCase {
         XCTAssertEqual(RoomLayout.lampIdsHiddenByCollapse(rooms: [kitchen], collapsedRoomIds: ["gone"]), [])
     }
 }
+
+final class RoomGroupingTests: XCTestCase {
+    private func lamp(_ id: String) -> LampDevice {
+        LampDevice(id: id, providerID: .wiz, nativeID: id, name: id, online: true, power: false,
+                   brightness: nil, temperature: nil, color: nil, workMode: nil, capabilities: LightCapabilities())
+    }
+
+    func testLampsFollowTheirOrderInsideEachRoomAndRoomsKeepTheirOrder() {
+        let kitchen = Room(id: "k", name: "Kitchen", lampIds: ["a", "c"])
+        let bedroom = Room(id: "b", name: "Bedroom", lampIds: ["b"])
+        // Visible order differs from the order in the room's own list.
+        let result = RoomLayout.group(lamps: [lamp("c"), lamp("b"), lamp("a")], rooms: [kitchen, bedroom])
+        XCTAssertEqual(result.sections.map(\.id), ["k", "b"])
+        XCTAssertEqual(result.sections[0].lamps.map(\.id), ["c", "a"])
+        XCTAssertEqual(result.sections[1].lamps.map(\.id), ["b"])
+        XCTAssertTrue(result.unassigned.isEmpty)
+    }
+
+    func testUnassignedLampsAreCollectedInOrder() {
+        let room = Room(id: "k", name: "Kitchen", lampIds: ["a"])
+        let result = RoomLayout.group(lamps: [lamp("z"), lamp("a"), lamp("y")], rooms: [room])
+        XCTAssertEqual(result.unassigned.map(\.id), ["z", "y"])
+    }
+
+    func testRoomsWithoutVisibleLampsAreOmitted() {
+        let empty = Room(id: "e", name: "Empty", lampIds: [])
+        let hidden = Room(id: "h", name: "Hidden", lampIds: ["gone"])
+        let shown = Room(id: "s", name: "Shown", lampIds: ["a"])
+        let result = RoomLayout.group(lamps: [lamp("a")], rooms: [empty, hidden, shown])
+        XCTAssertEqual(result.sections.map(\.id), ["s"])
+    }
+
+    func testLampListedByTwoRoomsAppearsInBothAndIsNotUnassigned() {
+        let one = Room(id: "1", name: "One", lampIds: ["a", "a"])
+        let two = Room(id: "2", name: "Two", lampIds: ["a"])
+        let result = RoomLayout.group(lamps: [lamp("a")], rooms: [one, two])
+        XCTAssertEqual(result.sections.map(\.id), ["1", "2"])
+        XCTAssertEqual(result.sections.map { $0.lamps.map(\.id) }, [["a"], ["a"]])
+        XCTAssertTrue(result.unassigned.isEmpty)
+    }
+
+    func testNoRoomsMeansEverythingIsUnassigned() {
+        let result = RoomLayout.group(lamps: [lamp("a"), lamp("b")], rooms: [])
+        XCTAssertTrue(result.sections.isEmpty)
+        XCTAssertEqual(result.unassigned.map(\.id), ["a", "b"])
+    }
+}

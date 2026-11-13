@@ -30,9 +30,12 @@ struct LampsView: View {
         }
     }
 
+    @ViewBuilder
     private var scrollableContent: some View {
+        // `visibleLamps` filters and sorts every time it is read: evaluate it once per body.
+        let visibleLamps = appState.visibleLamps
         VStack(spacing: LCSpacing.sm) {
-            statusBar
+            statusBar(onlineCount: visibleLamps.lazy.filter(\.online).count)
 
             // Search and filter controls
             if appState.showsLampFilters && appState.canSync {
@@ -80,7 +83,7 @@ struct LampsView: View {
                 onboardingCard
             } else if appState.lamps.isEmpty && !appState.isAutoSyncing {
                 emptyStateCard
-            } else if appState.visibleLamps.isEmpty && !appState.lamps.isEmpty {
+            } else if visibleLamps.isEmpty && !appState.lamps.isEmpty {
                 HStack(spacing: LCSpacing.sm) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 14, weight: .semibold))
@@ -110,83 +113,82 @@ struct LampsView: View {
             }
 
             LazyVStack(spacing: 8) {
-                // Group lamps by room
-                let rooms = appState.rooms
-                
+                // Group lamps by room, in one pass over the visible lamps.
+                let grouping = RoomLayout.group(lamps: visibleLamps, rooms: appState.rooms)
+                let showsGroupControls = appState.showsGroupControls
 
-                ForEach(rooms) { room in
-                    let roomLamps = appState.visibleLamps.filter { room.lampIds.contains($0.id) }
-                    if !roomLamps.isEmpty {
-                        VStack(spacing: LCSpacing.xs) {
-                            HStack(spacing: LCSpacing.xs) {
-                                Button {
-                                    withAnimation(LCAnimation.snap) { appState.toggleRoomExpanded(room.id) }
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: appState.isRoomExpanded(room.id) ? "chevron.down" : "chevron.right")
-                                            .font(.system(size: 9, weight: .bold))
-                                            .foregroundStyle(muted)
-                                            .frame(width: 12)
-                                        Text(room.name.uppercased())
-                                            .font(LCTypo.sectionHeader())
-                                            .tracking(0.6)
-                                            .foregroundStyle(muted)
+                ForEach(grouping.sections) { section in
+                    let room = section.room
+                    let roomLamps = section.lamps
+                    VStack(spacing: LCSpacing.xs) {
+                        HStack(spacing: LCSpacing.xs) {
+                            Button {
+                                withAnimation(LCAnimation.snap) { appState.toggleRoomExpanded(room.id) }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: appState.isRoomExpanded(room.id) ? "chevron.down" : "chevron.right")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundStyle(muted)
+                                        .frame(width: 12)
+                                    Text(room.name.uppercased())
+                                        .font(LCTypo.sectionHeader())
+                                        .tracking(0.6)
+                                        .foregroundStyle(muted)
+                                        .lineLimit(1)
+                                    if !appState.isRoomExpanded(room.id) {
+                                        Text(L10n.lampCount(roomLamps.count))
+                                            .font(LCTypo.micro())
+                                            .foregroundStyle(muted.opacity(0.8))
                                             .lineLimit(1)
-                                        if !appState.isRoomExpanded(room.id) {
-                                            Text(L10n.lampCount(roomLamps.count))
-                                                .font(LCTypo.micro())
-                                                .foregroundStyle(muted.opacity(0.8))
-                                                .lineLimit(1)
-                                        }
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .contentShape(Rectangle())
                                 }
-                                .buttonStyle(LCPressableButtonStyle())
-
-                                Menu {
-                                    Button {
-                                        Task { await appState.setPowerForRoom(room.id, value: true) }
-                                    } label: { Label(L10n.roomAllOn, systemImage: "lightbulb.fill") }
-                                    Button {
-                                        Task { await appState.setPowerForRoom(room.id, value: false) }
-                                    } label: { Label(L10n.roomAllOff, systemImage: "lightbulb.slash") }
-                                    if !appState.userScenes.isEmpty {
-                                        Divider()
-                                        Section("lamps.room.scenes") {
-                                            ForEach(appState.userScenes) { scene in
-                                                Button(scene.title) { Task { await appState.applyScene(scene, toRoomId: room.id, byUser: true) } }
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    Image(systemName: "ellipsis")
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundStyle(LCPalette.muted)
-                                        .frame(width: 28, height: 24)
-                                        .contentShape(Rectangle())
-                                }
-                                .menuStyle(BorderlessButtonMenuStyle())
-                                .help("help.room.menu")
-                                .menuIndicator(.hidden)
-                                .fixedSize()
-                                .disabled(appState.isBusy)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
-                            .padding(.horizontal, LCSpacing.xs)
-                            .padding(.top, LCSpacing.sm)
-                            .padding(.bottom, LCSpacing.xxs)
+                            .buttonStyle(LCPressableButtonStyle())
 
-                            if appState.isRoomExpanded(room.id) {
-                                ForEach(roomLamps) { lamp in
-                                    reorderableRow(lamp)
+                            Menu {
+                                Button {
+                                    Task { await appState.setPowerForRoom(room.id, value: true) }
+                                } label: { Label(L10n.roomAllOn, systemImage: "lightbulb.fill") }
+                                Button {
+                                    Task { await appState.setPowerForRoom(room.id, value: false) }
+                                } label: { Label(L10n.roomAllOff, systemImage: "lightbulb.slash") }
+                                if !appState.userScenes.isEmpty {
+                                    Divider()
+                                    Section("lamps.room.scenes") {
+                                        ForEach(appState.userScenes) { scene in
+                                            Button(scene.title) { Task { await appState.applyScene(scene, toRoomId: room.id, byUser: true) } }
+                                        }
+                                    }
                                 }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(LCPalette.muted)
+                                    .frame(width: 28, height: 24)
+                                    .contentShape(Rectangle())
+                            }
+                            .menuStyle(BorderlessButtonMenuStyle())
+                            .help("help.room.menu")
+                            .menuIndicator(.hidden)
+                            .fixedSize()
+                            .disabled(appState.isBusy)
+                        }
+                        .padding(.horizontal, LCSpacing.xs)
+                        .padding(.top, LCSpacing.sm)
+                        .padding(.bottom, LCSpacing.xxs)
+
+                        if appState.isRoomExpanded(room.id) {
+                            ForEach(roomLamps) { lamp in
+                                reorderableRow(lamp, showsGroupControls: showsGroupControls)
                             }
                         }
                     }
                 }
 
                 // Unassigned lamps
-                let unassigned = appState.visibleLamps.filter { appState.roomForLamp($0.id) == nil }
+                let unassigned = grouping.unassigned
                 if !unassigned.isEmpty {
                     VStack(spacing: LCSpacing.xs) {
                         HStack(spacing: LCSpacing.xs) {
@@ -201,7 +203,7 @@ struct LampsView: View {
                         .padding(.top, LCSpacing.xxs)
 
                         ForEach(unassigned) { lamp in
-                            reorderableRow(lamp)
+                            reorderableRow(lamp, showsGroupControls: showsGroupControls)
                         }
                     }
                 }
@@ -214,8 +216,15 @@ struct LampsView: View {
         appState.searchText.isEmpty && !appState.hideOfflineLamps
     }
 
-    private func reorderableRow(_ lamp: LampDevice) -> some View {
-        LampRow(lamp: lamp)
+    private func reorderableRow(_ lamp: LampDevice, showsGroupControls: Bool) -> some View {
+        LampRow(
+            appState: appState,
+            lamp: lamp,
+            isSelected: appState.selectedLampIds.contains(lamp.id),
+            isExpanded: appState.isAdvancedControlsExpanded(for: lamp),
+            showsGroupControls: showsGroupControls
+        )
+        .equatable()
             .opacity(draggedLampID == lamp.id ? 0.72 : 1)
             .onDrag {
                 beginDragging(lamp.id)
@@ -291,7 +300,7 @@ struct LampsView: View {
         )
     }
 
-    private var statusBar: some View {
+    private func statusBar(onlineCount: Int) -> some View {
         HStack(spacing: LCSpacing.sm) {
             Text(syncLabel)
                 .font(LCTypo.micro())
@@ -300,7 +309,7 @@ struct LampsView: View {
 
             Text("·").foregroundStyle(LCPalette.muted.opacity(0.5))
 
-            Text(L10n.onlineLamps(appState.visibleLamps.filter(\.online).count))
+            Text(L10n.onlineLamps(onlineCount))
                 .font(LCTypo.micro())
                 .foregroundStyle(LCPalette.muted)
 
@@ -826,10 +835,25 @@ private struct GroupControlPanel: View {
     }
 }
 
-private struct LampRow: View {
-    @EnvironmentObject private var appState: AppState
+/// A row is a pure function of its value inputs, so `.equatable()` lets SwiftUI skip it when
+/// none changed (every `AppState` publish used to re-render all rows). `appState` is only
+/// used to perform actions and is deliberately not observed: it is one stable object, so it
+/// takes no part in `==`.
+private struct LampRow: View, Equatable {
+    let appState: AppState
     let lamp: LampDevice
+    let isSelected: Bool
+    let isExpanded: Bool
+    let showsGroupControls: Bool
     @State private var showingFeedback = false
+
+    static func == (lhs: LampRow, rhs: LampRow) -> Bool {
+        lhs.lamp == rhs.lamp
+            && lhs.isSelected == rhs.isSelected
+            && lhs.isExpanded == rhs.isExpanded
+            && lhs.showsGroupControls == rhs.showsGroupControls
+            && lhs.appState === rhs.appState
+    }
 
     private let ink = LCPalette.ink
     private let muted = LCPalette.muted
@@ -909,17 +933,17 @@ private struct LampRow: View {
         .overlay(
             RoundedRectangle(cornerRadius: LCRadius.card, style: .continuous)
                 .strokeBorder(
-                    appState.selectedLampIds.contains(lamp.id)
+                    isSelected
                         ? LCPalette.accent.opacity(0.85)
                         : Color.clear,
-                    lineWidth: appState.selectedLampIds.contains(lamp.id) ? 1.5 : 0
+                    lineWidth: isSelected ? 1.5 : 0
                 )
         )
         .animation(LCAnimation.standard, value: showsAdvancedControls)
     }
 
     private var showsAdvancedControls: Bool {
-        appState.isAdvancedControlsExpanded(for: lamp)
+        isExpanded
     }
 
     private var rowSummary: some View {
@@ -978,19 +1002,19 @@ private struct LampRow: View {
 
     private var advancedControls: some View {
         VStack(spacing: 9) {
-            if appState.showsGroupControls {
+            if showsGroupControls {
                 HStack(spacing: 8) {
                     Button {
                         appState.toggleSelection(lamp)
                     } label: {
                         Label(
-                            appState.selectedLampIds.contains(lamp.id)
+                            isSelected
                                 ? NSLocalizedString("lamps.in.group", comment: "")
                                 : NSLocalizedString("lamps.add.to.group", comment: ""),
-                            systemImage: appState.selectedLampIds.contains(lamp.id) ? "checkmark.circle.fill" : "circle"
+                            systemImage: isSelected ? "checkmark.circle.fill" : "circle"
                         )
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(appState.selectedLampIds.contains(lamp.id) ? accent : muted)
+                        .foregroundStyle(isSelected ? accent : muted)
                         .padding(.horizontal, 10)
                         .frame(height: 28)
                         .liquidGlassSurface(radius: 14, interactive: true)

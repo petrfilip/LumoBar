@@ -43,4 +43,43 @@ enum RoomLayout {
         }
         return hidden
     }
+
+    struct RoomSection: Identifiable, Equatable {
+        let room: Room
+        /// In the order of the `lamps` that were grouped.
+        let lamps: [LampDevice]
+        var id: String { room.id }
+    }
+
+    struct Grouping: Equatable {
+        /// Rooms in their own order; rooms without a (visible) lamp are left out.
+        var sections: [RoomSection]
+        /// Lamps that no room lists, in the order of the `lamps` that were grouped.
+        var unassigned: [LampDevice]
+    }
+
+    /// Splits `lamps` (already filtered and ordered) over `rooms` in a single pass, instead of
+    /// filtering the whole list once per room. A lamp listed by several rooms appears in each of
+    /// them; a lamp listed by none is `unassigned`.
+    static func group(lamps: [LampDevice], rooms: [Room]) -> Grouping {
+        var roomIndexesByLamp: [String: [Int]] = [:]
+        for (index, room) in rooms.enumerated() {
+            for lampId in Set(room.lampIds) {
+                roomIndexesByLamp[lampId, default: []].append(index)
+            }
+        }
+        var lampsByRoom = [[LampDevice]](repeating: [], count: rooms.count)
+        var unassigned: [LampDevice] = []
+        for lamp in lamps {
+            if let indexes = roomIndexesByLamp[lamp.id] {
+                for index in indexes { lampsByRoom[index].append(lamp) }
+            } else {
+                unassigned.append(lamp)
+            }
+        }
+        let sections = rooms.enumerated().compactMap { index, room in
+            lampsByRoom[index].isEmpty ? nil : RoomSection(room: room, lamps: lampsByRoom[index])
+        }
+        return Grouping(sections: sections, unassigned: unassigned)
+    }
 }
