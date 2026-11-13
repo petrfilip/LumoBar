@@ -1,0 +1,88 @@
+name: Pages
+
+# Deploys the landing page (landing/) to GitHub Pages without cutting a
+# release. The Pages site also hosts the Sparkle appcast, so the live
+# appcast.xml is downloaded and shipped again: a plain landing deploy must not
+# remove it. (release.yml ships landing/ + a fresh appcast on every release.)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'landing/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy landing page
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # Same group as the deploy job in release.yml. Defined on the job (not the
+    # workflow) so that a queued run never cancels a release build. The appcast
+    # download below runs only once any running release deploy has finished.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Assemble site (landing page + current appcast)
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          rm -rf public
+          mkdir -p public
+          cp -R landing/. public/
+          rm -f public/README.md
+
+          OWNER_LC="$(printf '%s' "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')"
+          APPCAST_URL="https://${OWNER_LC}.github.io/${REPO_NAME}/appcast.xml"
+
+          # Keep the live appcast. 404 means no release has been published yet,
+          # so deploy without it. Any other failure aborts: deploying without
+          # the appcast would break updates for every installed copy.
+          HTTP_CODE="$(curl -sSL --retry 3 --retry-all-errors -o appcast.xml -w '%{http_code}' "$APPCAST_URL" || echo 000)"
+          case "$HTTP_CODE" in
+            200)
+              if ! grep -q '<rss' appcast.xml; then
+                echo "::error::$APPCAST_URL answered 200 but does not look like an appcast."
+                exit 1
+              fi
+              mv appcast.xml public/appcast.xml
+              echo "Kept the live appcast from $APPCAST_URL"
+              ;;
+            404)
+              rm -f appcast.xml
+              echo "::notice::No appcast published yet ($APPCAST_URL returned 404). Deploying the landing page only."
+              ;;
+            *)
+              echo "::error::Could not fetch $APPCAST_URL (HTTP $HTTP_CODE). Refusing to deploy without the appcast."
+              exit 1
+              ;;
+          esac
+
+          ls -la public
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
