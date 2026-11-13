@@ -43,8 +43,7 @@ vendor:
 2. Implement `LampVendor` (sync, set power, brightness, color).
 3. Register it in `VendorRegistry`.
 4. Add a settings sub-view exposing the vendor's credentials/discovery flow.
-5. Document the credentials/setup in `docs/CONFIGURATION.md` (English) and
-   `docs/CONFIGURATION.fr.md` (French).
+5. Document the credentials/setup in `docs/CONFIGURATION.md`.
 
 Until Phase 2 lands, please open an issue describing the vendor you'd like
 to support so we can coordinate.

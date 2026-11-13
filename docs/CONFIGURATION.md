@@ -1,7 +1,5 @@
 # Configuration guide — Tuya, Hue, LIFX, Govee, Yeelight
 
-> 🇫🇷 [Lire ce guide en français](CONFIGURATION.fr.md)
-
 LumoBar talks to five ecosystems in parallel. You can enable just one or
 all five — the lamp list is merged and sorted by name.
 

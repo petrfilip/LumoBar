@@ -157,8 +157,7 @@ Requires macOS 13+, Xcode 15.4+ command-line tools, and Swift 5.9+.
      then let LumoBar find it on your network.
 4. Lamps appear in the **Lamps** tab as soon as a provider is connected.
 
-The full walkthrough lives in [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
-(English) and [docs/CONFIGURATION.fr.md](docs/CONFIGURATION.fr.md) (French).
+The full walkthrough lives in [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
 ## Auto-updates
 
