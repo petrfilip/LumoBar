@@ -1418,7 +1418,11 @@ final class AppState: ObservableObject {
             guard yeelightSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
             }
-            provider = YeelightLightProvider(settings: yeelightSettings, initialLamps: yeelightProviderSeed())
+            // Bulbs with a connected push listener are not polled (`get_prop`) on top of that.
+            provider = YeelightLightProvider(
+                settings: yeelightSettings,
+                initialLamps: yeelightProviderSeed(),
+                liveState: { [weak self] bulbID in self?.yeelightLiveSync.liveProperties(for: bulbID) })
         case .nanoleaf:
             guard nanoleafSettings.isConfigured else {
                 throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))

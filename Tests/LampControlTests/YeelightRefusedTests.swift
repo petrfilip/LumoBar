@@ -32,3 +32,26 @@ final class YeelightRefusedTests: XCTestCase {
         }
     }
 }
+
+final class YeelightLivePollSkipTests: XCTestCase {
+    /// Port 1 on loopback refuses: a bulb that was actually asked would come back offline.
+    private let bulb = YeelightBulb(id: "live-1", host: "127.0.0.1", port: 1, name: "Live")
+    private let other = YeelightBulb(id: "quiet-2", host: "127.0.0.1", port: 1, name: "Quiet")
+
+    func testBulbsWithLiveStateAreNotPolled() async throws {
+        let live: [String: String] = ["power": "on", "bright": "40", "color_mode": "2", "ct": "3000"]
+        let provider = YeelightLightProvider(
+            client: YeelightClient(timeout: 2),
+            settings: YeelightSettings(bulbs: [bulb, other]),
+            liveState: { id in id == "live-1" ? live : nil })
+
+        let lamps = try await provider.syncLights()
+
+        let liveLamp = try XCTUnwrap(lamps.first { $0.nativeID == "live-1" })
+        XCTAssertTrue(liveLamp.online, "state came from the listener, no get_prop was needed")
+        XCTAssertTrue(liveLamp.power)
+        XCTAssertEqual(liveLamp.brightness, 40)
+        let quietLamp = try XCTUnwrap(lamps.first { $0.nativeID == "quiet-2" })
+        XCTAssertFalse(quietLamp.online, "no live state: the bulb is polled (and refuses here)")
+    }
+}

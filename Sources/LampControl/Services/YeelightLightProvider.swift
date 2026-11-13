@@ -11,6 +11,10 @@ final class YeelightLightProvider: LightProvider {
     /// before that moment describes the bulb before the command and must not overwrite it.
     private var commandedAt: [String: Date] = [:]
     private var bulbsById: [String: YeelightBulb] = [:]
+    /// Latest pushed properties of a bulb whose live listener is connected (main actor: that is
+    /// where `YeelightLiveSync` lives). A poll uses them instead of asking the bulb again.
+    typealias LiveState = @MainActor @Sendable (_ bulbID: String) -> [String: String]?
+    private let liveState: LiveState?
 
     let kind: LightProviderKind = .yeelight
     let displayName = LightProviderKind.yeelight.title
@@ -20,9 +24,11 @@ final class YeelightLightProvider: LightProvider {
     /// The bulb table is derived from `settings` up front so commands work before the first
     /// `syncLights()` (e.g. right after discovery replaced the provider). `initialLamps` carries
     /// the last known state so the first command result keeps brightness/colour/etc.
-    init(client: YeelightClient = YeelightClient(), settings: YeelightSettings, initialLamps: [LampDevice] = []) {
+    init(client: YeelightClient = YeelightClient(), settings: YeelightSettings, initialLamps: [LampDevice] = [],
+         liveState: LiveState? = nil) {
         self.client = client
         self.settings = settings
+        self.liveState = liveState
         self.bulbsById = Dictionary(settings.bulbs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         for lamp in initialLamps where lamp.providerID == .yeelight && bulbsById[lamp.nativeID] != nil {
             lamps[lamp.nativeID] = lamp
@@ -42,6 +48,12 @@ final class YeelightLightProvider: LightProvider {
 
         for bulb in bulbs {
             let lamp: LampDevice
+            // The listener already holds this bulb's state and keeps it current: asking again
+            // would only cost a connection slot (a bulb accepts four) for the same answer.
+            if let liveState, let live = await liveState(bulb.id) {
+                mapped.append(Self.makeLamp(bulb: bulb, properties: live, online: true))
+                continue
+            }
             do {
                 let props = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "get_prop", params: Self.propertyKeys)
                 lamp = self.lamp(from: bulb, properties: props, online: true)
