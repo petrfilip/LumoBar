@@ -536,3 +536,12 @@
 "status.data.recovered.unreadable" = "Le fichier %1$@ était illisible. Le fichier endommagé a été conservé sous le nom %2$@ et l'app a démarré avec les valeurs par défaut.";
 "status.data.recovered.partial" = "Certaines entrées de %1$@ étaient illisibles et ont été ignorées. Une copie de l'original a été conservée sous le nom %2$@.";
 "status.data.recovered.many" = "%d fichiers de données n'ont pas pu être lus entièrement. Des copies des originaux ont été conservées en fichiers .corrupt dans le dossier LampControl.";
+
+/* Concurrency & state (B4) */
+"scene.delete.confirm" = "Supprimer la scène « %@ » ?";
+"scene.delete.confirm.capture" = "Supprimer la scène capturée « %@ » ? Les états enregistrés des lampes seront perdus.";
+"scene.delete.confirm.used" = "Les automatisations et réglages Focus qui l’utilisent seront désactivés.";
+"scene.delete.confirm.button" = "Supprimer";
+"scenes.restore.confirm" = "Restaurer les scènes par défaut ? Vos modifications seront perdues.";
+"scenes.restore.confirm.button" = "Restaurer";
+"status.scene.deleted.disabled" = "Scène supprimée. Les automatisations et réglages Focus qui l’utilisaient ont été désactivés.";

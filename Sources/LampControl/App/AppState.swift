@@ -322,8 +322,10 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// A second mapping for a Focus that already has one updates that one instead (the first
+    /// enabled mapping wins in `enabledMapping`, so a duplicate could never take effect).
     func addFocusMapping(_ mapping: FocusMapping) {
-        focusMappings.append(mapping)
+        focusMappings = FocusMapping.adding(mapping, to: focusMappings)
         persistFocusMappings()
     }
 
@@ -333,10 +335,9 @@ final class AppState: ObservableObject {
     }
 
     func updateFocusMapping(_ mapping: FocusMapping) {
-        if let idx = focusMappings.firstIndex(where: { $0.id == mapping.id }) {
-            focusMappings[idx] = mapping
-            persistFocusMappings()
-        }
+        guard focusMappings.contains(where: { $0.id == mapping.id }) else { return }
+        focusMappings = FocusMapping.updating(mapping, in: focusMappings)
+        persistFocusMappings()
     }
 
     func sceneForCurrentFocus() -> UserLightScene? {
@@ -1087,7 +1088,9 @@ final class AppState: ObservableObject {
         guard !cleanTitle.isEmpty else { showError(L10n.sceneNameRequired); return }
         let cleanIcon = icon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "paintpalette.fill" : icon.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if let id, let index = userScenes.firstIndex(where: { $0.id == id }) {
+        if let id {
+            // The scene was deleted while its editor was open: saving must not bring it back.
+            guard let index = userScenes.firstIndex(where: { $0.id == id }) else { return }
             userScenes[index].title = cleanTitle
             userScenes[index].icon = cleanIcon
             userScenes[index].color = color
@@ -1128,11 +1131,29 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// How many enabled automations and Focus mappings use `scene` (deleting it switches them off).
+    func sceneReferenceCount(_ scene: UserLightScene) -> Int {
+        SceneDeletionCleanup.referenceCount(for: scene.id, automations: automations, focusMappings: focusMappings)
+    }
+
+    /// Deletes the scene and switches off what pointed at it: an automation or Focus mapping
+    /// left aimed at a missing scene would silently do nothing.
     func deleteUserScene(_ scene: UserLightScene) {
         userScenes.removeAll { $0.id == scene.id }
         persistScenes()
         persistWidgetSnapshot()
-        message = L10n.sceneDeleted
+
+        let cleanup = SceneDeletionCleanup.apply(deleting: scene.id, automations: automations, focusMappings: focusMappings)
+        if cleanup.automations.map(\.isEnabled) != automations.map(\.isEnabled) {
+            automations = cleanup.automations
+            persistAutomations()
+            automationScheduler.update(automations: automations)
+        }
+        if cleanup.focusMappings != focusMappings {
+            focusMappings = cleanup.focusMappings
+            persistFocusMappings()
+        }
+        message = cleanup.disabledCount > 0 ? L10n.sceneDeletedDisabled : L10n.sceneDeleted
     }
 
     private func applyScene(title: String, color: HSVColor, byUser: Bool) async {

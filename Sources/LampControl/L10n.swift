@@ -331,6 +331,15 @@ enum L10n {
     static func sceneCreated(_ name: String) -> String { String(format: s("status.scene.created"), name) }
     static func sceneApplied(_ name: String) -> String { String(format: s("status.scene.applied"), name) }
     static var sceneDeleted: String { s("status.scene.deleted") }
+    static var sceneDeletedDisabled: String { s("status.scene.deleted.disabled") }
+    static func sceneDeleteConfirm(_ name: String, isCapture: Bool, isUsed: Bool) -> String {
+        var text = String(format: s(isCapture ? "scene.delete.confirm.capture" : "scene.delete.confirm"), name)
+        if isUsed { text += " " + s("scene.delete.confirm.used") }
+        return text
+    }
+    static var sceneDeleteButton: String { s("scene.delete.confirm.button") }
+    static var scenesRestoreConfirm: String { s("scenes.restore.confirm") }
+    static var scenesRestoreButton: String { s("scenes.restore.confirm.button") }
     static var scenesUnreadable: String { s("status.scenes.unreadable") }
     static var scenesRestored: String { s("status.scenes.restored") }
     /// `file` is a file name and is not translated.

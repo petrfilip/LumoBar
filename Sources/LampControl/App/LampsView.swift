@@ -327,6 +327,8 @@ private struct ScenePresetBar: View {
     @State private var captureMode = false
     /// Editing a capture scene keeps its stored snapshots unless the user opts in to this.
     @State private var recaptureState = false
+    /// Scene waiting for the user to confirm its deletion (inline: alerts do not belong in a popover).
+    @State private var pendingDeletion: UserLightScene?
 
     private let iconChoices = [
         "paintpalette.fill", "sparkles", "moon.fill", "sun.max.fill",
@@ -353,7 +355,7 @@ private struct ScenePresetBar: View {
                               : L10n.sceneApplyAmbiance(scene.title))
                         .contextMenu {
                             Button("lamps.scene.edit") { beginEditing(scene) }
-                            Button("lamps.scene.delete", role: .destructive) { appState.deleteUserScene(scene) }
+                            Button("lamps.scene.delete", role: .destructive) { requestDeletion(of: scene) }
                         }
                     }
 
@@ -374,6 +376,10 @@ private struct ScenePresetBar: View {
             }
             .scrollIndicators(.never)
 
+            if let scene = pendingDeletion {
+                deletionConfirmation(for: scene).transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
             if isEditing {
                 sceneEditor.transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -381,6 +387,73 @@ private struct ScenePresetBar: View {
         .padding(10)
         .liquidGlassSurface(radius: 18)
         .animation(.spring(response: 0.28, dampingFraction: 0.88), value: isEditing)
+        .animation(.spring(response: 0.28, dampingFraction: 0.88), value: pendingDeletion?.id)
+        // A scene removed from elsewhere (or just now) must not stay open in the editor: saving
+        // it again would bring it back (for a capture scene, re-capturing the lamps).
+        .onReceive(appState.$userScenes) { scenes in
+            if let editingId, isEditing, !scenes.contains(where: { $0.id == editingId }) {
+                isEditing = false
+                self.editingId = nil
+            }
+            if let pending = pendingDeletion, !scenes.contains(where: { $0.id == pending.id }) {
+                pendingDeletion = nil
+            }
+        }
+    }
+
+    // MARK: - Deletion
+
+    /// A captured scene cannot be recreated and a scene that automations use takes them down
+    /// with it: those ask first. A plain colour scene is cheap to remake and goes right away.
+    private func requestDeletion(of scene: UserLightScene) {
+        if scene.isCapture || appState.sceneReferenceCount(scene) > 0 {
+            pendingDeletion = scene
+        } else {
+            delete(scene)
+        }
+    }
+
+    private func delete(_ scene: UserLightScene) {
+        pendingDeletion = nil
+        if editingId == scene.id {
+            isEditing = false
+            editingId = nil
+        }
+        appState.deleteUserScene(scene)
+    }
+
+    private func deletionConfirmation(for scene: UserLightScene) -> some View {
+        VStack(spacing: 8) {
+            Text(L10n.sceneDeleteConfirm(scene.title, isCapture: scene.isCapture,
+                                         isUsed: appState.sceneReferenceCount(scene) > 0))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(LCTheme.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                Button { delete(scene) } label: {
+                    Text(L10n.sceneDeleteButton)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color.white)
+                        .frame(maxWidth: .infinity).frame(height: 26)
+                        .contentShape(Rectangle())
+                }
+                .liquidGlassButtonStyle(prominent: true)
+                .tint(.red)
+
+                Button { pendingDeletion = nil } label: {
+                    Text(L10n.cancel)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(LCPalette.ink)
+                        .frame(maxWidth: .infinity).frame(height: 26)
+                        .contentShape(Rectangle())
+                }
+                .liquidGlassButtonStyle()
+                .keyboardShortcut(.cancelAction)
+            }
+        }
+        .padding(10)
+        .liquidGlassSurface(radius: 16, tint: Color.red.opacity(0.08))
     }
 
     // MARK: - Editor

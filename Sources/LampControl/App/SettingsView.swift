@@ -23,6 +23,8 @@ struct SettingsView: View {
     /// Unsaved edits to the adaptive schedule; `nil` = nothing edited.
     @State private var circadianDraft: CircadianSettings?
     @State private var copiedFocusMode: String?
+    /// "Restore default scenes" asks first: it resets the user's edits to the built-in scenes.
+    @State private var confirmingSceneRestore = false
     // Credential forms edit a draft (`nil` = untouched) and only reach AppState when saved, so a
     // half-typed token never makes a provider look "configured".
     @State private var hueBridgeIPDraft: String?
@@ -1642,23 +1644,48 @@ struct SettingsView: View {
                 Text("settings.scenes.restore.title")
                     .font(LCTypo.bodySemibold())
                     .foregroundStyle(ink)
-                Text("settings.scenes.restore.detail")
-                    .font(LCTypo.micro())
-                    .foregroundStyle(muted)
-                    .lineLimit(1)
+                if confirmingSceneRestore {
+                    Text(L10n.scenesRestoreConfirm)
+                        .font(LCTypo.micro())
+                        .foregroundStyle(ink)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("settings.scenes.restore.detail")
+                        .font(LCTypo.micro())
+                        .foregroundStyle(muted)
+                        .lineLimit(1)
+                }
             }
 
             Spacer()
 
-            Button("settings.scenes.restore.button") {
-                appState.restoreDefaultScenes()
+            if confirmingSceneRestore {
+                VStack(spacing: 4) {
+                    Button(L10n.scenesRestoreButton) {
+                        confirmingSceneRestore = false
+                        appState.restoreDefaultScenes()
+                    }
+                    .font(.system(size: 11, weight: .semibold))
+                    .liquidGlassButtonStyle(prominent: true)
+
+                    Button(L10n.cancel) { confirmingSceneRestore = false }
+                        .font(.system(size: 11, weight: .semibold))
+                        .liquidGlassButtonStyle()
+                        .keyboardShortcut(.cancelAction)
+                }
+            } else {
+                Button("settings.scenes.restore.button") {
+                    confirmingSceneRestore = true
+                }
+                .font(.system(size: 11, weight: .semibold))
+                .liquidGlassButtonStyle()
+                .help("help.scenes.restore")
             }
-            .font(.system(size: 11, weight: .semibold))
-            .liquidGlassButtonStyle()
-            .help("help.scenes.restore")
         }
         .padding(.horizontal, LCSpacing.sm)
-        .frame(height: 60)
+        .padding(.vertical, confirmingSceneRestore ? LCSpacing.xs : 0)
+        .frame(minHeight: 60)
         .lcCard(radius: LCRadius.card, tint: Color.white.opacity(0.04))
     }
 

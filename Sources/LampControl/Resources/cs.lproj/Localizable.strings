@@ -530,3 +530,12 @@
 "status.data.recovered.unreadable" = "Soubor %1$@ nešlo přečíst. Poškozený soubor byl uložen jako %2$@ a aplikace se spustila s výchozími hodnotami.";
 "status.data.recovered.partial" = "Některé položky v souboru %1$@ nešlo přečíst a byly přeskočeny. Kopie původního souboru byla uložena jako %2$@.";
 "status.data.recovered.many" = "Datové soubory (%d) se nepodařilo přečíst celé. Kopie originálů byly uloženy jako soubory .corrupt ve složce LampControl.";
+
+/* Concurrency & state (B4) */
+"scene.delete.confirm" = "Smazat scénu „%@“?";
+"scene.delete.confirm.capture" = "Smazat zachycenou scénu „%@“? Uložené stavy lamp se ztratí.";
+"scene.delete.confirm.used" = "Automatizace a nastavení Soustředění, která ji používají, se vypnou.";
+"scene.delete.confirm.button" = "Smazat";
+"scenes.restore.confirm" = "Obnovit výchozí scény? Vaše úpravy v nich se ztratí.";
+"scenes.restore.confirm.button" = "Obnovit";
+"status.scene.deleted.disabled" = "Scéna smazána. Automatizace a nastavení Soustředění, která ji používala, byla vypnuta.";
