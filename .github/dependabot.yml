@@ -1,33 +1,18 @@
 version: 2
 updates:
-  # Mise à jour des dépendances Node.js (npm)
-  - package-ecosystem: "npm"
-    directory: "/" # Si ton fichier package.json est à la racine
-    schedule:
-      interval: "daily" # Vérifie les mises à jour quotidiennement
-    commit-message:
-      prefix: "chore"
-    ignore:
-      - dependency-name: "react"
-        versions: ["<18.0.0"] # Exemple : Ignorer les mises à jour inférieures à une version spécifique
-
-  # Mise à jour des actions GitHub
+  # GitHub Actions are pinned by commit SHA; Dependabot bumps the SHA and the
+  # version comment together.
   - package-ecosystem: "github-actions"
-    directory: "/" # Place des workflows dans le répertoire .github/workflows
-    schedule:
-      interval: "daily" # Vérifie les mises à jour quotidiennement
-    commit-message:
-      prefix: "chore"
-
-  - package-ecosystem: "swift"
     directory: "/"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "chore"
 
-  # Exemple d’ajout pour un autre écosystème (si applicable)
-  # - package-ecosystem: "pip"
-  #   directory: "/" # Si requirements.txt est à la racine
-  #   schedule:
-  #     interval: "weekly"
+  # Swift Package Manager (Sparkle).
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
