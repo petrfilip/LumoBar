@@ -1,1 +1,1 @@
-NSLocalNetworkUsageDescription = "LumoBar používá místní síť k vyhledání žárovek Yeelight, jejich ovládání a zobrazení jejich stavu v reálném čase.";
+NSLocalNetworkUsageDescription = "LumoBar používá místní síť k vyhledání a ovládání vašich světel (Yeelight, WiZ, Nanoleaf, Philips Hue Bridge) a k zobrazení jejich stavu v reálném čase.";
