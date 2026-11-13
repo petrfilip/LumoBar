@@ -16,6 +16,7 @@
     <meta property="og:image" content="https://petrfilip.github.io/LumoBar/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="./styles.css" />
+    <script src="./demo.js" defer></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -32,7 +33,7 @@
     </script>
   </head>
   <body>
-    <header class="top">
+    <header class="top wrap">
       <a class="brand" href="./">
         <img src="./icon.png" width="28" height="28" alt="" />
         LumoBar
@@ -41,7 +42,7 @@
     </header>
 
     <main>
-      <section class="hero">
+      <section class="hero wrap">
         <h1>Your smart lights, in the menu bar.</h1>
         <p class="lead">
           LumoBar switches, dims and colours your lights without opening the vendor apps.
@@ -54,48 +55,171 @@
         <p class="meta">macOS 13 or later · MIT licence</p>
       </section>
 
-      <figure class="shot">
-        <img src="./screenshot.png" width="482" height="576" alt="The LumoBar window: scene buttons and a light with brightness, white temperature and colour controls." />
-      </figure>
+      <div class="demo-wrap">
+        <div class="demo">
+          <div class="room" id="room">
+            <canvas id="roomCanvas" width="1536" height="1024" role="img" aria-label="A desk with a monitor in a dark room. A light bar behind the monitor shines on the wall."></canvas>
+          </div>
 
-      <section>
-        <h2>What it does</h2>
-        <ul class="features">
-          <li><strong>Every light in one list.</strong> Power, brightness, white temperature and colour for each light, whatever the brand.</li>
-          <li><strong>Rooms and scenes.</strong> Group lights by room and save scenes you can edit, rename or delete.</li>
-          <li><strong>Schedules.</strong> Turn lights on or off or apply a scene at a set time, or let adaptive lighting follow the time of day.</li>
-          <li><strong>Focus modes.</strong> Switch scenes when a macOS Focus turns on or off, through a Shortcuts automation.</li>
-          <li><strong>Local first.</strong> Hue, Yeelight, Nanoleaf and WiZ are controlled on your home network, no cloud account needed.</li>
-          <li><strong>A native Mac app.</strong> Written in Swift, lives only in the menu bar, updates itself.</li>
-        </ul>
-      </section>
+          <div class="mac">
+            <div class="menubar" aria-hidden="true">
+              <span class="mb-item mb-active">
+                <svg viewBox="0 0 24 24"><path class="i-fill" d="M12 2.5a6.5 6.5 0 0 0-4.3 11.4c.8.7 1.3 1.6 1.3 2.6V17h6v-.5c0-1 .5-1.9 1.3-2.6A6.5 6.5 0 0 0 12 2.5zM9 19h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" /></svg>
+              </span>
+              <span class="mb-right">
+                <span class="mb-item">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="3" class="i-line" /><rect x="4.5" y="9.5" width="11" height="5" rx="1" class="i-fill" /><path d="M22 10.5v3" class="i-line" /></svg>
+                </span>
+                <span class="mb-clock" id="clock">9:41 PM</span>
+              </span>
+            </div>
 
-      <section>
-        <h2>Install</h2>
-        <ol class="steps">
-          <li>Download the DMG from the <a href="https://github.com/petrfilip/LumoBar/releases/latest">latest release</a> and drag LumoBar to Applications.</li>
-          <li>
-            The first time you open it, macOS will block it, because the app is not notarised by Apple.
-            Open <em>System Settings → Privacy &amp; Security</em> and click <em>Open Anyway</em>. You only do this once.
-          </li>
-          <li>
-            Click the bulb in the menu bar, open <em>Settings → Providers</em> and connect your lights.
-            The <a href="https://github.com/petrfilip/LumoBar/blob/main/docs/CONFIGURATION.md">setup guide</a> covers each brand.
-          </li>
-        </ol>
-      </section>
+            <div class="pop" role="group" aria-label="Interactive copy of the LumoBar window">
+              <div class="pop-head">
+                <span class="app-badge">
+                  <svg viewBox="0 0 24 24"><path class="i-fill" d="M12 2.5a6.5 6.5 0 0 0-4.3 11.4c.8.7 1.3 1.6 1.3 2.6V17h6v-.5c0-1 .5-1.9 1.3-2.6A6.5 6.5 0 0 0 12 2.5zM9 19h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" /></svg>
+                </span>
+                <span class="pop-titles">
+                  <span class="pop-title">LumoBar</span>
+                  <span class="pop-sub"><i class="dot"></i>Philips Hue</span>
+                </span>
+                <span class="head-btns" aria-hidden="true">
+                  <span class="rbtn sunrise"><svg viewBox="0 0 24 24"><path class="i-line" d="M3 19h18M7 19a5 5 0 0 1 10 0M12 5v3M5.5 10.5l1.6 1.6M18.5 10.5l-1.6 1.6M2.5 15h2M19.5 15h2" /></svg></span>
+                  <span class="rbtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" class="i-line cog" /><circle cx="12" cy="12" r="2.5" class="i-line" /></svg></span>
+                  <span class="rbtn"><svg viewBox="0 0 24 24"><path class="i-line" d="M7 7l10 10M17 7 7 17" /></svg></span>
+                </span>
+              </div>
 
-      <section>
-        <h2>Credits</h2>
-        <p>
-          LumoBar is a fork of <a href="https://github.com/hugoinformatique/LampControl">LampControl</a> by Hugo Informatique.
-          Thank you, Hugo, for building it and releasing it under the MIT licence.
-          The <a href="https://github.com/petrfilip/LumoBar#whats-different-from-lampcontrol">README</a> lists what changed.
+              <div class="pop-body">
+                <div class="status">
+                  <span>Synced <span id="synced">9:41 PM</span></span>
+                  <span class="sep">·</span>
+                  <span>1 online</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-line" d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4.5H15" /></svg>
+                </div>
+
+                <div class="scenes">
+                  <button type="button" class="chip" data-scene="white" style="--c: #ffffff">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-fill" d="M12 2.5a6.5 6.5 0 0 0-4.3 11.4c.8.7 1.3 1.6 1.3 2.6V17h6v-.5c0-1 .5-1.9 1.3-2.6A6.5 6.5 0 0 0 12 2.5zM9 19h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" /></svg>
+                    White
+                  </button>
+                  <button type="button" class="chip" data-scene="focus" style="--c: #ffe2a3">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" class="i-fill" /><path class="i-line" d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></svg>
+                    Focus
+                  </button>
+                  <button type="button" class="chip" data-scene="relax" style="--c: #d0702f">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-fill" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" /></svg>
+                    Relax
+                  </button>
+                  <button type="button" class="chip" data-scene="neon" style="--c: #a63bff">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-fill" d="M11 6l1.6 4.4L17 12l-4.4 1.6L11 18l-1.6-4.4L5 12l4.4-1.6zM18 2.5l.8 2.2 2.2.8-2.2.8L18 8.5l-.8-2.2L15 5.5l2.2-.8z" /></svg>
+                    Neon
+                  </button>
+                  <button type="button" class="chip" data-scene="night" style="--c: #4a6cc8">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-fill" d="M2 8h2v5h7v-3a1 1 0 0 1 1-1h6a4 4 0 0 1 4 4v6h-2v-2H4v2H2zM7.5 8.5a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4z" /></svg>
+                    Night
+                  </button>
+                </div>
+
+                <div class="room-head" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path class="i-line" d="m6 9 6 6 6-6" /></svg>
+                  <span>Desk</span>
+                  <span class="more">···</span>
+                </div>
+
+                <div class="card" id="card">
+                  <div class="row">
+                    <button type="button" class="bulb" id="power" aria-pressed="true" aria-label="Turn the light off">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-fill" d="M12 2.5a6.5 6.5 0 0 0-4.3 11.4c.8.7 1.3 1.6 1.3 2.6V17h6v-.5c0-1 .5-1.9 1.3-2.6A6.5 6.5 0 0 0 12 2.5zM9 19h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" /></svg>
+                    </button>
+                    <span class="name">
+                      <b>Monitor light</b>
+                      <span class="state"><i class="dot"></i><span id="stateText">On</span></span>
+                    </span>
+                    <span class="swatch" id="swatch"></span>
+                    <span class="pct" id="pct">70%</span>
+                    <button type="button" class="chev" id="expand" aria-expanded="true" aria-controls="controls" aria-label="Hide the controls">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-line" d="m6 15 6-6 6 6" /></svg>
+                    </button>
+                  </div>
+
+                  <div class="controls" id="controls">
+                    <label class="ctl">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5" class="i-line" /><path class="i-line" d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" /></svg>
+                      <input type="range" id="bri" min="1" max="100" value="70" aria-label="Brightness" />
+                      <span class="val" id="briVal">70%</span>
+                    </label>
+                    <label class="ctl">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-line" d="M10 14.5V5a2 2 0 1 1 4 0v9.5a4 4 0 1 1-4 0z" /></svg>
+                      <input type="range" id="temp" min="1700" max="6500" step="50" value="2700" aria-label="White temperature" />
+                      <span class="val" id="tempVal">2700K</span>
+                    </label>
+                    <div class="ctl colors">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-line" d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.7 1.6-1.5 0-.5-.2-.8-.5-1.1a1.5 1.5 0 0 1 1.1-2.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1.2" class="i-fill" /><circle cx="10.5" cy="7.5" r="1.2" class="i-fill" /><circle cx="15" cy="8" r="1.2" class="i-fill" /></svg>
+                      <span class="current" id="current"></span>
+                      <span class="dots">
+                        <button type="button" data-h="0" data-s="0" style="--c: #f2f2f2" aria-label="White"></button>
+                        <button type="button" data-h="0" data-s="0.85" style="--c: #e0393e" aria-label="Red"></button>
+                        <button type="button" data-h="34" data-s="0.8" style="--c: #f2a63a" aria-label="Orange"></button>
+                        <button type="button" data-h="128" data-s="0.7" style="--c: #3cc35a" aria-label="Green"></button>
+                        <button type="button" data-h="208" data-s="0.78" style="--c: #3b95e8" aria-label="Blue"></button>
+                        <button type="button" data-h="280" data-s="0.72" style="--c: #a855e8" aria-label="Purple"></button>
+                      </span>
+                    </div>
+                    <div class="field white-mode" id="field" tabindex="0" role="slider" aria-label="Colour" aria-valuemin="0" aria-valuemax="360" aria-valuenow="30" aria-valuetext="Hue 30°, saturation 80%">
+                      <span class="picker" id="picker"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="demo-note">
+          Try it: this is a working copy of the LumoBar window. Click the bulb, drag the sliders, pick a colour or a scene.
         </p>
-      </section>
+      </div>
+
+      <div class="wrap">
+        <section>
+          <h2>What it does</h2>
+          <ul class="features">
+            <li><strong>Every light in one list.</strong> Power, brightness, white temperature and colour for each light, whatever the brand.</li>
+            <li><strong>Rooms and scenes.</strong> Group lights by room and save scenes you can edit, rename or delete.</li>
+            <li><strong>Schedules.</strong> Turn lights on or off or apply a scene at a set time, or let adaptive lighting follow the time of day.</li>
+            <li><strong>Focus modes.</strong> Switch scenes when a macOS Focus turns on or off, through a Shortcuts automation.</li>
+            <li><strong>Local first.</strong> Hue, Yeelight, Nanoleaf and WiZ are controlled on your home network, no cloud account needed.</li>
+            <li><strong>A native Mac app.</strong> Written in Swift, lives only in the menu bar, updates itself.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Install</h2>
+          <ol class="steps">
+            <li>Download the DMG from the <a href="https://github.com/petrfilip/LumoBar/releases/latest">latest release</a> and drag LumoBar to Applications.</li>
+            <li>
+              The first time you open it, macOS will block it, because the app is not notarised by Apple.
+              Open <em>System Settings → Privacy &amp; Security</em> and click <em>Open Anyway</em>. You only do this once.
+            </li>
+            <li>
+              Click the bulb in the menu bar, open <em>Settings → Providers</em> and connect your lights.
+              The <a href="https://github.com/petrfilip/LumoBar/blob/main/docs/CONFIGURATION.md">setup guide</a> covers each brand.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Credits</h2>
+          <p>
+            LumoBar is a fork of <a href="https://github.com/hugoinformatique/LampControl">LampControl</a> by Hugo Informatique.
+            Thank you, Hugo, for building it and releasing it under the MIT licence.
+            The <a href="https://github.com/petrfilip/LumoBar#whats-different-from-lampcontrol">README</a> lists what changed.
+          </p>
+        </section>
+      </div>
     </main>
 
-    <footer>
+    <footer class="wrap">
       <a href="https://github.com/petrfilip/LumoBar">GitHub</a>
       <a href="https://github.com/petrfilip/LumoBar/releases">Releases</a>
       <a href="https://github.com/petrfilip/LumoBar/issues">Report a problem</a>
