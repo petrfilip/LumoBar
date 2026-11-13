@@ -10,14 +10,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let popover = NSPopover()
     private let appState = AppState()
     private var cancellables = Set<AnyCancellable>()
-    private let globalShortcutService = GlobalShortcutService()
     private var contextMenu: NSMenu?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configurePopover()
         configureStatusItem()
         appState.updateService.start()
-        configureShortcuts()
         appState.startAutomationScheduler()
         appState.startCircadianService()
     }
@@ -178,20 +176,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         statusItem?.menu = nil
     }
 
-    private func configureShortcuts() {
-        globalShortcutService.onAction = { [weak self] action in
-            Task { @MainActor in self?.appState.executeShortcutAction(action) }
-        }
-        globalShortcutService.start(with: appState.shortcutSettings.bindings)
-
-        NotificationCenter.default.addObserver(forName: .shortcutSettingsDidChange, object: nil, queue: .main) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                self.globalShortcutService.start(with: self.appState.shortcutSettings.bindings)
-            }
-        }
-    }
-
     @objc private func checkForUpdates() {
         appState.updateService.checkForUpdates()
     }
@@ -275,7 +259,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         else { return fallback }
 
         // Only when the click is in that screen's menu bar (not e.g. "Open"
-        // chosen from the context menu or a keyboard shortcut).
+        // chosen from the context menu).
         let menuBarHeight = max(NSStatusBar.system.thickness, clickScreen.frame.maxY - clickScreen.visibleFrame.maxY)
         guard mouse.y >= clickScreen.frame.maxY - menuBarHeight - 2 else { return fallback }
 

@@ -19,7 +19,7 @@ struct LightScenePreset: Identifiable, Hashable {
     }
 
     /// A regular, editable scene carrying this preset's definition. The
-    /// `presetId` is what lets shortcuts / automations keep resolving it.
+    /// `presetId` is what lets automations keep resolving it.
     func makeScene(sceneId: UUID = UUID()) -> UserLightScene {
         UserLightScene(id: sceneId, title: title, icon: icon, color: color, presetId: id)
     }

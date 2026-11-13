@@ -87,7 +87,6 @@
 "route.yeelight" = "Yeelight";
 "route.nanoleaf" = "Nanoleaf";
 "route.wiz" = "WiZ";
-"route.shortcuts" = "Raccourcis";
 "route.automations" = "Automations";
 "route.circadian" = "Éclairage adaptatif";
 "route.devices" = "Appareils";
@@ -114,7 +113,6 @@
 "route.nanoleaf.sub.connected" = "%d panneau(x) en LAN";
 "route.wiz.sub.none" = "Aucune ampoule enregistrée";
 "route.wiz.sub.connected" = "%d ampoule(s) en LAN";
-"route.shortcuts.subtitle" = "Raccourcis ⌥0–⌥4 configurables";
 "route.automations.sub.none" = "Aucune automation";
 "route.automations.sub.active" = "%d/%d actives";
 "route.circadian.sub.disabled" = "Désactivé";
@@ -207,11 +205,6 @@
 "wiz.ip.hint" = "L'IP est visible dans l'app WiZ (paramètres de l'ampoule). Port UDP 38899.";
 
 /* Raccourcis */
-"shortcuts.title" = "Raccourcis clavier";
-"shortcuts.subtitle" = "⌥0 Éteindre · ⌥1-⌥4 Scènes";
-"shortcuts.header" = "Raccourcis clavier globaux";
-"shortcuts.detail" = "Contrôlez vos lampes sans ouvrir l'app.";
-"shortcuts.save" = "Enregistrer les raccourcis";
 
 /* Automations */
 "automations.title" = "Automations";
@@ -329,12 +322,6 @@
 "action.disable.adaptive" = "Désactiver l'éclairage adaptatif";
 
 /* Actions de raccourcis */
-"shortcut.power.off.all" = "Éteindre tout";
-"shortcut.power.on.all" = "Allumer tout";
-"shortcut.scene.focus" = "Scène Focus";
-"shortcut.scene.relax" = "Scène Relax";
-"shortcut.scene.neon" = "Scène Neon";
-"shortcut.scene.night" = "Scène Nuit";
 
 /* Scènes prédéfinies */
 "scene.focus" = "Focus";
@@ -480,7 +467,6 @@
 "status.local.state.reset" = "État local réinitialisé.";
 "status.license.not.validated" = "Licence non validée en ligne. Early Access actif.";
 "status.license.unreadable" = "Licence locale illisible. Early Access actif.";
-"status.shortcuts.saved" = "Raccourcis enregistrés.";
 "status.automation.saved" = "Automation « %@ » enregistrée.";
 "status.automation.deleted" = "Automation supprimée.";
 "status.adaptive.saved" = "Réglages adaptatifs enregistrés.";
@@ -560,7 +546,7 @@
 "status.scenes.restored" = "Scènes par défaut restaurées";
 "settings.reset.button" = "Réinitialiser tous les réglages";
 "settings.reset.confirm.title" = "Réinitialiser tous les réglages ?";
-"settings.reset.confirm.message" = "Cette action supprime définitivement vos scènes, pièces, ordre des lampes, automatisations, associations Focus, plage d'éclairage adaptatif, raccourcis, réglages des fournisseurs de lampes (y compris les secrets stockés dans le Keychain) et les préférences de l'app comme l'accueil. Votre licence est conservée. LampControl redémarrera avec ses réglages d'origine.";
+"settings.reset.confirm.message" = "Cette action supprime définitivement vos scènes, pièces, ordre des lampes, automatisations, associations Focus, plage d'éclairage adaptatif, réglages des fournisseurs de lampes (y compris les secrets stockés dans le Keychain) et les préférences de l'app comme l'accueil. Votre licence est conservée. LampControl redémarrera avec ses réglages d'origine.";
 "settings.reset.confirm.action" = "Réinitialiser et redémarrer";
 "settings.reset.confirm.cancel" = "Annuler";
 "status.reset.failed" = "Réinitialisation incomplète, suppression impossible : %@";

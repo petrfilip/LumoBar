@@ -54,7 +54,6 @@ struct SettingsView: View {
                     case .yeelight:    yeelightSettings
                     case .nanoleaf:    nanoleafSettings
                     case .wiz:         wizSettings
-                    case .shortcuts:   shortcutsSettings
                     case .automations: automationsSettings
                     case .focus:       focusSettings
                     case .circadian:   circadianSettings_
@@ -119,14 +118,6 @@ struct SettingsView: View {
                         upcoming: LightProviderKind.allCases.count - appState.configuredProviderKinds.count
                     ),
                     tint: Color.cyan.opacity(0.10)
-                )
-
-                settingsLink(
-                    .shortcuts,
-                    icon: "keyboard",
-                    title: NSLocalizedString("route.shortcuts", comment: ""),
-                    subtitle: NSLocalizedString("shortcuts.subtitle", comment: ""),
-                    tint: Color.purple.opacity(0.10)
                 )
 
                 settingsLink(
@@ -1510,73 +1501,6 @@ struct SettingsView: View {
         editingKeyframeId = keyframe.id
     }
 
-    // MARK: - Shortcuts Settings
-
-    private var shortcutsSettings: some View {
-        VStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
-                    Image(systemName: "keyboard")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.purple)
-                        .frame(width: 32, height: 32)
-                        .liquidGlassSurface(radius: 12, tint: Color.purple.opacity(0.10))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("shortcuts.header")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("shortcuts.detail")
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(muted)
-                    }
-                    Spacer()
-                }
-                .padding(12)
-                .liquidGlassSurface(radius: 16)
-
-                ForEach($appState.shortcutSettings.bindings) { $binding in
-                    HStack(spacing: 10) {
-                        Image(systemName: binding.action.icon)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(binding.isEnabled ? accent : muted)
-                            .frame(width: 28, height: 28)
-                            .liquidGlassSurface(radius: 10, tint: binding.isEnabled ? accent.opacity(0.10) : nil)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(binding.action.title)
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(ink)
-                            Text(binding.displayKey)
-                                .font(.system(size: 10, weight: .medium).monospaced())
-                                .foregroundStyle(muted)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $binding.isEnabled)
-                            .labelsHidden()
-                            .toggleStyle(.switch)
-                            .scaleEffect(0.8)
-                            .disabled(binding.keyCode == nil)
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .liquidGlassSurface(radius: 14)
-                    .opacity(binding.keyCode == nil ? 0.55 : 1)
-                }
-
-                Button {
-                    Task { await appState.saveShortcutSettings() }
-                } label: {
-                    Text("shortcuts.save")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                }
-                .liquidGlassButtonStyle(prominent: true)
-                .tint(accent)
-                .disabled(appState.isBusy)
-            }
-        }
-    }
-
     /// Overview status: any configured provider counts. (The Tuya-specific
     /// step summary used to sit here and reported "setup incomplete" to users
     /// of every other vendor; it now lives in the Tuya section.)
@@ -2447,7 +2371,7 @@ private struct AutomationEditor: View {
 
 private enum SettingsRoute {
     case overview, providers, tuya, hue, lifx, govee, yeelight, nanoleaf, wiz
-    case shortcuts, automations, focus, circadian, devices, updates, premium, about
+    case automations, focus, circadian, devices, updates, premium, about
 
     var title: String {
         switch self {
@@ -2460,7 +2384,6 @@ private enum SettingsRoute {
         case .yeelight:    NSLocalizedString("route.yeelight", comment: "")
         case .nanoleaf:    NSLocalizedString("route.nanoleaf", comment: "")
         case .wiz:         NSLocalizedString("route.wiz", comment: "")
-        case .shortcuts:   NSLocalizedString("route.shortcuts", comment: "")
         case .automations: NSLocalizedString("route.automations", comment: "")
         case .focus:       L10n.focusTitle
         case .circadian:   NSLocalizedString("route.circadian", comment: "")
@@ -2498,8 +2421,6 @@ private enum SettingsRoute {
             appState.wizSettings.isConfigured
                 ? L10n.routeWizConnected(appState.wizSettings.devices.count)
                 : L10n.routeWizNone
-        case .shortcuts:
-            L10n.routeShortcutsSubtitle
         case .automations:
             appState.automations.isEmpty
                 ? L10n.routeAutomationsNone

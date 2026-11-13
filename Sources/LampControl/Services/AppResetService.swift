@@ -6,7 +6,7 @@ import Foundation
 /// - Files in `~/Library/Application Support/LampControl/`: settings.json (Tuya),
 ///   lampOrder.json, hue-settings.json, yeelight-settings.json, nanoleaf-settings.json,
 ///   wiz-settings.json, scenes.json, rooms.json, focusMappings.json, automations.json,
-///   circadian-settings.json, shortcut-settings.json, widgetSnapshot.json,
+///   circadian-settings.json, shortcut-settings.json (legacy), widgetSnapshot.json,
 ///   license.json (KEPT).
 ///   Every file in the folder except the license is removed, so files written by
 ///   older versions are covered too.

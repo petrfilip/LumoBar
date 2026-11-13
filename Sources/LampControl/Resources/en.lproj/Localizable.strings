@@ -87,7 +87,6 @@
 "route.yeelight" = "Yeelight";
 "route.nanoleaf" = "Nanoleaf";
 "route.wiz" = "WiZ";
-"route.shortcuts" = "Shortcuts";
 "route.automations" = "Automations";
 "route.circadian" = "Adaptive Lighting";
 "route.devices" = "Devices";
@@ -114,7 +113,6 @@
 "route.nanoleaf.sub.connected" = "%d panel(s) in LAN";
 "route.wiz.sub.none" = "No bulb registered";
 "route.wiz.sub.connected" = "%d bulb(s) in LAN";
-"route.shortcuts.subtitle" = "⌥0–⌥4 shortcuts configurable";
 "route.automations.sub.none" = "No automation";
 "route.automations.sub.active" = "%d/%d active";
 "route.circadian.sub.disabled" = "Disabled";
@@ -205,13 +203,6 @@
 "wiz.hint" = "WiZ bulbs (Signify) on the same network. No configuration required.";
 "wiz.ip.placeholder" = "IP address (e.g. 192.168.1.55)";
 "wiz.ip.hint" = "The IP is visible in the WiZ app (bulb settings). UDP port 38899.";
-
-/* Shortcuts */
-"shortcuts.title" = "Keyboard Shortcuts";
-"shortcuts.subtitle" = "⌥0 Off · ⌥1-⌥4 Scenes";
-"shortcuts.header" = "Global keyboard shortcuts";
-"shortcuts.detail" = "Control your lamps without opening the app.";
-"shortcuts.save" = "Save shortcuts";
 
 /* Automations */
 "automations.title" = "Automations";
@@ -327,14 +318,6 @@
 "action.apply.profile" = "Apply a profile";
 "action.enable.adaptive" = "Enable adaptive lighting";
 "action.disable.adaptive" = "Disable adaptive lighting";
-
-/* Shortcut actions */
-"shortcut.power.off.all" = "Turn off all";
-"shortcut.power.on.all" = "Turn on all";
-"shortcut.scene.focus" = "Scene Focus";
-"shortcut.scene.relax" = "Scene Relax";
-"shortcut.scene.neon" = "Scene Neon";
-"shortcut.scene.night" = "Scene Night";
 
 /* Scene presets */
 "scene.focus" = "Focus";
@@ -480,7 +463,6 @@
 "status.local.state.reset" = "Local state reset.";
 "status.license.not.validated" = "License could not be validated online. Early Access active.";
 "status.license.unreadable" = "Local license is unreadable. Early Access active.";
-"status.shortcuts.saved" = "Shortcuts saved.";
 "status.automation.saved" = "Automation “%@” saved.";
 "status.automation.deleted" = "Automation deleted.";
 "status.adaptive.saved" = "Adaptive settings saved.";
@@ -560,7 +542,7 @@
 "status.scenes.restored" = "Default scenes restored";
 "settings.reset.button" = "Reset all settings";
 "settings.reset.confirm.title" = "Reset all settings?";
-"settings.reset.confirm.message" = "This permanently removes your scenes, rooms, lamp order, automations, Focus mappings, adaptive lighting schedule, shortcuts, light provider settings (including the secrets stored in the Keychain) and app preferences such as onboarding. Your license is kept. LampControl will restart with its original settings.";
+"settings.reset.confirm.message" = "This permanently removes your scenes, rooms, lamp order, automations, Focus mappings, adaptive lighting schedule, light provider settings (including the secrets stored in the Keychain) and app preferences such as onboarding. Your license is kept. LampControl will restart with its original settings.";
 "settings.reset.confirm.action" = "Reset and restart";
 "settings.reset.confirm.cancel" = "Cancel";
 "status.reset.failed" = "Reset incomplete, could not remove: %@";

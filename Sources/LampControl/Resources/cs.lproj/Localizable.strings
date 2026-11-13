@@ -87,7 +87,6 @@
 "route.yeelight" = "Yeelight";
 "route.nanoleaf" = "Nanoleaf";
 "route.wiz" = "WiZ";
-"route.shortcuts" = "Zkratky";
 "route.automations" = "Automatizace";
 "route.circadian" = "Adaptivní osvětlení";
 "route.devices" = "Zařízení";
@@ -114,7 +113,6 @@
 "route.nanoleaf.sub.connected" = "Panely v síti LAN: %d";
 "route.wiz.sub.none" = "Žádná zaregistrovaná žárovka";
 "route.wiz.sub.connected" = "Žárovky v síti LAN: %d";
-"route.shortcuts.subtitle" = "Nastavitelné zkratky ⌥0–⌥4";
 "route.automations.sub.none" = "Žádná automatizace";
 "route.automations.sub.active" = "Aktivní: %d/%d";
 "route.circadian.sub.disabled" = "Vypnuto";
@@ -205,13 +203,6 @@
 "wiz.hint" = "Žárovky WiZ (Signify) ve stejné síti. Není potřeba žádné nastavení.";
 "wiz.ip.placeholder" = "IP adresa (např. 192.168.1.55)";
 "wiz.ip.hint" = "IP adresu najdete v aplikaci WiZ (nastavení žárovky). Port UDP 38899.";
-
-/* Shortcuts */
-"shortcuts.title" = "Klávesové zkratky";
-"shortcuts.subtitle" = "⌥0 Vypnout · ⌥1-⌥4 Scény";
-"shortcuts.header" = "Globální klávesové zkratky";
-"shortcuts.detail" = "Ovládejte své žárovky bez otevření aplikace.";
-"shortcuts.save" = "Uložit zkratky";
 
 /* Automations */
 "automations.title" = "Automatizace";
@@ -327,14 +318,6 @@
 "action.apply.profile" = "Použít profil";
 "action.enable.adaptive" = "Zapnout adaptivní osvětlení";
 "action.disable.adaptive" = "Vypnout adaptivní osvětlení";
-
-/* Shortcut actions */
-"shortcut.power.off.all" = "Vypnout vše";
-"shortcut.power.on.all" = "Zapnout vše";
-"shortcut.scene.focus" = "Scéna Soustředění";
-"shortcut.scene.relax" = "Scéna Relaxace";
-"shortcut.scene.neon" = "Scéna Neon";
-"shortcut.scene.night" = "Scéna Noc";
 
 /* Scene presets */
 "scene.focus" = "Soustředění";
@@ -480,7 +463,6 @@
 "status.local.state.reset" = "Místní stav byl resetován.";
 "status.license.not.validated" = "Licenci se nepodařilo ověřit online. Předběžný přístup je aktivní.";
 "status.license.unreadable" = "Místní licence je nečitelná. Předběžný přístup je aktivní.";
-"status.shortcuts.saved" = "Zkratky uloženy.";
 "status.automation.saved" = "Automatizace „%@“ uložena.";
 "status.automation.deleted" = "Automatizace smazána.";
 "status.adaptive.saved" = "Adaptivní nastavení uloženo.";
@@ -560,7 +542,7 @@
 "status.scenes.restored" = "Výchozí scény obnoveny";
 "settings.reset.button" = "Resetovat všechna nastavení";
 "settings.reset.confirm.title" = "Resetovat všechna nastavení?";
-"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, zkratky, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. Licence zůstane zachována. LampControl se restartuje s původním nastavením.";
+"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. Licence zůstane zachována. LampControl se restartuje s původním nastavením.";
 "settings.reset.confirm.action" = "Resetovat a restartovat";
 "settings.reset.confirm.cancel" = "Zrušit";
 "status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";

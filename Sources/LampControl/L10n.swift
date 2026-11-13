@@ -142,7 +142,6 @@ enum L10n {
     static var routeYeeNone:            String { NSLocalizedString("route.yeelight.sub.none", comment: "") }
     static var routeNanoleafNone:       String { NSLocalizedString("route.nanoleaf.sub.none", comment: "") }
     static var routeWizNone:            String { NSLocalizedString("route.wiz.sub.none", comment: "") }
-    static var routeShortcutsSubtitle:  String { NSLocalizedString("route.shortcuts.subtitle", comment: "") }
     static var routeAutomationsNone:    String { NSLocalizedString("route.automations.sub.none", comment: "") }
     static var routeCircadianDisabled:  String { NSLocalizedString("route.circadian.sub.disabled", comment: "") }
     static var routeUpdatesSubtitle:    String { NSLocalizedString("route.updates.subtitle", comment: "") }
@@ -226,15 +225,6 @@ enum L10n {
     static func actionScene(_ name: String) -> String {
         String(format: NSLocalizedString("action.scene", comment: ""), name)
     }
-
-    // MARK: - Shortcut actions
-
-    static var shortcutPowerOff: String { NSLocalizedString("shortcut.power.off.all", comment: "") }
-    static var shortcutPowerOn:  String { NSLocalizedString("shortcut.power.on.all", comment: "") }
-    static var shortcutFocus:    String { NSLocalizedString("shortcut.scene.focus", comment: "") }
-    static var shortcutRelax:    String { NSLocalizedString("shortcut.scene.relax", comment: "") }
-    static var shortcutNeon:     String { NSLocalizedString("shortcut.scene.neon", comment: "") }
-    static var shortcutNight:    String { NSLocalizedString("shortcut.scene.night", comment: "") }
 
     // MARK: - Scene presets
 
@@ -374,7 +364,6 @@ enum L10n {
     static var licenseUnreadable: String  { s("status.license.unreadable") }
 
     // Settings saved
-    static var shortcutsSaved: String { s("status.shortcuts.saved") }
     static func automationSaved(_ name: String) -> String {
         String(format: s("status.automation.saved"), name)
     }

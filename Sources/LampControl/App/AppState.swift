@@ -16,7 +16,6 @@ final class AppState: ObservableObject {
     @Published var yeelightSearchCompleted = false
     @Published var nanoleafSettings = NanoleafSettings()
     @Published var wizSettings = WizSettings()
-    @Published var shortcutSettings = ShortcutSettings.default
     @Published var automations: [Automation] = []
     @Published var circadianSettings = CircadianSettings.default
     @Published var discoveredHueBridges: [HueBridge] = []
@@ -71,7 +70,6 @@ final class AppState: ObservableObject {
     private let yeelightSettingsStore = YeelightSettingsStore()
     private let nanoleafSettingsStore = NanoleafSettingsStore()
     private let wizSettingsStore = WizSettingsStore()
-    private let shortcutSettingsStore = ShortcutSettingsStore()
     private let automationStore = AutomationStore()
     private let circadianSettingsStore = CircadianSettingsStore()
     private let automationScheduler = AutomationScheduler()
@@ -121,7 +119,6 @@ final class AppState: ObservableObject {
             loadYeelightSettings()
             loadNanoleafSettings()
             loadWizSettings()
-            loadShortcutSettings()
             loadAutomations()
             loadCircadianSettings()
             await syncLamps(silent: true)
@@ -1037,7 +1034,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// `byUser`: the user picked this scene (UI or keyboard shortcut), as
+    /// `byUser`: the user picked this scene in the UI, as
     /// opposed to an automation / Focus trigger. A user-picked scene turns
     /// adaptive lighting off, otherwise it would overwrite the scene within
     /// 15 minutes.
@@ -1056,7 +1053,7 @@ final class AppState: ObservableObject {
 
     /// Applies a built-in by id ("focus", "relax"...): the user's (possibly
     /// edited) scene when it still exists, else the hard-coded definition, so
-    /// shortcuts and automations keep working even if the scene was deleted.
+    /// automations keep working even if the scene was deleted.
     func applyPreset(id: String, byUser: Bool = false) async {
         if let scene = PresetScenes.scene(forPresetId: id, in: userScenes) {
             await applyScene(scene, byUser: byUser)
@@ -1503,20 +1500,7 @@ final class AppState: ObservableObject {
         do { wizSettings = try wizSettingsStore.load() } catch { }
     }
 
-    // MARK: - Shortcuts
-
-    func executeShortcutAction(_ action: ShortcutAction) {
-        Task { @MainActor in
-            switch action {
-            case .powerOffAll:     await applyPowerAll(false)
-            case .powerOnAll:      await applyPowerAll(true)
-            case .applySceneFocus: await applyPreset(id: "focus", byUser: true)
-            case .applySceneRelax: await applyPreset(id: "relax", byUser: true)
-            case .applySceneNeon:  await applyPreset(id: "neon",  byUser: true)
-            case .applySceneNight: await applyPreset(id: "night", byUser: true)
-            }
-        }
-    }
+    // MARK: - Power all
 
     func applyPowerAll(_ value: Bool) async {
         let targets = lamps.filter { $0.online }
@@ -1529,18 +1513,6 @@ final class AppState: ObservableObject {
             for lamp in updated { updateLamp(lamp) }
             message = L10n.allLampsPower(value)
         }
-    }
-
-    func saveShortcutSettings() async {
-        await runBusy {
-            shortcutSettings = try shortcutSettingsStore.save(shortcutSettings)
-            message = L10n.shortcutsSaved
-        }
-        NotificationCenter.default.post(name: .shortcutSettingsDidChange, object: nil)
-    }
-
-    private func loadShortcutSettings() {
-        shortcutSettings = (try? shortcutSettingsStore.load()) ?? .default
     }
 
     // MARK: - Automations
@@ -1785,7 +1757,7 @@ final class AppState: ObservableObject {
     /// then relaunches the app.
     ///
     /// Relaunch instead of an in-process reload: state lives in ~15 `@Published`
-    /// properties, per-provider clients, the shortcut registrations, the
+    /// properties, per-provider clients, the
     /// automation / circadian timers, Yeelight sockets and Sparkle's cached
     /// preferences. Re-initialising all of that in place is easy to get subtly
     /// wrong (a stale timer or secret would survive); a fresh process reads the
