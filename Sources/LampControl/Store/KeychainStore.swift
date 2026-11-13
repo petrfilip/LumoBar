@@ -6,6 +6,8 @@ protocol SecretStoring {
     func readSecret(service: String, account: String) throws -> String
     func saveSecret(_ secret: String, service: String, account: String) throws
     func deleteSecret(service: String, account: String) throws
+    /// Removes every item of `service`, whatever its account (used for per-device secrets).
+    func deleteAllSecrets(service: String) throws
 }
 
 extension SecretStoring {
@@ -33,6 +35,14 @@ final class KeychainStore: SecretStoring {
         static let govee = Item(service: "LampControl.Govee", account: "govee-api-key")
 
         static let all: [Item] = [.tuya, .hue, .lifx, .govee]
+
+        /// Nanoleaf auth tokens: one item per device, so not part of `all` (the account is
+        /// `nanoleafAccount(for:)`); "Reset all settings" removes the whole service.
+        static let nanoleafService = "LampControl.Nanoleaf"
+
+        static func nanoleafAccount(for deviceId: UUID) -> String {
+            "nanoleaf-token-\(deviceId.uuidString)"
+        }
     }
 
     private let defaultService = Item.tuya.service
@@ -93,6 +103,17 @@ final class KeychainStore: SecretStoring {
     /// Removes the item; "not found" counts as success.
     func deleteSecret(service: String, account: String) throws {
         let status = SecItemDelete(baseQuery(service: service, account: account) as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.delete", comment: ""), status))
+        }
+    }
+
+    func deleteAllSecrets(service: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service
+        ]
+        let status = SecItemDelete(query as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.delete", comment: ""), status))
         }

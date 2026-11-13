@@ -11,7 +11,10 @@ import Foundation
 ///   Every file in the folder is removed, so files written by older versions are
 ///   covered too.
 /// - Keychain (generic passwords): see `KeychainStore.Item.all`
-///   (Tuya access secret, Hue username, LIFX token, Govee API key).
+///   (Tuya access secret, Hue username, LIFX token, Govee API key), plus every item of the
+///   Nanoleaf token service (one per device).
+/// - Backups the stores keep of unreadable files (`<name>.corrupt-<timestamp>.json`) live in the
+///   same folder and are removed with it.
 /// - UserDefaults of the app's bundle id: onboarding flag, the presets-seeded flag,
 ///   Sparkle's update preferences, system-managed UI keys.
 struct AppResetService {
@@ -25,7 +28,9 @@ struct AppResetService {
     /// nil when running outside an app bundle (e.g. `swift run`): the known keys are removed instead.
     var defaultsDomain: String? = Bundle.main.bundleIdentifier
     var keychainItems: [KeychainStore.Item] = KeychainStore.Item.all
-    var keychain = KeychainStore()
+    /// Services whose items are removed wholesale (their accounts are per device).
+    var keychainServices: [String] = [KeychainStore.Item.nanoleafService]
+    var keychain: SecretStoring = KeychainStore()
 
     /// Wipes files, Keychain items and UserDefaults. Returns human-readable
     /// descriptions of the items that could not be removed (empty on success).
@@ -54,6 +59,10 @@ struct AppResetService {
         for item in keychainItems {
             do { try keychain.deleteSecret(service: item.service, account: item.account) }
             catch { failures.append(item.service) }
+        }
+        for service in keychainServices {
+            do { try keychain.deleteAllSecrets(service: service) }
+            catch { failures.append(service) }
         }
         return failures
     }

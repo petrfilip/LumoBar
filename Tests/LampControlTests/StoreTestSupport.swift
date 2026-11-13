@@ -16,6 +16,9 @@ final class MemorySecrets: SecretStoring {
         items[key(service, account)] = secret
     }
     func deleteSecret(service: String, account: String) throws { items[key(service, account)] = nil }
+    func deleteAllSecrets(service: String) throws {
+        for k in items.keys where k.hasPrefix(service + "/") { items[k] = nil }
+    }
 }
 
 /// A throwaway support folder per test, removed afterwards.

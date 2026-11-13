@@ -5,6 +5,9 @@ struct NanoleafDevice: Codable, Identifiable {
     var name: String       // display name (user-editable)
     var host: String       // IP address
     var port: Int = 16021
+    /// Held in memory for the client. On disk it only ever appears in files written by older
+    /// versions: it is decoded (so it can be migrated) but never encoded, because the token
+    /// lives in the Keychain (see `NanoleafSettingsStore`).
     var authToken: String
     var serial: String = ""
 
@@ -22,8 +25,18 @@ extension NanoleafDevice {
         name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
         host = try c.decode(String.self, forKey: .host)
         port = try c.decodeIfPresent(Int.self, forKey: .port) ?? 16021
-        authToken = try c.decode(String.self, forKey: .authToken)
+        authToken = try c.decodeIfPresent(String.self, forKey: .authToken) ?? ""
         serial = try c.decodeIfPresent(String.self, forKey: .serial) ?? ""
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(host, forKey: .host)
+        try c.encode(port, forKey: .port)
+        try c.encode(serial, forKey: .serial)
+        // `authToken` is deliberately not written: it belongs in the Keychain.
     }
 }
 
