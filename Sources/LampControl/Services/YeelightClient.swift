@@ -54,6 +54,22 @@ final class YeelightClient {
         return .ignore
     }
 
+    /// A refused TCP connection means nothing listens on the bulb's control port: LAN Control is
+    /// switched off (or the address is wrong). Network.framework reports it as `.waiting`, not
+    /// `.failed`, and retries until the timeout, so it has to be recognised to fail fast.
+    static func isConnectionRefused(_ error: NWError) -> Bool {
+        if case .posix(let code) = error { return code == .ECONNREFUSED }
+        return false
+    }
+
+    /// The error shown for a connection-level failure.
+    static func connectionError(_ error: NWError) -> LampControlError {
+        if isConnectionRefused(error) {
+            return .yeelight(NSLocalizedString("error.yeelight.refused", comment: ""))
+        }
+        return .yeelight("Yeelight: \(error.localizedDescription)")
+    }
+
     private func exchange(host: String, port: Int, command: String, requestID: Int) async throws -> [String] {
         guard let rawPort = UInt16(exactly: port), let nwPort = NWEndpoint.Port(rawValue: rawPort) else {
             throw LampControlError.configuration(NSLocalizedString("error.yeelight.port.invalid", comment: ""))
@@ -131,8 +147,12 @@ final class YeelightClient {
                         }
                         receiveNext()
                     })
+                case .waiting(let error):
+                    if Self.isConnectionRefused(error) {
+                        finish(.failure(Self.connectionError(error)))
+                    }
                 case .failed(let error):
-                    finish(.failure(LampControlError.yeelight("Yeelight: \(error.localizedDescription)")))
+                    finish(.failure(Self.connectionError(error)))
                 case .cancelled:
                     finish(.failure(LampControlError.offline))
                 default:

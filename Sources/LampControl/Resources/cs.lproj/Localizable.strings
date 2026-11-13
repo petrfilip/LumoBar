@@ -523,3 +523,4 @@
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "žárovka příkaz neprovedla";
 "error.hue.unauthorized" = "Hue: bridge tuto aplikaci už nepřijímá. Spárujte bridge znovu v Nastavení.";
+"error.yeelight.refused" = "Yeelight: spojení bylo odmítnuto. Ujistěte se, že je pro tuto žárovku zapnuto LAN Control.";

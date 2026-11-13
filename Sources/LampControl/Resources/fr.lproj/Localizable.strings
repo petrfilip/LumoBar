@@ -529,3 +529,4 @@
 "error.wiz.device" = "WiZ : %@";
 "error.wiz.not.applied" = "l’ampoule n’a pas appliqué la commande";
 "error.hue.unauthorized" = "Hue : le bridge n’accepte plus cette app. Appairez à nouveau le bridge dans les Réglages.";
+"error.yeelight.refused" = "Yeelight : connexion refusée. Vérifiez que LAN Control est activé pour cette ampoule.";

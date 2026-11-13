@@ -523,3 +523,4 @@
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "the bulb did not apply the command";
 "error.hue.unauthorized" = "Hue: the bridge no longer accepts this app. Pair the bridge again in Settings.";
+"error.yeelight.refused" = "Yeelight: connection refused. Make sure LAN Control is enabled for this bulb.";

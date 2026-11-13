@@ -529,3 +529,4 @@
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "la bombilla no aplicó el comando";
 "error.hue.unauthorized" = "Hue: el bridge ya no acepta esta app. Vuelve a emparejar el bridge en Ajustes.";
+"error.yeelight.refused" = "Yeelight: conexión rechazada. Comprueba que LAN Control esté activado para esta bombilla.";
