@@ -61,7 +61,7 @@ final class WizLightProvider: LightProvider {
 
     func setColor(deviceId: String, color: HSVColor) async throws -> LampDevice {
         let (device, _) = try requireDevice(deviceId)
-        let (r, g, b) = Self.hsvToRGB(color)
+        let (r, g, b) = color.rgb
         let dimming = max(1, min(100, color.v / 10))
         try await client.setRGB(device: device, r: r, g: g, b: b, dimming: dimming)
         return try update(deviceId: deviceId) {
@@ -99,7 +99,7 @@ final class WizLightProvider: LightProvider {
         let temperature = state?.temp
         let r = state?.r ?? 0; let g = state?.g ?? 0; let b = state?.b ?? 0
         let hasColor = (r + g + b) > 0
-        let color: HSVColor? = hasColor ? Self.rgbToHSV(r: r, g: g, b: b) : nil
+        let color: HSVColor? = hasColor ? HSVColor.fromRGB(r: r, g: g, b: b) : nil
 
         let capabilities = LightCapabilities(
             switchCode: "state",
@@ -123,39 +123,5 @@ final class WizLightProvider: LightProvider {
             workMode: nil,
             capabilities: capabilities
         )
-    }
-
-    private static func hsvToRGB(_ hsv: HSVColor) -> (r: Int, g: Int, b: Int) {
-        let h = Double(hsv.h) / 360.0
-        let s = Double(hsv.s) / 1000.0
-        let v = Double(hsv.v) / 1000.0
-        let i = Int(h * 6)
-        let f = h * 6 - Double(i)
-        let p = v * (1 - s); let q = v * (1 - f * s); let t = v * (1 - (1 - f) * s)
-        var r = 0.0, g = 0.0, b = 0.0
-        switch i % 6 {
-        case 0: r=v; g=t; b=p
-        case 1: r=q; g=v; b=p
-        case 2: r=p; g=v; b=t
-        case 3: r=p; g=q; b=v
-        case 4: r=t; g=p; b=v
-        default: r=v; g=p; b=q
-        }
-        return (Int(r * 255), Int(g * 255), Int(b * 255))
-    }
-
-    private static func rgbToHSV(r: Int, g: Int, b: Int) -> HSVColor {
-        let rf = Double(r) / 255.0; let gf = Double(g) / 255.0; let bf = Double(b) / 255.0
-        let maxV = max(rf, gf, bf); let minV = min(rf, gf, bf); let delta = maxV - minV
-        let v = Int(maxV * 1000)
-        let s = maxV == 0 ? 0 : Int((delta / maxV) * 1000)
-        var h = 0.0
-        if delta > 0 {
-            if maxV == rf      { h = (gf - bf) / delta + (gf < bf ? 6 : 0) }
-            else if maxV == gf { h = (bf - rf) / delta + 2 }
-            else               { h = (rf - gf) / delta + 4 }
-            h /= 6
-        }
-        return HSVColor(h: Int(h * 360), s: s, v: v)
     }
 }

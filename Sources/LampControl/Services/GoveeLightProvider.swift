@@ -63,7 +63,7 @@ final class GoveeLightProvider: LightProvider {
     }
 
     func setColor(deviceId: String, color: HSVColor) async throws -> LampDevice {
-        let rgb = rgb(from: color)
+        let rgb = color.rgb
         try await sendCommand(deviceId: deviceId, name: "color", value: .color(r: rgb.r, g: rgb.g, b: rgb.b))
         return try update(deviceId: deviceId) {
             $0.power = true
@@ -103,7 +103,7 @@ final class GoveeLightProvider: LightProvider {
             power: powerState?.lowercased() == "on",
             brightness: brightness,
             temperature: colorTem,
-            color: hasColor ? color.map { hsv(fromR: $0.r, g: $0.g, b: $0.b, brightness: brightness ?? 100) } : nil,
+            color: hasColor ? color.map { HSVColor.fromRGB(r: $0.r, g: $0.g, b: $0.b, value: Int((Double(min(100, max(1, brightness ?? 100))) * 10).rounded())) } : nil,
             workMode: nil,
             capabilities: LightCapabilities(
                 switchCode: "turn",
@@ -114,61 +114,6 @@ final class GoveeLightProvider: LightProvider {
                 workModeCode: nil
             )
         )
-    }
-
-    private func rgb(from color: HSVColor) -> (r: Int, g: Int, b: Int) {
-        let h = Double(color.h) / 360.0
-        let s = Double(color.s) / 1000.0
-        let v = Double(color.v) / 1000.0
-
-        let i = Int(h * 6)
-        let f = h * 6 - Double(i)
-        let p = v * (1 - s)
-        let q = v * (1 - f * s)
-        let t = v * (1 - (1 - f) * s)
-
-        let (r, g, b): (Double, Double, Double)
-        switch i % 6 {
-        case 0: (r, g, b) = (v, t, p)
-        case 1: (r, g, b) = (q, v, p)
-        case 2: (r, g, b) = (p, v, t)
-        case 3: (r, g, b) = (p, q, v)
-        case 4: (r, g, b) = (t, p, v)
-        default: (r, g, b) = (v, p, q)
-        }
-
-        return (
-            r: min(255, max(0, Int(round(r * 255)))),
-            g: min(255, max(0, Int(round(g * 255)))),
-            b: min(255, max(0, Int(round(b * 255))))
-        )
-    }
-
-    private func hsv(fromR r: Int, g: Int, b: Int, brightness: Int) -> HSVColor {
-        let rd = Double(r) / 255.0
-        let gd = Double(g) / 255.0
-        let bd = Double(b) / 255.0
-
-        let maxC = max(rd, gd, bd)
-        let minC = min(rd, gd, bd)
-        let delta = maxC - minC
-
-        var hue: Double = 0
-        if delta > 0 {
-            if maxC == rd {
-                hue = 60 * (((gd - bd) / delta).truncatingRemainder(dividingBy: 6))
-            } else if maxC == gd {
-                hue = 60 * (((bd - rd) / delta) + 2)
-            } else {
-                hue = 60 * (((rd - gd) / delta) + 4)
-            }
-        }
-        if hue < 0 { hue += 360 }
-
-        let saturation = maxC == 0 ? 0 : Int(round((delta / maxC) * 1000))
-        let value = Int(round(Double(min(100, max(1, brightness))) * 10))
-
-        return HSVColor(h: Int(round(hue)), s: saturation, v: value)
     }
 
     private func requireLamp(_ deviceId: String) throws -> LampDevice {
