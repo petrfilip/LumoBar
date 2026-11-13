@@ -41,13 +41,42 @@ final class HueClient {
     }
 
     func lights(settings: HueSettings) async throws -> [String: HueLightDTO] {
-        try await request(
+        let data = try await requestData(
             bridgeIP: settings.bridgeIP,
             method: "GET",
             path: "/api/\(escapePath(settings.username))/lights",
             username: settings.username,
             body: Optional<EmptyBody>.none
         )
+        return try Self.decodeLights(data)
+    }
+
+    /// Hue v1 answers errors with HTTP 200 and an array (`[{"error":{"type":1,...}}]`) instead
+    /// of the object we asked for. Surface that as a readable error, not a decoding failure.
+    static func decodeLights(_ data: Data) throws -> [String: HueLightDTO] {
+        do {
+            return try JSONDecoder().decode([String: HueLightDTO].self, from: data)
+        } catch {
+            if let apiError = apiError(in: data) {
+                throw map(apiError)
+            }
+            throw error
+        }
+    }
+
+    /// The first `error` item of a Hue v1 reply array, if the body is such an array.
+    static func apiError(in data: Data) -> HueAPIError? {
+        guard let items = try? JSONDecoder().decode([HueAPIItem].self, from: data) else { return nil }
+        for case .error(let error) in items { return error }
+        return nil
+    }
+
+    /// Error type 1 is "unauthorized user": the stored username is no longer valid.
+    static func map(_ error: HueAPIError) -> LampControlError {
+        if error.type == 1 {
+            return .configuration(NSLocalizedString("error.hue.unauthorized", comment: ""))
+        }
+        return .device("Hue: \(error.description)")
     }
 
     func setState(settings: HueSettings, lightID: String, state: HueStateCommand) async throws {
@@ -74,6 +103,17 @@ final class HueClient {
         username: String?,
         body: Body?
     ) async throws -> Response {
+        let data = try await requestData(bridgeIP: bridgeIP, method: method, path: path, username: username, body: body)
+        return try JSONDecoder().decode(Response.self, from: data)
+    }
+
+    private func requestData<Body: Encodable>(
+        bridgeIP: String,
+        method: String,
+        path: String,
+        username: String?,
+        body: Body?
+    ) async throws -> Data {
         guard var components = URLComponents(string: "http://\(bridgeIP)") else {
             throw LampControlError.configuration(NSLocalizedString("error.hue.bridge.address.invalid", comment: ""))
         }
@@ -94,7 +134,11 @@ final class HueClient {
 
         let (data, response) = try await session.data(for: request)
         try validate(response)
-        return try JSONDecoder().decode(Response.self, from: data)
+        // An invalid user must read as "pair again", whatever shape the caller expected.
+        if username != nil, let apiError = Self.apiError(in: data), apiError.type == 1 {
+            throw Self.map(apiError)
+        }
+        return data
     }
 
     private func validate(_ response: URLResponse) throws {

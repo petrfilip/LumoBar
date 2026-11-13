@@ -528,3 +528,4 @@
 /* Service errors (B1) */
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "la bombilla no aplicó el comando";
+"error.hue.unauthorized" = "Hue: el bridge ya no acepta esta app. Vuelve a emparejar el bridge en Ajustes.";
