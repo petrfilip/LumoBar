@@ -59,7 +59,6 @@ struct SettingsView: View {
                     case .circadian:   circadianSettings_
                     case .devices:     devicesSettings
                     case .updates:     updatesSettings
-                    case .premium:     PremiumSettingsView(licenseState: appState.licenseState)
                     case .about:       aboutSettings
                     }
                 }
@@ -172,14 +171,6 @@ struct SettingsView: View {
                         build: appState.updateService.currentBuild
                     ),
                     tint: Color.purple.opacity(0.10)
-                )
-
-                settingsLink(
-                    .premium,
-                    icon: "crown.fill",
-                    title: NSLocalizedString("route.premium", comment: ""),
-                    subtitle: "\(appState.licenseState.tier.title) - \(appState.licenseState.statusText)",
-                    tint: Color.yellow.opacity(0.12)
                 )
 
                 settingsLink(
@@ -862,19 +853,8 @@ struct SettingsView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 38)
                     }
-                    .liquidGlassButtonStyle(prominent: appState.licenseState.entitlements.canUseAutomations)
-                    .disabled(!appState.licenseState.entitlements.canUseAutomations || appState.isBusy)
-                    .overlay {
-                        if !appState.licenseState.entitlements.canUseAutomations {
-                            HStack {
-                                Spacer()
-                                Label("Premium", systemImage: "crown.fill")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(Color.yellow)
-                                    .padding(.trailing, 12)
-                            }
-                        }
-                    }
+                    .liquidGlassButtonStyle(prominent: true)
+                    .disabled(appState.isBusy)
                 }
             }
             .animation(.spring(response: 0.28, dampingFraction: 0.88), value: isAddingAutomation)
@@ -885,222 +865,198 @@ struct SettingsView: View {
 
     private var focusSettings: some View {
         VStack(spacing: 12) {
-            // Premium gating
-            if !appState.licenseState.entitlements.canUseFocusMappings {
-                settingsGroup {
-                    HStack(spacing: 12) {
-                        Image(systemName: "lock.fill")
-                            .foregroundStyle(Color.yellow)
-                            .frame(width: 24, height: 24)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(L10n.focusTitle)
-                                .font(.system(size: 12, weight: .semibold))
-                            Text(L10n.focusPremiumMessage)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(muted)
-                        }
+            settingsGroup {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(L10n.focusTitle)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(ink)
                         Spacer()
-                        Label("premium.locked", systemImage: "crown.fill")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color.yellow)
-                    }
-                    .padding(10)
-                    .liquidGlassSurface(radius: 16)
-                }
-            } else {
-                settingsGroup {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text(L10n.focusTitle)
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(ink)
-                            Spacer()
-                            Button {
-                                isCreatingFocusMapping = true
-                                newFocusIdentifier = ""
-                                newFocusSceneId = nil
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(accent)
-                                    .frame(width: 26, height: 26)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                        Button {
+                            isCreatingFocusMapping = true
+                            newFocusIdentifier = ""
+                            newFocusSceneId = nil
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(accent)
+                                .frame(width: 26, height: 26)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                    }
 
-                        if appState.focusMappings.isEmpty {
-                            HStack(spacing: 10) {
+                    if appState.focusMappings.isEmpty {
+                        HStack(spacing: 10) {
+                            Image(systemName: "target")
+                                .foregroundStyle(muted)
+                                .frame(width: 24, height: 24)
+                            Text(L10n.focusEmptyMessage)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(muted)
+                            Spacer()
+                        }
+                        .padding(12)
+                        .liquidGlassSurface(radius: 14)
+                    } else {
+                        ForEach(appState.focusMappings) { mapping in
+                            HStack(spacing: 8) {
                                 Image(systemName: "target")
-                                    .foregroundStyle(muted)
-                                    .frame(width: 24, height: 24)
-                                Text(L10n.focusEmptyMessage)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(muted)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(accent)
+                                    .frame(width: 20, height: 20)
+                                
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(mapping.focusDisplayName)
+                                        .font(.system(size: 11, weight: .semibold))
+                                    let sceneName = appState.userScenes.first(where: { $0.id == mapping.sceneId })?.title ?? "—"
+                                    Text(sceneName)
+                                        .font(.system(size: 9, weight: .medium))
+                                        .foregroundStyle(muted)
+                                }
+                                
                                 Spacer()
-                            }
-                            .padding(12)
-                            .liquidGlassSurface(radius: 14)
-                        } else {
-                            ForEach(appState.focusMappings) { mapping in
-                                HStack(spacing: 8) {
-                                    Image(systemName: "target")
+                                
+                                Toggle("", isOn: Binding(
+                                    get: { mapping.isEnabled },
+                                    set: { enabled in
+                                        var updated = mapping
+                                        updated.isEnabled = enabled
+                                        appState.updateFocusMapping(updated)
+                                    }
+                                ))
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .tint(accent)
+                                
+                                Button {
+                                    editingFocusMappingId = mapping.id
+                                    newFocusIdentifier = mapping.focusIdentifier
+                                    newFocusSceneId = mapping.sceneId
+                                } label: {
+                                    Image(systemName: "pencil.circle")
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundStyle(accent)
-                                        .frame(width: 20, height: 20)
-                                    
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Text(mapping.focusDisplayName)
-                                            .font(.system(size: 11, weight: .semibold))
-                                        let sceneName = appState.userScenes.first(where: { $0.id == mapping.sceneId })?.title ?? "—"
-                                        Text(sceneName)
-                                            .font(.system(size: 9, weight: .medium))
-                                            .foregroundStyle(muted)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Toggle("", isOn: Binding(
-                                        get: { mapping.isEnabled },
-                                        set: { enabled in
-                                            var updated = mapping
-                                            updated.isEnabled = enabled
-                                            appState.updateFocusMapping(updated)
-                                        }
-                                    ))
-                                    .labelsHidden()
-                                    .toggleStyle(.switch)
-                                    .tint(accent)
-                                    
-                                    Button {
-                                        editingFocusMappingId = mapping.id
-                                        newFocusIdentifier = mapping.focusIdentifier
-                                        newFocusSceneId = mapping.sceneId
-                                    } label: {
-                                        Image(systemName: "pencil.circle")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundStyle(accent)
-                                            .frame(width: 28, height: 28)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .help("help.focus.edit")
+                                        .frame(width: 28, height: 28)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .help("help.focus.edit")
 
-                                    Button {
-                                        appState.removeFocusMapping(mapping.id)
-                                    } label: {
-                                        Image(systemName: "trash")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundStyle(Color.red)
-                                            .frame(width: 28, height: 28)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .help("help.focus.delete")
+                                Button {
+                                    appState.removeFocusMapping(mapping.id)
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(Color.red)
+                                        .frame(width: 28, height: 28)
+                                        .contentShape(Rectangle())
                                 }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 6)
-                                .liquidGlassSurface(radius: 10)
+                                .buttonStyle(.plain)
+                                .help("help.focus.delete")
                             }
-                        }
-
-                        // Create new mapping
-                        if isCreatingFocusMapping {
-                            VStack(spacing: 8) {
-                                TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .textFieldStyle(.roundedBorder)
-                                
-                                Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
-                                    Text("—").tag(UUID?.none)
-                                    ForEach(appState.userScenes) { scene in
-                                        Text(scene.title).tag(UUID?.some(scene.id))
-                                    }
-                                }
-                                .font(.system(size: 11, weight: .medium))
-                                
-                                HStack(spacing: 8) {
-                                    Button(L10n.save) {
-                                        let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
-                                        guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
-                                        let mapping = FocusMapping(focusIdentifier: trimmed, focusDisplayName: trimmed, sceneId: newFocusSceneId)
-                                        appState.addFocusMapping(mapping)
-                                        isCreatingFocusMapping = false
-                                        newFocusIdentifier = ""
-                                        newFocusSceneId = nil
-                                    }
-                                    .buttonStyle(.plain)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .liquidGlassButtonStyle(prominent: true)
-                                    
-                                    Button(L10n.cancel) {
-                                        isCreatingFocusMapping = false
-                                        newFocusIdentifier = ""
-                                        newFocusSceneId = nil
-                                    }
-                                    .buttonStyle(.plain)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .liquidGlassButtonStyle()
-                                }
-                            }
-                            .padding(10)
-                            .liquidGlassSurface(radius: 14)
-                        }
-
-                        // Edit mapping
-                        if let editingId = editingFocusMappingId, let idx = appState.focusMappings.firstIndex(where: { $0.id == editingId }) {
-                            VStack(spacing: 8) {
-                                TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .textFieldStyle(.roundedBorder)
-                                
-                                Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
-                                    Text("—").tag(UUID?.none)
-                                    ForEach(appState.userScenes) { scene in
-                                        Text(scene.title).tag(UUID?.some(scene.id))
-                                    }
-                                }
-                                .font(.system(size: 11, weight: .medium))
-                                
-                                HStack(spacing: 8) {
-                                    Button(L10n.save) {
-                                        let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
-                                        guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
-                                        var updated = appState.focusMappings[idx]
-                                        updated.focusIdentifier = trimmed
-                                        updated.focusDisplayName = trimmed
-                                        updated.sceneId = newFocusSceneId
-                                        appState.updateFocusMapping(updated)
-                                        editingFocusMappingId = nil
-                                        newFocusIdentifier = ""
-                                        newFocusSceneId = nil
-                                    }
-                                    .buttonStyle(.plain)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .liquidGlassButtonStyle(prominent: true)
-                                    
-                                    Button(L10n.cancel) {
-                                        editingFocusMappingId = nil
-                                        newFocusIdentifier = ""
-                                        newFocusSceneId = nil
-                                    }
-                                    .buttonStyle(.plain)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .liquidGlassButtonStyle()
-                                }
-                            }
-                            .padding(10)
-                            .liquidGlassSurface(radius: 14)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .liquidGlassSurface(radius: 10)
                         }
                     }
-                }
 
-                focusAutomationGroup
+                    // Create new mapping
+                    if isCreatingFocusMapping {
+                        VStack(spacing: 8) {
+                            TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
+                                .font(.system(size: 11, weight: .medium))
+                                .textFieldStyle(.roundedBorder)
+                            
+                            Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
+                                Text("—").tag(UUID?.none)
+                                ForEach(appState.userScenes) { scene in
+                                    Text(scene.title).tag(UUID?.some(scene.id))
+                                }
+                            }
+                            .font(.system(size: 11, weight: .medium))
+                            
+                            HStack(spacing: 8) {
+                                Button(L10n.save) {
+                                    let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
+                                    let mapping = FocusMapping(focusIdentifier: trimmed, focusDisplayName: trimmed, sceneId: newFocusSceneId)
+                                    appState.addFocusMapping(mapping)
+                                    isCreatingFocusMapping = false
+                                    newFocusIdentifier = ""
+                                    newFocusSceneId = nil
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .liquidGlassButtonStyle(prominent: true)
+                                
+                                Button(L10n.cancel) {
+                                    isCreatingFocusMapping = false
+                                    newFocusIdentifier = ""
+                                    newFocusSceneId = nil
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .liquidGlassButtonStyle()
+                            }
+                        }
+                        .padding(10)
+                        .liquidGlassSurface(radius: 14)
+                    }
+
+                    // Edit mapping
+                    if let editingId = editingFocusMappingId, let idx = appState.focusMappings.firstIndex(where: { $0.id == editingId }) {
+                        VStack(spacing: 8) {
+                            TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
+                                .font(.system(size: 11, weight: .medium))
+                                .textFieldStyle(.roundedBorder)
+                            
+                            Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
+                                Text("—").tag(UUID?.none)
+                                ForEach(appState.userScenes) { scene in
+                                    Text(scene.title).tag(UUID?.some(scene.id))
+                                }
+                            }
+                            .font(.system(size: 11, weight: .medium))
+                            
+                            HStack(spacing: 8) {
+                                Button(L10n.save) {
+                                    let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
+                                    var updated = appState.focusMappings[idx]
+                                    updated.focusIdentifier = trimmed
+                                    updated.focusDisplayName = trimmed
+                                    updated.sceneId = newFocusSceneId
+                                    appState.updateFocusMapping(updated)
+                                    editingFocusMappingId = nil
+                                    newFocusIdentifier = ""
+                                    newFocusSceneId = nil
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .liquidGlassButtonStyle(prominent: true)
+                                
+                                Button(L10n.cancel) {
+                                    editingFocusMappingId = nil
+                                    newFocusIdentifier = ""
+                                    newFocusSceneId = nil
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .liquidGlassButtonStyle()
+                            }
+                        }
+                        .padding(10)
+                        .liquidGlassSurface(radius: 14)
+                    }
+                }
             }
+
+            focusAutomationGroup
         }
     }
 
@@ -1202,7 +1158,6 @@ struct SettingsView: View {
                     ))
                     .labelsHidden()
                     .toggleStyle(.switch)
-                    .disabled(!appState.licenseState.entitlements.canUseAdaptiveLighting)
                 }
                 .padding(12)
                 .liquidGlassSurface(radius: 16)
@@ -1843,196 +1798,173 @@ struct SettingsView: View {
             hint(appState.canSync ? "devices.sync.hint" : "devices.sync.required.hint")
 
             // Room management section
-            if !appState.licenseState.entitlements.canUseRooms {
-                settingsGroup {
-                    HStack(spacing: 12) {
-                        Image(systemName: "lock.fill")
-                            .foregroundStyle(Color.yellow)
-                            .frame(width: 24, height: 24)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("devices.rooms.title")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text("room.premium.message")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(muted)
-                        }
+            settingsGroup {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("devices.rooms.title")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(ink)
                         Spacer()
-                        Label("premium.locked", systemImage: "crown.fill")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color.yellow)
+                        Button {
+                            isCreatingRoom = true
+                            newRoomName = ""
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(accent)
+                                .frame(width: 26, height: 26)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .padding(10)
-                    .liquidGlassSurface(radius: 16)
-                }
-            } else {
-                settingsGroup {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("devices.rooms.title")
+
+                    // List rooms with edit/delete
+                    ForEach(appState.rooms) { room in
+                        HStack(spacing: 8) {
+                            Image(systemName: "door.left.hand.open")
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(ink)
+                                .foregroundStyle(accent)
+                                .frame(width: 20, height: 20)
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(room.name)
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(L10n.lampCount(room.lampIds.count))
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundStyle(muted)
+                            }
+
                             Spacer()
+
                             Button {
-                                isCreatingRoom = true
-                                newRoomName = ""
+                                editingRoomId = room.id
+                                newRoomName = room.name
                             } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 13, weight: .semibold))
+                                Image(systemName: "pencil.circle")
+                                    .font(.system(size: 12, weight: .semibold))
                                     .foregroundStyle(accent)
-                                    .frame(width: 26, height: 26)
+                                    .frame(width: 28, height: 28)
                                     .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-                        }
+                            .help("help.room.edit")
 
-                        // List rooms with edit/delete
-                        ForEach(appState.rooms) { room in
-                            HStack(spacing: 8) {
-                                Image(systemName: "door.left.hand.open")
+                            Button {
+                                var updated = room
+                                updated.lampIds = []
+                                if let idx = appState.rooms.firstIndex(where: { $0.id == room.id }) {
+                                    appState.rooms.remove(at: idx)
+                                    appState.persistRooms()
+                                }
+                            } label: {
+                                Image(systemName: "trash")
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundStyle(accent)
-                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.red)
+                                    .frame(width: 28, height: 28)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .help("help.room.delete")
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .liquidGlassSurface(radius: 10)
+                    }
 
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(room.name)
+                    // Lamp assignment
+                    if !appState.lamps.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("room.assign.lamps")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(muted)
+                            
+                            ForEach(appState.lamps) { lamp in
+                                HStack(spacing: 8) {
+                                    Text(lamp.name)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                    let current = appState.roomForLamp(lamp.id)?.name ?? L10n.roomUnassigned
+                                    Text(current)
                                         .font(.system(size: 11, weight: .semibold))
-                                    Text(L10n.lampCount(room.lampIds.count))
-                                        .font(.system(size: 9, weight: .medium))
                                         .foregroundStyle(muted)
-                                }
 
-                                Spacer()
-
-                                Button {
-                                    editingRoomId = room.id
-                                    newRoomName = room.name
-                                } label: {
-                                    Image(systemName: "pencil.circle")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(accent)
-                                        .frame(width: 28, height: 28)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .help("help.room.edit")
-
-                                Button {
-                                    var updated = room
-                                    updated.lampIds = []
-                                    if let idx = appState.rooms.firstIndex(where: { $0.id == room.id }) {
-                                        appState.rooms.remove(at: idx)
-                                        appState.persistRooms()
-                                    }
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(Color.red)
-                                        .frame(width: 28, height: 28)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .help("help.room.delete")
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .liquidGlassSurface(radius: 10)
-                        }
-
-                        // Lamp assignment
-                        if !appState.lamps.isEmpty {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("room.assign.lamps")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(muted)
-                                
-                                ForEach(appState.lamps) { lamp in
-                                    HStack(spacing: 8) {
-                                        Text(lamp.name)
-                                            .font(.system(size: 11, weight: .medium))
-                                        Spacer()
-                                        let current = appState.roomForLamp(lamp.id)?.name ?? L10n.roomUnassigned
-                                        Text(current)
-                                            .font(.system(size: 11, weight: .semibold))
-                                            .foregroundStyle(muted)
-
-                                        Menu {
-                                            Button(L10n.roomUnassigned) { appState.unassignLamp(lamp.id) }
-                                            ForEach(appState.rooms) { room in
-                                                Button(room.name) { appState.assignLamp(lamp.id, to: room.id) }
-                                            }
-                                        } label: {
-                                            Image(systemName: "ellipsis.circle")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundStyle(accent)
+                                    Menu {
+                                        Button(L10n.roomUnassigned) { appState.unassignLamp(lamp.id) }
+                                        ForEach(appState.rooms) { room in
+                                            Button(room.name) { appState.assignLamp(lamp.id, to: room.id) }
                                         }
-                                        .menuStyle(BorderlessButtonMenuStyle())
-                                        .help("help.room.assign")
+                                    } label: {
+                                        Image(systemName: "ellipsis.circle")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundStyle(accent)
                                     }
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .liquidGlassSurface(radius: 10)
+                                    .menuStyle(BorderlessButtonMenuStyle())
+                                    .help("help.room.assign")
                                 }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .liquidGlassSurface(radius: 10)
                             }
                         }
+                    }
 
-                        if isCreatingRoom {
-                            HStack(spacing: 8) {
-                                TextField("room.name.placeholder", text: $newRoomName)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .textFieldStyle(.roundedBorder)
-                                
-                                Button(L10n.save) {
-                                    let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    guard !trimmed.isEmpty else { return }
-                                    appState.rooms.append(Room(name: trimmed))
-                                    appState.persistRooms()
-                                    isCreatingRoom = false
-                                    newRoomName = ""
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle(prominent: true)
-                                
-                                Button(L10n.cancel) {
-                                    isCreatingRoom = false
-                                    newRoomName = ""
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle()
+                    if isCreatingRoom {
+                        HStack(spacing: 8) {
+                            TextField("room.name.placeholder", text: $newRoomName)
+                                .font(.system(size: 11, weight: .medium))
+                                .textFieldStyle(.roundedBorder)
+                            
+                            Button(L10n.save) {
+                                let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmed.isEmpty else { return }
+                                appState.rooms.append(Room(name: trimmed))
+                                appState.persistRooms()
+                                isCreatingRoom = false
+                                newRoomName = ""
                             }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .liquidGlassButtonStyle(prominent: true)
+                            
+                            Button(L10n.cancel) {
+                                isCreatingRoom = false
+                                newRoomName = ""
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .liquidGlassButtonStyle()
                         }
+                    }
 
-                        if let editingId = editingRoomId, let idx = appState.rooms.firstIndex(where: { $0.id == editingId }) {
-                            HStack(spacing: 8) {
-                                TextField("room.name.placeholder", text: $newRoomName)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .textFieldStyle(.roundedBorder)
-                                
-                                Button(L10n.save) {
-                                    let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    guard !trimmed.isEmpty else { return }
-                                    appState.rooms[idx].name = trimmed
-                                    appState.persistRooms()
-                                    editingRoomId = nil
-                                    newRoomName = ""
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle(prominent: true)
-                                
-                                Button(L10n.cancel) {
-                                    editingRoomId = nil
-                                    newRoomName = ""
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle()
+                    if let editingId = editingRoomId, let idx = appState.rooms.firstIndex(where: { $0.id == editingId }) {
+                        HStack(spacing: 8) {
+                            TextField("room.name.placeholder", text: $newRoomName)
+                                .font(.system(size: 11, weight: .medium))
+                                .textFieldStyle(.roundedBorder)
+                            
+                            Button(L10n.save) {
+                                let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmed.isEmpty else { return }
+                                appState.rooms[idx].name = trimmed
+                                appState.persistRooms()
+                                editingRoomId = nil
+                                newRoomName = ""
                             }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .liquidGlassButtonStyle(prominent: true)
+                            
+                            Button(L10n.cancel) {
+                                editingRoomId = nil
+                                newRoomName = ""
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .liquidGlassButtonStyle()
                         }
                     }
                 }
@@ -2371,7 +2303,7 @@ private struct AutomationEditor: View {
 
 private enum SettingsRoute {
     case overview, providers, tuya, hue, lifx, govee, yeelight, nanoleaf, wiz
-    case automations, focus, circadian, devices, updates, premium, about
+    case automations, focus, circadian, devices, updates, about
 
     var title: String {
         switch self {
@@ -2389,7 +2321,6 @@ private enum SettingsRoute {
         case .circadian:   NSLocalizedString("route.circadian", comment: "")
         case .devices:     NSLocalizedString("route.devices", comment: "")
         case .updates:     NSLocalizedString("route.updates", comment: "")
-        case .premium:     NSLocalizedString("route.premium", comment: "")
         case .about:       NSLocalizedString("route.about", comment: "")
         }
     }
@@ -2437,8 +2368,6 @@ private enum SettingsRoute {
             L10n.routeDevices(appState.lamps.count)
         case .updates:
             L10n.routeUpdatesSubtitle
-        case .premium:
-            appState.licenseState.statusText
         case .about:
             L10n.routeAboutSubtitle
         }

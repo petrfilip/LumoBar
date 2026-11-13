@@ -124,19 +124,11 @@ jour intégrées.
 - Clic droit sur l'icône barre de menu pour accéder à **Check for Updates…**
   sans ouvrir le popover.
 
-## Premium
-
-La préparation de l'offre Premium et de l'activation Lemon Squeezy est
-documentée dans [docs/PREMIUM.fr.md](docs/PREMIUM.fr.md).
-
 ## Roadmap
 
 - **Phase 1** : support Tuya, auto-update, doc bilingue, release publique. ✅
 - **Phase 2** : abstraction multi-fournisseurs + Philips Hue, LIFX, Govee,
   Yeelight. ✅
-- **Phase 3** : modèle freemium — gratuit (ON/OFF, 2 lampes), licence à vie à
-  10 € pour débloquer couleur, luminosité, multi-fournisseurs et lampes
-  illimitées.
 - **Phase 4** : notarisation Apple, installation automatique au lancement,
   onboarding guidé.
 - **Phase 5** : localisation (UI anglaise), pont HomeKit, automatisations.

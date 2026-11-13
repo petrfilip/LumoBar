@@ -102,16 +102,14 @@ struct ControlCenterView: View {
 
             Spacer(minLength: LCSpacing.xs)
 
-            if appState.licenseState.entitlements.canUseAdaptiveLighting {
-                // Adaptive lighting on/off — moved here from the tiny icon in
-                // the lamps status bar, where it was easy to miss.
-                circleIconButton(
-                    icon: appState.circadianSettings.isEnabled ? "sun.and.horizon.fill" : "sun.and.horizon",
-                    help: appState.circadianSettings.isEnabled ? "lamps.adaptive.disable" : "lamps.adaptive.enable",
-                    tint: appState.circadianSettings.isEnabled ? Color.orange : nil
-                ) {
-                    Task { await appState.setAdaptiveLighting(enabled: !appState.circadianSettings.isEnabled) }
-                }
+            // Adaptive lighting on/off — moved here from the tiny icon in
+            // the lamps status bar, where it was easy to miss.
+            circleIconButton(
+                icon: appState.circadianSettings.isEnabled ? "sun.and.horizon.fill" : "sun.and.horizon",
+                help: appState.circadianSettings.isEnabled ? "lamps.adaptive.disable" : "lamps.adaptive.enable",
+                tint: appState.circadianSettings.isEnabled ? Color.orange : nil
+            ) {
+                Task { await appState.setAdaptiveLighting(enabled: !appState.circadianSettings.isEnabled) }
             }
 
             circleIconButton(

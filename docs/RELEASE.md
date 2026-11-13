@@ -108,9 +108,6 @@ right-click menu.
 
 ## Future work
 
-- **Phase 3** will introduce a small Cloudflare Worker (or similar) that
-  validates Lemon Squeezy purchases and issues Ed25519-signed JWT tokens
-  for the freemium tier. Document its setup here once that lands.
 - **Notarisation** becomes mandatory once the Developer ID is enrolled —
   remove the "ad-hoc fallback" lines in `scripts/build_app.sh` at that
   point.

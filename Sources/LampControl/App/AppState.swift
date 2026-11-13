@@ -42,7 +42,6 @@ final class AppState: ObservableObject {
     @Published var expandedLampIds = Set<String>()
     @Published var isOnboardingPresented = false
     @Published var userScenes: [UserLightScene] = []
-    @Published var licenseState = LicenseState.earlyAccess
     @Published var hideOfflineLamps = false
     @Published var lampOrderIds: [String] = []
     @Published var searchText = ""
@@ -76,13 +75,8 @@ final class AppState: ObservableObject {
     let circadianService = CircadianService()
     private let hueClient = HueClient()
     private let sceneStore = LightSceneStore()
-    private let licenseStore = LicenseStore()
-    private let licenseActivationService = LicenseActivationService()
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
-    /// Pending retry of the launch-time license check after a network failure.
-    private var licenseRetryTask: Task<Void, Never>?
-    private var licenseNeedsRevalidation = false
     private let yeelightLiveSync = YeelightLiveSync()
     /// Coalesces and paces what sliders / the color picker stream while the user drags.
     private lazy var commandQueue: LampCommandQueue = makeCommandQueue()
@@ -108,7 +102,6 @@ final class AppState: ObservableObject {
 
     init() {
         configureYeelightLiveSync()
-        loadLicense()
         loadScenes()
         lampOrderIds = settingsStore.loadLampOrder()
         Task {
@@ -221,11 +214,6 @@ final class AppState: ObservableObject {
     }
 
     func applyScene(_ scene: UserLightScene, toRoomId roomId: String, byUser: Bool = false) async {
-        guard canApply(scene) else {
-            message = L10n.premiumScenes
-            return
-        }
-
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         // A captured scene restores each lamp's own look (white-only lamps included); a plain
         // color scene needs color-capable lamps.
@@ -384,11 +372,6 @@ final class AppState: ObservableObject {
             return
         }
 
-        guard licenseState.entitlements.canUseFocusMappings else {
-            Self.focusLog.info("Focus automation ignored: Premium feature")
-            return
-        }
-
         switch event {
         case .off:
             currentFocusIdentifier = nil
@@ -425,16 +408,8 @@ final class AppState: ObservableObject {
         (hasSecret || !settings.accessSecret.isEmpty)
     }
 
-    private var licensedLamps: [LampDevice] {
-        guard let maxLamps = licenseState.entitlements.maxLamps else {
-            return lamps
-        }
-
-        return Array(lamps.prefix(maxLamps))
-    }
-
     var visibleLamps: [LampDevice] {
-        var filtered = licensedLamps
+        var filtered = lamps
 
         // Filter offline lamps if toggle is on
         if hideOfflineLamps {
@@ -457,14 +432,6 @@ final class AppState: ObservableObject {
         }
 
         return filtered
-    }
-
-    var hiddenLampCount: Int {
-        guard let maxLamps = licenseState.entitlements.maxLamps else {
-            return 0
-        }
-
-        return max(0, lamps.count - maxLamps)
     }
 
     func updateLampOrder(_ order: [String]) {
@@ -864,11 +831,6 @@ final class AppState: ObservableObject {
     }
 
     func toggleSelection(_ lamp: LampDevice) {
-        guard licenseState.entitlements.canUseGroups else {
-            message = L10n.premiumGroups
-            return
-        }
-
         if selectedLampIds.contains(lamp.id) {
             selectedLampIds.remove(lamp.id)
         } else {
@@ -891,11 +853,6 @@ final class AppState: ObservableObject {
     }
 
     func selectAllRGBLamps() {
-        guard licenseState.entitlements.canUseGroups else {
-            message = L10n.premiumGroups
-            return
-        }
-
         selectedLampIds = Set(lamps.filter { $0.online && $0.capabilities.colorCode != nil }.map(\.id))
         isGroupPanelExpanded = selectedLampIds.count >= 2
     }
@@ -972,7 +929,6 @@ final class AppState: ObservableObject {
         if showsGroupControls {
             h += isGroupPanelExpanded || selectedLampIds.count >= 2 ? 220 : 60
         }
-        if hiddenLampCount > 0 { h += 56 }
 
         // Reserve room for every visible lamp row (expanded rows at their full
         // height) + room headers. Previously capped at 3 rows / 620 pt, so two
@@ -1011,11 +967,6 @@ final class AppState: ObservableObject {
     }
 
     func applyGroupColor() async {
-        guard licenseState.entitlements.canUseGroups else {
-            message = L10n.premiumGroups
-            return
-        }
-
         let targets = lamps.filter { selectedLampIds.contains($0.id) && canShow(groupColor, on: $0) }
         guard !targets.isEmpty else {
             showError(L10n.selectRGBLamp)
@@ -1042,15 +993,6 @@ final class AppState: ObservableObject {
         await applyScene(title: preset.title, color: preset.color, byUser: byUser)
     }
 
-    /// Built-in presets were always free; now that they live in the scene list
-    /// as regular scenes, applying an (unmodified-kind) preset-derived scene
-    /// stays free too. Everything else needs custom-scene entitlement.
-    private func canApply(_ scene: UserLightScene) -> Bool {
-        let e = licenseState.entitlements
-        if e.canUseCustomScenes { return true }
-        return scene.presetId != nil && !scene.isCapture && e.canUseScenePresets
-    }
-
     /// Applies a built-in by id ("focus", "relax"...): the user's (possibly
     /// edited) scene when it still exists, else the hard-coded definition, so
     /// automations keep working even if the scene was deleted.
@@ -1063,11 +1005,6 @@ final class AppState: ObservableObject {
     }
 
     func applyScene(_ scene: UserLightScene, byUser: Bool = false) async {
-        guard canApply(scene) else {
-            message = L10n.premiumScenes
-            return
-        }
-
         if let snapshots = scene.snapshots {
             await applyCapture(snapshots: snapshots, name: scene.title, byUser: byUser)
         } else {
@@ -1076,11 +1013,6 @@ final class AppState: ObservableObject {
     }
 
     func saveUserScene(id: UUID?, title: String, icon: String, color: HSVColor, snapshots: [LampSnapshot]? = nil) {
-        guard licenseState.entitlements.canUseCustomScenes else {
-            message = L10n.premiumScenes
-            return
-        }
-
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanTitle.isEmpty else { showError(L10n.sceneNameRequired); return }
         let cleanIcon = icon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "paintpalette.fill" : icon.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1126,11 +1058,6 @@ final class AppState: ObservableObject {
     }
 
     func deleteUserScene(_ scene: UserLightScene) {
-        guard licenseState.entitlements.canUseCustomScenes else {
-            message = L10n.premiumScenes
-            return
-        }
-
         userScenes.removeAll { $0.id == scene.id }
         persistScenes()
         persistWidgetSnapshot()
@@ -1168,11 +1095,6 @@ final class AppState: ObservableObject {
     }
 
     func applyGroupPower(_ value: Bool) async {
-        guard licenseState.entitlements.canUseGroups else {
-            message = L10n.premiumGroups
-            return
-        }
-
         let targets = lamps.filter { selectedLampIds.contains($0.id) }
         guard !targets.isEmpty else {
             showError(L10n.selectLamp)
@@ -1189,43 +1111,6 @@ final class AppState: ObservableObject {
             }
             message = L10n.groupPower(value)
         }
-    }
-
-    func activateLicense(_ licenseKey: String, email: String?) async {
-        await runBusy {
-            let next = try await licenseActivationService.activate(licenseKey: licenseKey, expectedEmail: email)
-            guard !isResettingApp else { return }
-            licenseState = next
-            try licenseStore.save(next)
-            message = L10n.premiumPurchaseRegistered
-        }
-    }
-
-    func validateLicense() async {
-        await runBusy {
-            let next = try await licenseActivationService.validate(licenseState)
-            guard !isResettingApp else { return }
-            licenseState = next
-            try licenseStore.save(next)
-            message = next.tier == .premium ? L10n.premiumActivated : L10n.premiumNotDetected
-        }
-    }
-
-    func deactivateLicense() async {
-        await runBusy {
-            if licenseState.tier == .premium {
-                try await licenseActivationService.deactivate(licenseState)
-            }
-
-            guard !isResettingApp else { return }
-            licenseState = .earlyAccess
-            try licenseStore.save(licenseState)
-            message = L10n.localStateReset
-        }
-    }
-
-    func openPremiumCheckout() {
-        Task { await activateLicense("", email: nil) }
     }
 
     func discoverHueBridges() async {
@@ -1519,10 +1404,6 @@ final class AppState: ObservableObject {
 
     func saveAutomation(_ automation: Automation) {
         guard !isResettingApp else { return }
-        guard licenseState.entitlements.canUseAutomations else {
-            message = L10n.premiumAutomations
-            return
-        }
         if let idx = automations.firstIndex(where: { $0.id == automation.id }) {
             automations[idx] = automation
         } else {
@@ -1597,10 +1478,6 @@ final class AppState: ObservableObject {
 
     func setAdaptiveLighting(enabled: Bool) async {
         guard !isResettingApp else { return }
-        guard licenseState.entitlements.canUseAdaptiveLighting || !enabled else {
-            message = L10n.premiumAdaptive
-            return
-        }
         circadianSettings.isEnabled = enabled
         _ = try? circadianSettingsStore.save(circadianSettings)
         if enabled {
@@ -1678,69 +1555,6 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func loadLicense() {
-        do {
-            licenseState = try licenseStore.load()
-
-            // Validate license with provider asynchronously at startup to prevent
-            // local tampering of license.json (if the file was edited to be premium).
-            revalidateLicense(attempt: 0)
-            // Offline at launch (e.g. launch-at-login before Wi-Fi is up): try
-            // again after wake instead of waiting for the next launch.
-            NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated {
-                    guard let self, self.licenseNeedsRevalidation else { return }
-                    self.revalidateLicense(attempt: 0)
-                }
-            }
-        } catch {
-            licenseState = .earlyAccess
-            showError(L10n.licenseUnreadable)
-        }
-    }
-
-    /// Re-checks the cached license with the provider. Only a definitive
-    /// answer changes or persists anything; transport failures keep the cached
-    /// state (and the stored key) silently and retry with a growing delay.
-    private func revalidateLicense(attempt: Int) {
-        licenseRetryTask?.cancel()
-        licenseRetryTask = nil
-        let cached = licenseState
-        Task { [weak self] in
-            guard let self else { return }
-            let result: Result<LicenseState, Error>
-            do {
-                result = .success(try await self.licenseActivationService.validate(cached))
-            } catch {
-                result = .failure(error)
-            }
-            await MainActor.run {
-                // The user activated / reset a license meanwhile: don't clobber it.
-                guard !self.isResettingApp, self.licenseState == cached else { return }
-                switch LicenseValidationPolicy.outcome(for: result) {
-                case .adopt(let validated):
-                    self.licenseNeedsRevalidation = false
-                    self.licenseState = validated
-                    // non-fatal if saving fails: keep in-memory state
-                    try? self.licenseStore.save(validated)
-                case .downgrade:
-                    self.licenseNeedsRevalidation = false
-                    self.licenseState = .earlyAccess
-                    try? self.licenseStore.save(self.licenseState)
-                    self.showError(L10n.licenseNotValidated)
-                case .keepCached:
-                    self.licenseNeedsRevalidation = true
-                    guard let delay = LicenseValidationPolicy.retryDelay(afterAttempt: attempt) else { return }
-                    self.licenseRetryTask = Task { [weak self] in
-                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                        guard !Task.isCancelled else { return }
-                        self?.revalidateLicense(attempt: attempt + 1)
-                    }
-                }
-            }
-        }
-    }
-
     /// Settings › "Restore default scenes": re-adds missing built-ins and
     /// resets modified ones; the user's own scenes are untouched.
     func restoreDefaultScenes() {
@@ -1753,8 +1567,7 @@ final class AppState: ObservableObject {
 
     // MARK: - Reset all settings
 
-    /// Wipes every persisted setting (see `AppResetService`) except the license,
-    /// then relaunches the app.
+    /// Wipes every persisted setting (see `AppResetService`), then relaunches the app.
     ///
     /// Relaunch instead of an in-process reload: state lives in ~15 `@Published`
     /// properties, per-provider clients, the

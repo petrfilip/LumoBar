@@ -21,7 +21,6 @@
 "lamps.sync.updating" = "Actualizando...";
 "lamps.sync.auto" = "Auto-sync";
 "lamps.sync.time" = "Sincronizado %@";
-"lamps.hidden.count" = "%d lámpara(s) oculta(s) por el plan gratuito";
 "lamps.online.count" = "%d en línea";
 "lamps.adaptive.disable" = "Iluminación adaptativa activa — desactivar";
 "lamps.adaptive.enable" = "Activar iluminación adaptativa";
@@ -91,7 +90,6 @@
 "route.circadian" = "Iluminación adaptativa";
 "route.devices" = "Dispositivos";
 "route.updates" = "Actualizaciones";
-"route.premium" = "Premium";
 "route.about" = "Acerca de";
 
 /* Navegación de ajustes */
@@ -284,34 +282,7 @@
 "about.storage.value" = "Keychain + archivos locales";
 "about.config.guide" = "Guía de configuración";
 
-/* Premium */
-"premium.title" = "Premium";
-"premium.lamps" = "Lámparas";
-"premium.lamps.unlimited" = "Ilimitadas";
-"premium.groups" = "Grupos";
-"premium.custom.scenes" = "Escenas personalizadas";
-"premium.quick.ambiances" = "Ambientes rápidos";
-"premium.activation" = "Activación";
-"premium.purchase" = "Compra";
-"premium.app.store.hint" = "Premium se compra a través de la App Store y se restaura desde tu cuenta de Apple.";
-"premium.app.store.note" = "Premium ahora lo gestiona Apple. Usa el botón de compra para abrir el flujo de App Store y luego restaura las compras si hace falta.";
-"premium.license.key" = "Clave de licencia";
-"premium.email" = "Email de compra";
-"premium.activate" = "Activar";
-"premium.reactivate" = "Reactivar";
-"premium.buy" = "Comprar Premium";
-"premium.early.access.note" = "Durante el Early Access, las funciones Premium permanecen activas.";
-"premium.active" = "Activo";
-"premium.locked" = "Premium";
-
 /* Licencia */
-"license.free" = "Gratuito";
-"license.premium" = "Premium";
-"license.early.access" = "Early Access";
-"license.status.free" = "Funciones básicas";
-"license.status.early.access" = "Premium activo durante la beta";
-"license.status.premium" = "Licencia activa";
-"license.none" = "No conectada";
 
 /* Acciones de automatización */
 "action.power.off.all" = "Apagar todo";
@@ -348,8 +319,6 @@
 "room.unassigned" = "Sin asignar";
 "room.manage" = "Gestionar habitaciones";
 "room.name.placeholder" = "Nombre de la habitación";
-"premium.rooms" = "Habitaciones";
-"room.premium.message" = "La gestión de habitaciones es una característica Premium";
 
 /* Modos de enfoque */
 "focus.title" = "Modos de enfoque";
@@ -362,7 +331,6 @@
 "focus.mapping.enable" = "Habilitado";
 "focus.mapping.disabled" = "Mapeo deshabilitado";
 "focus.empty.message" = "No hay mapeos de enfoque configurados";
-"focus.premium.message" = "La automatización del modo de enfoque es una característica Premium";
 
 /* Errors (services) */
 "error.offline" = "Dispositivo sin conexión.";
@@ -417,10 +385,6 @@
 "status.room.off" = "Habitación apagada.";
 "status.room.scene.applied" = "Escena %@ aplicada a la habitación.";
 "status.focus.save.failed" = "No se pudieron guardar los mapeos de enfoque.";
-"status.premium.scenes" = "Las escenas personalizadas están incluidas en Premium.";
-"status.premium.groups" = "Los grupos están incluidos en Premium.";
-"status.premium.automations" = "Las automatizaciones están incluidas en Premium.";
-"status.premium.adaptive" = "La iluminación adaptativa está incluida en Premium.";
 "status.lamps.synced" = "%ld lámpara(s) sincronizada(s).";
 "status.lamps.none.found" = "No se encontró ninguna lámpara compatible.";
 "status.settings.saved" = "Ajustes guardados.";
@@ -461,12 +425,6 @@
 "status.ambiance.no.rgb" = "No hay ninguna lámpara RGB en línea para aplicar este ambiente.";
 "status.ambiance.applied.all" = "Ambiente %@ aplicado a todas las lámparas RGB.";
 "status.ambiance.applied.count" = "Ambiente %@ aplicado a %ld lámpara(s).";
-"status.premium.purchase.registered" = "Compra Premium registrada.";
-"status.premium.activated" = "Premium activado.";
-"status.premium.not.detected" = "No se detectó ninguna compra Premium.";
-"status.local.state.reset" = "Estado local restablecido.";
-"status.license.not.validated" = "Licencia no validada en línea. Early Access activo.";
-"status.license.unreadable" = "La licencia local no se puede leer. Early Access activo.";
 "status.automation.saved" = "Automatización «%@» guardada.";
 "status.automation.deleted" = "Automatización eliminada.";
 "status.adaptive.saved" = "Ajustes adaptativos guardados.";
@@ -494,15 +452,10 @@
 "help.room.edit" = "Renombrar habitación";
 "help.room.delete" = "Eliminar habitación";
 "help.room.assign" = "Mover a una habitación";
-"help.license.refresh" = "Revalidar licencia";
 "help.onboarding.back" = "Atrás";
 
 /* Previously missing keys */
 "settings.title" = "Ajustes";
-"premium.license" = "Licencia";
-"premium.license.hint" = "Introduce la clave de licencia y el correo usado en la compra.";
-"premium.license.email" = "Correo de compra";
-"premium.early.access.hint" = "Durante el acceso anticipado, todas las funciones Premium están desbloqueadas gratis.";
 "focus.mode.donotdisturb" = "No molestar";
 "focus.mode.focus" = "Concentración";
 "focus.mode.sleep" = "Dormir";
@@ -546,7 +499,7 @@
 "status.scenes.restored" = "Escenas predeterminadas restauradas";
 "settings.reset.button" = "Restablecer todos los ajustes";
 "settings.reset.confirm.title" = "¿Restablecer todos los ajustes?";
-"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. Tu licencia se conserva. LampControl se reiniciará con sus ajustes originales.";
+"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. LampControl se reiniciará con sus ajustes originales.";
 "settings.reset.confirm.action" = "Restablecer y reiniciar";
 "settings.reset.confirm.cancel" = "Cancelar";
 "status.reset.failed" = "Restablecimiento incompleto, no se pudo eliminar: %@";

@@ -1,23 +1,20 @@
 import Foundation
 
-/// Removes everything LampControl persists, except the license.
+/// Removes everything LampControl persists.
 ///
 /// Persisted data (read from the stores):
 /// - Files in `~/Library/Application Support/LampControl/`: settings.json (Tuya),
 ///   lampOrder.json, hue-settings.json, yeelight-settings.json, nanoleaf-settings.json,
 ///   wiz-settings.json, scenes.json, rooms.json, focusMappings.json, automations.json,
 ///   circadian-settings.json, shortcut-settings.json (legacy), widgetSnapshot.json,
-///   license.json (KEPT).
-///   Every file in the folder except the license is removed, so files written by
-///   older versions are covered too.
+///   license.json (legacy).
+///   Every file in the folder is removed, so files written by older versions are
+///   covered too.
 /// - Keychain (generic passwords): see `KeychainStore.Item.all`
 ///   (Tuya access secret, Hue username, LIFX token, Govee API key).
 /// - UserDefaults of the app's bundle id: onboarding flag, the presets-seeded flag,
 ///   Sparkle's update preferences, system-managed UI keys.
 struct AppResetService {
-    /// Files that survive a reset (a purchase / early-access state, not a setting).
-    static let preservedFileNames: Set<String> = ["license.json"]
-
     static var defaultSupportDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("LampControl", isDirectory: true)
@@ -46,7 +43,7 @@ struct AppResetService {
             return [supportDirectory.lastPathComponent]
         }
         var failures: [String] = []
-        for url in items where !Self.preservedFileNames.contains(url.lastPathComponent) {
+        for url in items {
             do { try fm.removeItem(at: url) } catch { failures.append(url.lastPathComponent) }
         }
         return failures

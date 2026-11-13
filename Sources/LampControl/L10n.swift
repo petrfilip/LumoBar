@@ -10,10 +10,6 @@ enum L10n {
         String(format: NSLocalizedString("lamps.sync.time", comment: ""), time)
     }
 
-    static func hiddenLamps(_ count: Int) -> String {
-        String(format: NSLocalizedString("lamps.hidden.count", comment: ""), count)
-    }
-
     static var save: String { NSLocalizedString("action.save", comment: "") }
     static var cancel: String { NSLocalizedString("action.cancel", comment: "") }
 
@@ -103,7 +99,6 @@ enum L10n {
     static var roomUnassigned: String     { NSLocalizedString("room.unassigned", comment: "") }
     static var roomManage: String         { NSLocalizedString("room.manage", comment: "") }
     static var roomNamePlaceholder: String { NSLocalizedString("room.name.placeholder", comment: "") }
-    static var roomPremiumMessage: String { NSLocalizedString("room.premium.message", comment: "") }
 
     // MARK: - Focus Mode strings
 
@@ -117,7 +112,6 @@ enum L10n {
     static var focusMappingEnable: String        { NSLocalizedString("focus.mapping.enable", comment: "") }
     static var focusMappingDisabled: String      { NSLocalizedString("focus.mapping.disabled", comment: "") }
     static var focusEmptyMessage: String         { NSLocalizedString("focus.empty.message", comment: "") }
-    static var focusPremiumMessage: String       { NSLocalizedString("focus.premium.message", comment: "") }
 
     // MARK: - Lamp status (computed String properties)
 
@@ -204,16 +198,6 @@ enum L10n {
         String(format: NSLocalizedString("wiz.connected.count", comment: ""), count)
     }
 
-    // MARK: - License / Premium
-
-    static var licenseFree:              String { NSLocalizedString("license.free", comment: "") }
-    static var licensePremium:           String { NSLocalizedString("license.premium", comment: "") }
-    static var licenseEarlyAccess:       String { NSLocalizedString("license.early.access", comment: "") }
-    static var licenseStatusFree:        String { NSLocalizedString("license.status.free", comment: "") }
-    static var licenseStatusEarlyAccess: String { NSLocalizedString("license.status.early.access", comment: "") }
-    static var licenseStatusPremium:     String { NSLocalizedString("license.status.premium", comment: "") }
-    static var licenseNone:              String { NSLocalizedString("license.none", comment: "") }
-
     // MARK: - Automation actions
 
     static var actionPowerOff:       String { NSLocalizedString("action.power.off.all", comment: "") }
@@ -282,12 +266,6 @@ enum L10n {
     }
     static var focusSaveFailed: String  { s("status.focus.save.failed") }
 
-    // Premium upsells
-    static var premiumScenes: String      { s("status.premium.scenes") }
-    static var premiumGroups: String      { s("status.premium.groups") }
-    static var premiumAutomations: String { s("status.premium.automations") }
-    static var premiumAdaptive: String    { s("status.premium.adaptive") }
-
     // Sync / providers
     static func lampsSynced(_ count: Int) -> String {
         String(format: s("status.lamps.synced"), count)
@@ -354,14 +332,6 @@ enum L10n {
     static func ambianceApplied(_ title: String, count: Int) -> String {
         String(format: s("status.ambiance.applied.count"), title, count)
     }
-
-    // License
-    static var premiumPurchaseRegistered: String { s("status.premium.purchase.registered") }
-    static var premiumActivated: String   { s("status.premium.activated") }
-    static var premiumNotDetected: String { s("status.premium.not.detected") }
-    static var localStateReset: String    { s("status.local.state.reset") }
-    static var licenseNotValidated: String { s("status.license.not.validated") }
-    static var licenseUnreadable: String  { s("status.license.unreadable") }
 
     // Settings saved
     static func automationSaved(_ name: String) -> String {

@@ -24,7 +24,7 @@ final class AppResetServiceTests: XCTestCase {
         AppResetService(supportDirectory: dir, defaults: defaults, defaultsDomain: suiteName, keychainItems: [])
     }
 
-    func testWipesEverythingExceptLicense() throws {
+    func testWipesEverything() throws {
         let names = ["scenes.json", "rooms.json", "focusMappings.json", "automations.json", "lampOrder.json",
                      "settings.json", "hue-settings.json", "circadian-settings.json", "shortcut-settings.json",
                      "widgetSnapshot.json", "leftover-from-old-version.dat", "license.json"]
@@ -33,7 +33,7 @@ final class AppResetServiceTests: XCTestCase {
         XCTAssertEqual(service().wipeFiles(), [])
 
         let remaining = try FileManager.default.contentsOfDirectory(atPath: dir.path)
-        XCTAssertEqual(remaining, ["license.json"])
+        XCTAssertEqual(remaining, [])
     }
 
     func testWipesDefaultsDomain() {

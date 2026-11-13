@@ -21,7 +21,6 @@
 "lamps.sync.updating" = "Updating...";
 "lamps.sync.auto" = "Auto-sync";
 "lamps.sync.time" = "Synced %@";
-"lamps.hidden.count" = "%d lamp(s) hidden by the free plan";
 "lamps.online.count" = "%d online";
 "lamps.adaptive.disable" = "Adaptive lighting active — disable";
 "lamps.adaptive.enable" = "Enable adaptive lighting";
@@ -91,7 +90,6 @@
 "route.circadian" = "Adaptive Lighting";
 "route.devices" = "Devices";
 "route.updates" = "Updates";
-"route.premium" = "Premium";
 "route.about" = "About";
 
 /* Settings navigation */
@@ -282,35 +280,6 @@
 "about.storage.value" = "Keychain + local files";
 "about.config.guide" = "Configuration guide";
 
-/* Premium */
-"premium.title" = "Premium";
-"premium.lamps" = "Lamps";
-"premium.lamps.unlimited" = "Unlimited";
-"premium.groups" = "Groups";
-"premium.custom.scenes" = "Custom scenes";
-"premium.quick.ambiances" = "Quick ambiances";
-"premium.activation" = "Activation";
-"premium.purchase" = "Purchase";
-"premium.app.store.hint" = "Premium is purchased through the App Store and restored from your Apple account.";
-"premium.app.store.note" = "Premium is now managed by Apple. Use the purchase button to open the App Store flow, then restore purchases if needed.";
-"premium.license.key" = "License key";
-"premium.email" = "Purchase email";
-"premium.activate" = "Activate";
-"premium.reactivate" = "Reactivate";
-"premium.buy" = "Buy Premium";
-"premium.early.access.note" = "During Early Access, Premium features remain active.";
-"premium.active" = "Active";
-"premium.locked" = "Premium";
-
-/* License */
-"license.free" = "Free";
-"license.premium" = "Premium";
-"license.early.access" = "Early Access";
-"license.status.free" = "Basic features";
-"license.status.early.access" = "Premium active during beta";
-"license.status.premium" = "Active license";
-"license.none" = "Not connected";
-
 /* Automation actions */
 "action.power.off.all" = "Turn off all";
 "action.power.on.all" = "Turn on all";
@@ -344,8 +313,6 @@
 "room.unassigned" = "Unassigned";
 "room.manage" = "Manage Rooms";
 "room.name.placeholder" = "Room name";
-"premium.rooms" = "Rooms";
-"room.premium.message" = "Room management is a Premium feature";
 
 /* Focus Mode Mappings */
 "focus.title" = "Focus Modes";
@@ -358,7 +325,6 @@
 "focus.mapping.enable" = "Enabled";
 "focus.mapping.disabled" = "Mapping disabled";
 "focus.empty.message" = "No Focus mappings configured";
-"focus.premium.message" = "Focus mode automation is a Premium feature";
 
 /* Errors (services) */
 "error.offline" = "Device offline.";
@@ -413,10 +379,6 @@
 "status.room.off" = "Room turned off.";
 "status.room.scene.applied" = "Scene %@ applied to the room.";
 "status.focus.save.failed" = "Couldn't save Focus mappings.";
-"status.premium.scenes" = "Custom scenes are included in Premium.";
-"status.premium.groups" = "Groups are included in Premium.";
-"status.premium.automations" = "Automations are included in Premium.";
-"status.premium.adaptive" = "Adaptive lighting is included in Premium.";
 "status.lamps.synced" = "%ld lamp(s) synced.";
 "status.lamps.none.found" = "No compatible lamp found.";
 "status.settings.saved" = "Settings saved.";
@@ -457,12 +419,6 @@
 "status.ambiance.no.rgb" = "No online RGB lamp to apply this ambiance.";
 "status.ambiance.applied.all" = "Ambiance %@ applied to all RGB lamps.";
 "status.ambiance.applied.count" = "Ambiance %@ applied to %ld lamp(s).";
-"status.premium.purchase.registered" = "Premium purchase registered.";
-"status.premium.activated" = "Premium activated.";
-"status.premium.not.detected" = "No Premium purchase detected.";
-"status.local.state.reset" = "Local state reset.";
-"status.license.not.validated" = "License could not be validated online. Early Access active.";
-"status.license.unreadable" = "Local license is unreadable. Early Access active.";
 "status.automation.saved" = "Automation “%@” saved.";
 "status.automation.deleted" = "Automation deleted.";
 "status.adaptive.saved" = "Adaptive settings saved.";
@@ -490,15 +446,10 @@
 "help.room.edit" = "Rename room";
 "help.room.delete" = "Delete room";
 "help.room.assign" = "Move to room";
-"help.license.refresh" = "Re-validate license";
 "help.onboarding.back" = "Back";
 
 /* Previously missing keys */
 "settings.title" = "Settings";
-"premium.license" = "License";
-"premium.license.hint" = "Enter the license key and the email you used for the purchase.";
-"premium.license.email" = "Purchase email";
-"premium.early.access.hint" = "During Early Access all Premium features are unlocked for free.";
 "focus.mode.donotdisturb" = "Do Not Disturb";
 "focus.mode.focus" = "Focus";
 "focus.mode.sleep" = "Sleep";
@@ -542,7 +493,7 @@
 "status.scenes.restored" = "Default scenes restored";
 "settings.reset.button" = "Reset all settings";
 "settings.reset.confirm.title" = "Reset all settings?";
-"settings.reset.confirm.message" = "This permanently removes your scenes, rooms, lamp order, automations, Focus mappings, adaptive lighting schedule, light provider settings (including the secrets stored in the Keychain) and app preferences such as onboarding. Your license is kept. LampControl will restart with its original settings.";
+"settings.reset.confirm.message" = "This permanently removes your scenes, rooms, lamp order, automations, Focus mappings, adaptive lighting schedule, light provider settings (including the secrets stored in the Keychain) and app preferences such as onboarding. LampControl will restart with its original settings.";
 "settings.reset.confirm.action" = "Reset and restart";
 "settings.reset.confirm.cancel" = "Cancel";
 "status.reset.failed" = "Reset incomplete, could not remove: %@";

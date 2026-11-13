@@ -21,7 +21,6 @@
 "lamps.sync.updating" = "Aktualizace…";
 "lamps.sync.auto" = "Automatická synchronizace";
 "lamps.sync.time" = "Synchronizováno %@";
-"lamps.hidden.count" = "Žárovky skryté bezplatným tarifem: %d";
 "lamps.online.count" = "Online: %d";
 "lamps.adaptive.disable" = "Adaptivní osvětlení je aktivní — vypnout";
 "lamps.adaptive.enable" = "Zapnout adaptivní osvětlení";
@@ -91,7 +90,6 @@
 "route.circadian" = "Adaptivní osvětlení";
 "route.devices" = "Zařízení";
 "route.updates" = "Aktualizace";
-"route.premium" = "Premium";
 "route.about" = "O aplikaci";
 
 /* Settings navigation */
@@ -282,35 +280,6 @@
 "about.storage.value" = "Klíčenka + místní soubory";
 "about.config.guide" = "Průvodce nastavením";
 
-/* Premium */
-"premium.title" = "Premium";
-"premium.lamps" = "Žárovky";
-"premium.lamps.unlimited" = "Neomezeně";
-"premium.groups" = "Skupiny";
-"premium.custom.scenes" = "Vlastní scény";
-"premium.quick.ambiances" = "Rychlé nálady";
-"premium.activation" = "Aktivace";
-"premium.purchase" = "Koupit";
-"premium.app.store.hint" = "Premium se kupuje přes App Store a obnovuje se z vašeho účtu Apple.";
-"premium.app.store.note" = "Premium nyní spravuje Apple. Tlačítkem nákupu otevřete App Store a v případě potřeby poté obnovte nákupy.";
-"premium.license.key" = "Licenční klíč";
-"premium.email" = "E-mail použitý při nákupu";
-"premium.activate" = "Aktivovat";
-"premium.reactivate" = "Znovu aktivovat";
-"premium.buy" = "Koupit Premium";
-"premium.early.access.note" = "Během předběžného přístupu zůstávají funkce Premium aktivní.";
-"premium.active" = "Aktivní";
-"premium.locked" = "Premium";
-
-/* License */
-"license.free" = "Zdarma";
-"license.premium" = "Premium";
-"license.early.access" = "Předběžný přístup";
-"license.status.free" = "Základní funkce";
-"license.status.early.access" = "Premium aktivní během bety";
-"license.status.premium" = "Aktivní licence";
-"license.none" = "Nepřipojeno";
-
 /* Automation actions */
 "action.power.off.all" = "Vypnout vše";
 "action.power.on.all" = "Zapnout vše";
@@ -344,8 +313,6 @@
 "room.unassigned" = "Nepřiřazeno";
 "room.manage" = "Spravovat místnosti";
 "room.name.placeholder" = "Název místnosti";
-"premium.rooms" = "Místnosti";
-"room.premium.message" = "Správa místností je funkce Premium";
 
 /* Focus Mode Mappings */
 "focus.title" = "Režimy Soustředění";
@@ -358,7 +325,6 @@
 "focus.mapping.enable" = "Zapnuto";
 "focus.mapping.disabled" = "Přiřazení je vypnuto";
 "focus.empty.message" = "Nejsou nastavena žádná přiřazení Soustředění";
-"focus.premium.message" = "Automatizace režimů Soustředění je funkce Premium";
 
 /* Errors (services) */
 "error.offline" = "Zařízení je offline.";
@@ -413,10 +379,6 @@
 "status.room.off" = "Místnost vypnuta.";
 "status.room.scene.applied" = "Scéna %@ byla použita v místnosti.";
 "status.focus.save.failed" = "Přiřazení Soustředění se nepodařilo uložit.";
-"status.premium.scenes" = "Vlastní scény jsou součástí Premium.";
-"status.premium.groups" = "Skupiny jsou součástí Premium.";
-"status.premium.automations" = "Automatizace jsou součástí Premium.";
-"status.premium.adaptive" = "Adaptivní osvětlení je součástí Premium.";
 "status.lamps.synced" = "Synchronizované žárovky: %ld.";
 "status.lamps.none.found" = "Nebyla nalezena žádná kompatibilní žárovka.";
 "status.settings.saved" = "Nastavení uloženo.";
@@ -457,12 +419,6 @@
 "status.ambiance.no.rgb" = "Pro použití této nálady není k dispozici žádná online žárovka RGB.";
 "status.ambiance.applied.all" = "Nálada %@ byla použita na všechny žárovky RGB.";
 "status.ambiance.applied.count" = "Nálada %@ byla použita na žárovky: %ld.";
-"status.premium.purchase.registered" = "Nákup Premium byl zaregistrován.";
-"status.premium.activated" = "Premium bylo aktivováno.";
-"status.premium.not.detected" = "Nebyl zjištěn žádný nákup Premium.";
-"status.local.state.reset" = "Místní stav byl resetován.";
-"status.license.not.validated" = "Licenci se nepodařilo ověřit online. Předběžný přístup je aktivní.";
-"status.license.unreadable" = "Místní licence je nečitelná. Předběžný přístup je aktivní.";
 "status.automation.saved" = "Automatizace „%@“ uložena.";
 "status.automation.deleted" = "Automatizace smazána.";
 "status.adaptive.saved" = "Adaptivní nastavení uloženo.";
@@ -490,15 +446,10 @@
 "help.room.edit" = "Přejmenovat místnost";
 "help.room.delete" = "Smazat místnost";
 "help.room.assign" = "Přesunout do místnosti";
-"help.license.refresh" = "Znovu ověřit licenci";
 "help.onboarding.back" = "Zpět";
 
 /* Previously missing keys */
 "settings.title" = "Nastavení";
-"premium.license" = "Licence";
-"premium.license.hint" = "Zadejte licenční klíč a e-mail použitý při nákupu.";
-"premium.license.email" = "E-mail použitý při nákupu";
-"premium.early.access.hint" = "Během předběžného přístupu jsou všechny funkce Premium odemčeny zdarma.";
 "focus.mode.donotdisturb" = "Nerušit";
 "focus.mode.focus" = "Soustředění";
 "focus.mode.sleep" = "Spánek";
@@ -542,7 +493,7 @@
 "status.scenes.restored" = "Výchozí scény obnoveny";
 "settings.reset.button" = "Resetovat všechna nastavení";
 "settings.reset.confirm.title" = "Resetovat všechna nastavení?";
-"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. Licence zůstane zachována. LampControl se restartuje s původním nastavením.";
+"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. LampControl se restartuje s původním nastavením.";
 "settings.reset.confirm.action" = "Resetovat a restartovat";
 "settings.reset.confirm.cancel" = "Zrušit";
 "status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";

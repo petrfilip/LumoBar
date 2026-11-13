@@ -118,8 +118,6 @@ LampControl uses [Sparkle](https://sparkle-project.org/) for in-app updates.
 
 - **Phase 1:** Tuya support, auto-update, bilingual docs, public release. ✅
 - **Phase 2:** Vendor abstraction + Philips Hue, LIFX, Govee, Yeelight. ✅
-- **Phase 3:** Freemium licensing — free tier (ON/OFF, 2 lamps), lifetime
-  €10 unlock for colour, brightness, multi-vendor and unlimited lamps.
 - **Phase 4:** Notarisation, automatic install on launch, onboarding tour.
 - **Phase 5:** Localisation (English UI), HomeKit bridge, automation triggers.
 
