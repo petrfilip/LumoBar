@@ -12,13 +12,12 @@ struct SettingsView: View {
     @State private var newWizName: String = ""
     @State private var editingAutomation: Automation?
     @State private var isAddingAutomation = false
-    @State private var editingRoomId: String?
-    @State private var newRoomName: String = ""
-    @State private var isCreatingRoom = false
-    @State private var editingFocusMappingId: String?
-    @State private var newFocusIdentifier: String = ""
-    @State private var newFocusSceneId: UUID?
-    @State private var isCreatingFocusMapping = false
+    /// One editor per section: the create and the edit form can never be open together.
+    @State private var roomEditor: SectionEditor<String> = .none
+    @State private var roomDraftName: String = ""
+    @State private var focusEditor: SectionEditor<String> = .none
+    @State private var focusDraftIdentifier: String = ""
+    @State private var focusDraftSceneId: UUID?
     @State private var editingKeyframeId: UUID?
     /// Unsaved edits to the adaptive schedule; `nil` = nothing edited.
     @State private var circadianDraft: CircadianSettings?
@@ -942,6 +941,39 @@ struct SettingsView: View {
 
     // MARK: - Focus Mode Settings
 
+    private func saveFocusMapping() {
+        let trimmed = focusDraftIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, focusDraftSceneId != nil else { return }
+        switch focusEditor {
+        case .none:
+            return
+        case .create:
+            appState.addFocusMapping(FocusMapping(focusIdentifier: trimmed, focusDisplayName: trimmed, sceneId: focusDraftSceneId))
+        case .edit(let id):
+            if var updated = appState.focusMappings.first(where: { $0.id == id }) {
+                updated.focusIdentifier = trimmed
+                updated.focusDisplayName = trimmed
+                updated.sceneId = focusDraftSceneId
+                appState.updateFocusMapping(updated)
+            }
+        }
+        focusEditor = .none
+        focusDraftIdentifier = ""
+        focusDraftSceneId = nil
+    }
+
+    private func saveRoom() {
+        let trimmed = roomDraftName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        switch roomEditor {
+        case .none: return
+        case .create: appState.addRoom(name: trimmed)
+        case .edit(let id): appState.renameRoom(id, to: trimmed)
+        }
+        roomEditor = .none
+        roomDraftName = ""
+    }
+
     private var focusSettings: some View {
         VStack(spacing: 12) {
             settingsGroup {
@@ -952,9 +984,9 @@ struct SettingsView: View {
                             .foregroundStyle(ink)
                         Spacer()
                         Button {
-                            isCreatingFocusMapping = true
-                            newFocusIdentifier = ""
-                            newFocusSceneId = nil
+                            focusEditor = .create
+                            focusDraftIdentifier = ""
+                            focusDraftSceneId = nil
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 13, weight: .semibold))
@@ -1009,9 +1041,9 @@ struct SettingsView: View {
                                 .tint(accent)
                                 
                                 Button {
-                                    editingFocusMappingId = mapping.id
-                                    newFocusIdentifier = mapping.focusIdentifier
-                                    newFocusSceneId = mapping.sceneId
+                                    focusEditor = .edit(mapping.id)
+                                    focusDraftIdentifier = mapping.focusIdentifier
+                                    focusDraftSceneId = mapping.sceneId
                                 } label: {
                                     Image(systemName: "pencil.circle")
                                         .font(.system(size: 12, weight: .semibold))
@@ -1040,102 +1072,29 @@ struct SettingsView: View {
                         }
                     }
 
-                    // Create new mapping
-                    if isCreatingFocusMapping {
-                        VStack(spacing: 8) {
-                            TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
+                    if focusEditor.isOpen {
+                        InlineEditorForm(onSave: saveFocusMapping, onCancel: { focusEditor = .none }) {
+                            TextField(L10n.focusIdentifierPlaceholder, text: $focusDraftIdentifier)
                                 .font(.system(size: 11, weight: .medium))
                                 .textFieldStyle(.roundedBorder)
-                            
-                            Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
-                                Text("—").tag(UUID?.none)
-                                ForEach(appState.userScenes) { scene in
-                                    Text(scene.title).tag(UUID?.some(scene.id))
-                                }
-                            }
-                            .font(.system(size: 11, weight: .medium))
-                            
-                            HStack(spacing: 8) {
-                                Button(L10n.save) {
-                                    let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
-                                    let mapping = FocusMapping(focusIdentifier: trimmed, focusDisplayName: trimmed, sceneId: newFocusSceneId)
-                                    appState.addFocusMapping(mapping)
-                                    isCreatingFocusMapping = false
-                                    newFocusIdentifier = ""
-                                    newFocusSceneId = nil
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle(prominent: true)
-                                
-                                Button(L10n.cancel) {
-                                    isCreatingFocusMapping = false
-                                    newFocusIdentifier = ""
-                                    newFocusSceneId = nil
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle()
-                            }
-                        }
-                        .padding(10)
-                        .liquidGlassSurface(radius: 14)
-                    }
 
-                    // Edit mapping
-                    if let editingId = editingFocusMappingId, let idx = appState.focusMappings.firstIndex(where: { $0.id == editingId }) {
-                        VStack(spacing: 8) {
-                            TextField(L10n.focusIdentifierPlaceholder, text: $newFocusIdentifier)
-                                .font(.system(size: 11, weight: .medium))
-                                .textFieldStyle(.roundedBorder)
-                            
-                            Picker(L10n.focusScenePlaceholder, selection: $newFocusSceneId) {
+                            Picker(L10n.focusScenePlaceholder, selection: $focusDraftSceneId) {
                                 Text("—").tag(UUID?.none)
                                 ForEach(appState.userScenes) { scene in
                                     Text(scene.title).tag(UUID?.some(scene.id))
                                 }
                             }
                             .font(.system(size: 11, weight: .medium))
-                            
-                            HStack(spacing: 8) {
-                                Button(L10n.save) {
-                                    let trimmed = newFocusIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    guard !trimmed.isEmpty, newFocusSceneId != nil else { return }
-                                    var updated = appState.focusMappings[idx]
-                                    updated.focusIdentifier = trimmed
-                                    updated.focusDisplayName = trimmed
-                                    updated.sceneId = newFocusSceneId
-                                    appState.updateFocusMapping(updated)
-                                    editingFocusMappingId = nil
-                                    newFocusIdentifier = ""
-                                    newFocusSceneId = nil
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle(prominent: true)
-                                
-                                Button(L10n.cancel) {
-                                    editingFocusMappingId = nil
-                                    newFocusIdentifier = ""
-                                    newFocusSceneId = nil
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .liquidGlassButtonStyle()
-                            }
                         }
-                        .padding(10)
-                        .liquidGlassSurface(radius: 14)
                     }
                 }
             }
 
             focusAutomationGroup
+        }
+        // A mapping deleted (or switched off by a scene deletion) while its form is open.
+        .onReceive(appState.$focusMappings) { mappings in
+            focusEditor = focusEditor.resolved(existingIDs: mappings.map(\.id))
         }
     }
 
@@ -1916,8 +1875,8 @@ struct SettingsView: View {
                             .foregroundStyle(ink)
                         Spacer()
                         Button {
-                            isCreatingRoom = true
-                            newRoomName = ""
+                            roomEditor = .create
+                            roomDraftName = ""
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 13, weight: .semibold))
@@ -1947,8 +1906,8 @@ struct SettingsView: View {
                             Spacer()
 
                             Button {
-                                editingRoomId = room.id
-                                newRoomName = room.name
+                                roomEditor = .edit(room.id)
+                                roomDraftName = room.name
                             } label: {
                                 Image(systemName: "pencil.circle")
                                     .font(.system(size: 12, weight: .semibold))
@@ -1960,12 +1919,7 @@ struct SettingsView: View {
                             .help("help.room.edit")
 
                             Button {
-                                var updated = room
-                                updated.lampIds = []
-                                if let idx = appState.rooms.firstIndex(where: { $0.id == room.id }) {
-                                    appState.rooms.remove(at: idx)
-                                    appState.persistRooms()
-                                }
+                                appState.deleteRoom(room.id)
                             } label: {
                                 Image(systemName: "trash")
                                     .font(.system(size: 12, weight: .semibold))
@@ -2018,67 +1972,20 @@ struct SettingsView: View {
                         }
                     }
 
-                    if isCreatingRoom {
-                        HStack(spacing: 8) {
-                            TextField("room.name.placeholder", text: $newRoomName)
+                    if roomEditor.isOpen {
+                        InlineEditorForm(onSave: saveRoom, onCancel: { roomEditor = .none }) {
+                            TextField("room.name.placeholder", text: $roomDraftName)
                                 .font(.system(size: 11, weight: .medium))
                                 .textFieldStyle(.roundedBorder)
-                            
-                            Button(L10n.save) {
-                                let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
-                                guard !trimmed.isEmpty else { return }
-                                appState.rooms.append(Room(name: trimmed))
-                                appState.persistRooms()
-                                isCreatingRoom = false
-                                newRoomName = ""
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .liquidGlassButtonStyle(prominent: true)
-                            
-                            Button(L10n.cancel) {
-                                isCreatingRoom = false
-                                newRoomName = ""
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .liquidGlassButtonStyle()
-                        }
-                    }
-
-                    if let editingId = editingRoomId, let idx = appState.rooms.firstIndex(where: { $0.id == editingId }) {
-                        HStack(spacing: 8) {
-                            TextField("room.name.placeholder", text: $newRoomName)
-                                .font(.system(size: 11, weight: .medium))
-                                .textFieldStyle(.roundedBorder)
-                            
-                            Button(L10n.save) {
-                                let trimmed = newRoomName.trimmingCharacters(in: .whitespacesAndNewlines)
-                                guard !trimmed.isEmpty else { return }
-                                appState.rooms[idx].name = trimmed
-                                appState.persistRooms()
-                                editingRoomId = nil
-                                newRoomName = ""
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .liquidGlassButtonStyle(prominent: true)
-                            
-                            Button(L10n.cancel) {
-                                editingRoomId = nil
-                                newRoomName = ""
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .liquidGlassButtonStyle()
+                                .onSubmit(saveRoom)
                         }
                     }
                 }
             }
+        }
+        // A room deleted while its form is open.
+        .onReceive(appState.$rooms) { rooms in
+            roomEditor = roomEditor.resolved(existingIDs: rooms.map(\.id))
         }
     }
 

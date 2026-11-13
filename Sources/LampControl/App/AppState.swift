@@ -212,6 +212,22 @@ final class AppState: ObservableObject {
         rooms.first { $0.lampIds.contains(lampId) }
     }
 
+    func addRoom(name: String) {
+        rooms.append(Room(name: name))
+        persistRooms()
+    }
+
+    func renameRoom(_ roomId: String, to name: String) {
+        guard let index = rooms.firstIndex(where: { $0.id == roomId }) else { return }
+        rooms[index].name = name
+        persistRooms()
+    }
+
+    func deleteRoom(_ roomId: String) {
+        rooms.removeAll { $0.id == roomId }
+        persistRooms()
+    }
+
     func assignLamp(_ lampId: String, to roomId: String) {
         // Remove from other rooms
         for i in rooms.indices {
