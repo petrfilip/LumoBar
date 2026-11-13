@@ -102,6 +102,10 @@ LumoBar started from LampControl 1.3.3. Changes in this fork:
   unassigned lamps.
 - Settings no longer demand Tuya setup when you use other providers.
 - Sparkle does not start without a valid public key; Sparkle bumped to 2.9.5.
+- Unreadable settings files are set aside and reported instead of being
+  overwritten; the Nanoleaf token lives in the Keychain.
+- Background polling pauses while the Mac sleeps or the screen is locked.
+- Status banners can be dismissed; VoiceOver labels on icon-only controls.
 
 ## Install
 
@@ -155,6 +159,10 @@ Requires macOS 13+, Xcode 15.4+ command-line tools, and Swift 5.9+.
      for API Key*).
    - **Yeelight** — enable *LAN Control* on each bulb in the Yeelight app,
      then let LumoBar find it on your network.
+   - **Nanoleaf** — enter the panel's IP, hold its power button for 5–7 s,
+     click *Pair and sync*.
+   - **WiZ** — enter the bulb's IP (local communication must be allowed in
+     the WiZ app).
 4. Lamps appear in the **Lamps** tab as soon as a provider is connected.
 
 The full walkthrough lives in [docs/CONFIGURATION.md](docs/CONFIGURATION.md).

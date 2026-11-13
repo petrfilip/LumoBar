@@ -1,7 +1,7 @@
-# Configuration guide — Tuya, Hue, LIFX, Govee, Yeelight
+# Configuration guide — Tuya, Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ
 
-LumoBar talks to five ecosystems in parallel. You can enable just one or
-all five — the lamp list is merged and sorted by name.
+LumoBar talks to seven ecosystems in parallel. You can enable just one or
+all of them — the lamp list is merged and sorted by name.
 
 | Brand | Access type | Internet required? |
 | --- | --- | --- |
@@ -10,6 +10,8 @@ all five — the lamp list is merged and sorted by name.
 | **LIFX** | Cloud (personal token) | Yes |
 | **Govee** | Cloud (Developer API key) | Yes |
 | **Yeelight** | Direct LAN (developer mode) | No (LAN) |
+| **Nanoleaf** | Local LAN (pairing token) | No (LAN) |
+| **WiZ** | Direct LAN (UDP) | No (LAN) |
 
 Each brand has its own settings page in **Settings → Providers**. Jump to the
 brand you need:
@@ -19,6 +21,8 @@ brand you need:
 - [LIFX](#lifx)
 - [Govee](#govee)
 - [Yeelight](#yeelight)
+- [Nanoleaf](#nanoleaf)
+- [WiZ](#wiz)
 
 ---
 
@@ -347,14 +351,17 @@ cloud, no token — but you must enable **"LAN Control"** on each bulb.
 > Repeat for every bulb. If LAN Control isn't visible, update the bulb's
 > firmware from the app first.
 
-### Step 2 — Enter it in LumoBar
+### Step 2 — Add it in LumoBar
 
 1. **Settings → Providers → Yeelight**.
-2. Enter the **IP** (e.g. `192.168.1.42`) — you can append `:port` if your
-   bulb listens on a custom port (rare).
-3. Optional: a **name** (otherwise LumoBar uses the one reported by the
-   bulb).
-4. **Add and sync**. Repeat for each bulb.
+2. Click **Search network**. LumoBar lists every bulb with LAN Control
+   enabled on your network; click **+** next to each one you want.
+3. If a bulb isn't found (some routers block multicast), enter its **IP**
+   instead (e.g. `192.168.1.42`, optionally `:port`), an optional **name**,
+   and click **Add and sync**.
+
+LumoBar subscribes to each bulb's push notifications, so changes made in the
+Yeelight app or with a wall switch show up immediately.
 
 The list is stored in plain JSON at
 `~/Library/Application Support/LampControl/yeelight-settings.json` (no
@@ -371,6 +378,64 @@ secret to protect — there's no key or password).
 
 - **Bulb offline** — power-cycle the bulb, wait 30 seconds, click **Sync
   now**.
-- **IP changed** — Yeelight bulbs use DHCP. If your router rotates the
-  lease, remove the old entry (trash icon) and re-add with the new IP.
-  Better: reserve an IP in your router.
+- **IP changed** — Yeelight bulbs use DHCP. LumoBar's network discovery
+  recognises a known bulb by its ID and updates the stored IP. If that does
+  not happen (multicast blocked), remove the entry and re-add it with the
+  new IP. Better: reserve an IP in your router.
+
+---
+
+## Nanoleaf
+
+Nanoleaf panels (Shapes, Canvas, Elements, Lines, Light Panels) expose a
+local **OpenAPI** on port 16021. Pairing creates a token that LumoBar keeps
+in the macOS Keychain.
+
+### Step 1 — Find the panel's IP
+
+Open the Nanoleaf app, pick the panel and look at the device info, or find
+the controller in your router's list of connected devices.
+
+### Step 2 — Pair it in LumoBar
+
+1. **Settings → Providers → Nanoleaf**.
+2. Enter the **IP** (e.g. `192.168.1.50`) and an optional **name**.
+3. On the controller, **hold the power button for 5–7 seconds** until the
+   LEDs start flashing. The controller now accepts pairing for about
+   30 seconds.
+4. Click **Pair and sync** within that window.
+
+### Nanoleaf troubleshooting
+
+- **Pairing fails / HTTP 403** — the pairing window closed. Hold the power
+  button again and click **Pair and sync** straight away.
+- **Timed out** — the Mac and the panel are on different networks, or the
+  port is blocked. Test with `nc -vz 192.168.1.50 16021`.
+- **IP changed** — remove the panel and pair it again with the new IP, or
+  reserve an IP in your router.
+
+---
+
+## WiZ
+
+WiZ bulbs (Signify, also sold under the Philips "WiZ" label) talk a local
+**UDP** protocol on port 38899. No account and no token.
+
+### Step 1 — Find the bulb's IP
+
+In the **WiZ** app, open the bulb's settings → **Device info**. Make sure
+**Allow local communication** is enabled in the app's privacy/settings
+section (newer firmware turns it off by default).
+
+### Step 2 — Add it in LumoBar
+
+1. **Settings → Providers → WiZ**.
+2. Enter the **IP** (e.g. `192.168.1.55`) and an optional **name**.
+3. Click **Add and sync**. Repeat for each bulb.
+
+### WiZ troubleshooting
+
+- **Timed out** — local communication is disabled in the WiZ app, or the Mac
+  and the bulb are on different networks (guest Wi-Fi, VLAN).
+- **IP changed** — WiZ bulbs use DHCP. Remove the entry and re-add it, or
+  reserve an IP in your router.
