@@ -1,64 +1,53 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LampControl - App macOS pour lampes connectées</title>
-    <meta
-      name="description"
-      content="Contrôlez vos lampes connectées Hue, LIFX, Govee, Yeelight et Tuya depuis la barre de menu macOS. Gratuit, Premium lifetime à 5,99 EUR."
-    />
+    <title>LumoBar - free macOS menu bar app for smart lights</title>
+    <meta name="description" content="Control Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ and Tuya smart lights from the macOS menu bar. Free, open source (MIT), no account, no limits." />
     <meta name="robots" content="index,follow" />
-    <link rel="canonical" href="https://lampcontrol.app/" />
-    <link rel="alternate" hreflang="fr" href="https://lampcontrol.app/" />
-    <link rel="alternate" hreflang="en" href="https://lampcontrol.app/en/" />
-    <link rel="alternate" hreflang="es" href="https://lampcontrol.app/es/" />
-    <link rel="alternate" hreflang="x-default" href="https://lampcontrol.app/en/" />
+    <link rel="canonical" href="https://petrfilip.github.io/LumoBar/" />
+    <link rel="alternate" hreflang="en" href="https://petrfilip.github.io/LumoBar/" />
+    <link rel="alternate" hreflang="fr" href="https://petrfilip.github.io/LumoBar/fr/" />
+    <link rel="alternate" hreflang="es" href="https://petrfilip.github.io/LumoBar/es/" />
+    <link rel="alternate" hreflang="cs" href="https://petrfilip.github.io/LumoBar/cs/" />
+    <link rel="alternate" hreflang="x-default" href="https://petrfilip.github.io/LumoBar/" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://lampcontrol.app/" />
-    <meta property="og:title" content="LampControl - toutes vos lampes dans la barre de menu Mac" />
-    <meta
-      property="og:description"
-      content="Une app macOS native pour piloter Hue, LIFX, Govee, Yeelight et Tuya sans ouvrir cinq apps différentes."
-    />
-    <meta property="og:image" content="https://lampcontrol.app/og-image.svg" />
-    <meta property="og:image:alt" content="LampControl, app macOS pour contrôler Hue, LIFX, Govee, Yeelight et Tuya depuis la barre de menu Mac" />
+    <meta property="og:url" content="https://petrfilip.github.io/LumoBar/" />
+    <meta property="og:title" content="LumoBar - smart lights in your Mac menu bar" />
+    <meta property="og:description" content="A free, open source native macOS app to control Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ and Tuya without opening seven different apps." />
+    <meta property="og:image" content="https://petrfilip.github.io/LumoBar/og-image.svg" />
+    <meta property="og:image:alt" content="LumoBar, a free open source macOS menu bar app for smart lights" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="LampControl - App macOS pour lampes connectées" />
-    <meta
-      name="twitter:description"
-      content="Contrôlez Hue, LIFX, Govee, Yeelight et Tuya depuis une seule app de barre de menu macOS."
-    />
-    <meta name="twitter:image" content="https://lampcontrol.app/og-image.svg" />
-    <meta name="twitter:image:alt" content="Aperçu de LampControl et de son offre Premium lifetime à 5,99 EUR" />
+    <meta name="twitter:title" content="LumoBar - free macOS app for smart lights" />
+    <meta name="twitter:description" content="Control seven smart light brands from one free, open source macOS menu bar app." />
+    <meta name="twitter:image" content="https://petrfilip.github.io/LumoBar/og-image.svg" />
+    <meta name="twitter:image:alt" content="LumoBar, a free open source macOS menu bar app for smart lights" />
     <meta name="theme-color" content="#101010" />
     <link rel="stylesheet" href="./styles.css" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "LampControl",
-        "url": "https://lampcontrol.app/",
-        "downloadUrl": "https://github.com/hugoinformatique/LampControl/releases/latest",
-        "softwareVersion": "1.1.0",
+        "name": "LumoBar",
+        "url": "https://petrfilip.github.io/LumoBar/",
+        "downloadUrl": "https://github.com/petrfilip/LumoBar/releases/latest",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "macOS 13+",
+        "license": "https://opensource.org/licenses/MIT",
         "offers": {
           "@type": "Offer",
-          "price": "5.99",
+          "price": "0",
           "priceCurrency": "EUR",
           "availability": "https://schema.org/InStock"
         },
-        "image": "https://lampcontrol.app/og-image.svg",
+        "image": "https://petrfilip.github.io/LumoBar/og-image.svg",
         "author": {
-          "@type": "Organization",
-          "name": "Hugo Informatique"
+          "@type": "Person",
+          "name": "petrfilip",
+          "url": "https://github.com/petrfilip"
         },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Hugo Informatique"
-        },
-        "description": "App macOS de barre de menu pour contrôler plusieurs marques de lampes connectées depuis une seule interface."
+        "description": "A free, open source macOS menu bar app to control multiple smart light brands from one native interface."
       }
     </script>
     <script type="application/ld+json">
@@ -68,74 +57,66 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "LampControl est-il gratuit ?",
+            "name": "Is LumoBar free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Oui. L'offre gratuite permet de commencer avec les contrôles de base et jusqu'à 2 lampes. Premium débloque les lampes illimitées, groupes, scènes personnalisées, automations et éclairage adaptatif."
+              "text": "Yes. LumoBar is free and MIT open source. There is no account, no lamp limit and no paid tier."
             }
           },
           {
             "@type": "Question",
-            "name": "La licence Premium est-elle un abonnement ?",
+            "name": "How is LumoBar related to LampControl?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Non. Premium est une licence lifetime à 5,99 EUR, vendue via Lemon Squeezy."
+              "text": "LumoBar is a fork of LampControl by Hugo Informatique, released under the MIT licence. It removes the paid tier, includes every feature and adds a few improvements. The original author is credited in the footer."
             }
           },
           {
             "@type": "Question",
-            "name": "Quelles marques de lampes connectées sont compatibles ?",
+            "name": "Why does macOS block the first launch?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "LampControl prend en charge Tuya / Smart Life, Philips Hue, LIFX, Govee, Yeelight, Nanoleaf et WiZ. Les ampoules Ledvance Smart+ Wi-Fi et Sylvania Smart Wi-Fi fonctionnent via l'intégration Tuya car elles utilisent le backend Smart Life."
+              "text": "The app is ad-hoc signed and not notarised, because notarisation needs a paid Apple Developer account. Open the app once, then go to System Settings → Privacy & Security and click Open Anyway."
             }
           },
           {
             "@type": "Question",
-            "name": "Comment installer LampControl sur Mac ?",
+            "name": "Which smart light brands are supported?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Téléchargez la dernière release GitHub, ouvrez le DMG, glissez LampControl dans Applications, puis lancez l'app depuis macOS."
+              "text": "LumoBar supports Philips Hue (local bridge), LIFX (cloud), Tuya / Smart Life (cloud), Govee (cloud), Yeelight (LAN), Nanoleaf (LAN) and WiZ (LAN, UDP). Ledvance Smart+ Wi-Fi and Sylvania Smart Wi-Fi bulbs work via the Tuya integration since they use the Smart Life backend."
             }
           },
           {
             "@type": "Question",
-            "name": "LampControl remplace-t-il HomeKit ?",
+            "name": "How do I install LumoBar?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Non. LampControl est un contrôle rapide depuis la barre de menu Mac pour plusieurs fournisseurs, utile même si votre installation HomeKit reste en place."
+              "text": "Download the DMG from the latest GitHub release, drag LumoBar to Applications and launch it. Follow the first-launch step above. The terminal command at the top of the page does the download for you."
             }
           },
           {
             "@type": "Question",
-            "name": "Pourquoi utiliser LampControl plutôt que les apps Hue, LIFX ou Govee ?",
+            "name": "Are my API keys sent anywhere else?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "LampControl évite de changer d'app pour chaque marque et met les contrôles utiles dans une seule interface macOS."
+              "text": "Secrets are stored in the macOS Keychain. LumoBar only calls the APIs needed to control your providers, and there is no LumoBar account."
             }
           },
           {
             "@type": "Question",
-            "name": "Quelle version de macOS est nécessaire ?",
+            "name": "Does LumoBar replace HomeKit?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "LampControl est prévu pour macOS 13 ou plus récent."
+              "text": "No. LumoBar is a quick control from the Mac menu bar for several providers. HomeKit stays useful if your smart home is already set up around it."
             }
           },
           {
             "@type": "Question",
-            "name": "Puis-je utiliser plusieurs marques de lampes ensemble ?",
+            "name": "What macOS version is required?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Oui. LampControl sert à regrouper plusieurs écosystèmes de lampes connectées dans une seule app Mac."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Que se passe-t-il après l'achat ?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Lemon Squeezy vous donne une clé. Collez-la dans Réglages > Premium pour activer les fonctionnalités débloquées."
+              "text": "LumoBar is built for macOS 13 or newer."
             }
           }
         ]
@@ -143,23 +124,24 @@
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Aller au contenu</a>
+    <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header" data-header>
-      <a class="brand" href="#main" aria-label="LampControl accueil">
+      <a class="brand" href="#main" aria-label="LumoBar home">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>LampControl</span>
+        <span>LumoBar</span>
       </a>
-      <nav class="nav-links" aria-label="Navigation principale">
-        <a href="#features">Fonctions</a>
-        <a href="#pricing">Prix <span>5,99 EUR</span></a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
         <a href="#faq">FAQ</a>
       </nav>
-      <nav class="language-switcher" aria-label="Changer de langue">
-        <a aria-current="page" href="./">FR</a>
-        <a href="./en/">EN</a>
-        <a href="./es/">ES</a>
+      <nav class="language-switcher" aria-label="Change language">
+        <a aria-current="page" href="./">EN</a>
+        <a href="fr/">FR</a>
+        <a href="es/">ES</a>
+        <a href="cs/">CS</a>
       </nav>
-      <a class="header-cta" href="https://github.com/hugoinformatique/LampControl/releases/latest">Télécharger</a>
+      <a class="header-cta" href="https://github.com/petrfilip/LumoBar/releases/latest">Download</a>
     </header>
 
     <main id="main">
@@ -173,99 +155,95 @@
           <div class="hero-copy">
             <div class="status-pill">
               <span></span>
-              macOS 13+ / Freemium / Lifetime
+              macOS 13+ / Free / MIT open source
             </div>
-            <h1>Contrôlez Hue, LIFX, Govee, Yeelight et Tuya depuis la barre de menu Mac.</h1>
+            <h1>Control Hue, LIFX, Govee, Yeelight and more from your Mac menu bar.</h1>
             <blockquote class="aeo-answer">
-              LampControl est une app macOS freemium qui permet de contrôler Philips Hue, LIFX, Govee, Yeelight et Tuya depuis la barre de menu du Mac, sans ouvrir plusieurs apps mobiles.
+              LumoBar is a free, open source macOS menu bar app that controls Philips Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ and Tuya / Smart Life smart lights from one native interface.
             </blockquote>
             <p class="hero-subtitle">
-              LampControl réunit vos lampes connectées dans une app macOS
-              native: on/off, couleurs, scènes, groupes et automations, sans
-              téléphone et sans jongler entre cinq applications.
+              Stop reaching for your phone or switching between vendor apps. Power, colors, scenes, groups and automations stay one click away while you work.
             </p>
-            <nav class="hero-actions" aria-label="Actions principales">
-              <a class="button button-primary" href="https://github.com/hugoinformatique/LampControl/releases/latest">
-                Télécharger pour macOS
+            <nav class="hero-actions" aria-label="Primary actions">
+              <a class="button button-primary" href="https://github.com/petrfilip/LumoBar/releases/latest">
+                Download for macOS
               </a>
-              <a class="button button-secondary" href="https://lampcontrol.lemonsqueezy.com/checkout/buy/12d32ac2-9a5a-4120-a95e-36a10afb51d9">
-                Débloquer Premium - 5,99 EUR
+              <a class="button button-secondary" href="https://github.com/petrfilip/LumoBar">
+                View on GitHub
               </a>
             </nav>
-            <p class="microcopy">Licence lifetime. Paiement sécurisé Lemon Squeezy. Pas d'Electron.</p>
-            <div class="install-command" aria-label="Installation en ligne de commande">
+            <p class="microcopy">Free and MIT open source. No account, no lamp limit, no Electron.</p>
+            <div class="install-command" aria-label="Command line install">
               <div class="install-command-top">
                 <span>Terminal</span>
-                <button type="button" data-copy-command>Copier</button>
+                <button type="button" data-copy-command>Copy</button>
               </div>
-              <code data-install-command>curl -fsSL https://api.github.com/repos/hugoinformatique/LampControl/releases/latest | grep browser_download_url | cut -d '"' -f 4 | xargs curl -L -o ~/Downloads/LampControl.dmg &amp;&amp; open ~/Downloads/LampControl.dmg</code>
+              <code data-install-command>curl -fsSL https://api.github.com/repos/petrfilip/LumoBar/releases/latest | grep browser_download_url | grep -m1 '\.dmg' | cut -d '"' -f 4 | xargs curl -L -o ~/Downloads/LumoBar.dmg &amp;&amp; open ~/Downloads/LumoBar.dmg</code>
             </div>
           </div>
 
           <figure class="product-panel">
-            <figcaption class="visually-hidden">Aperçu de l'interface LampControl avec plusieurs lampes synchronisées.</figcaption>
+            <figcaption class="visually-hidden">LumoBar interface preview with several synced lights.</figcaption>
             <div class="panel-top">
               <span class="window-dot"></span>
-              <span>LampControl.menu</span>
+              <span>LumoBar.menu</span>
               <strong>SYNC OK</strong>
             </div>
             <div class="lamp-list">
               <div class="lamp-row active">
                 <span class="lamp-icon"></span>
                 <div>
-                  <strong>Salon Hue</strong>
-                  <small>ON / 64% / chaud</small>
+                  <strong>Living Room Hue</strong>
+                  <small>ON / 64% / warm</small>
                 </div>
                 <span class="toggle-indicator" aria-hidden="true"></span>
               </div>
               <div class="lamp-row">
                 <span class="lamp-icon amber"></span>
                 <div>
-                  <strong>Bureau LIFX</strong>
-                  <small>Scène Focus</small>
+                  <strong>Desk LIFX</strong>
+                  <small>Focus scene</small>
                 </div>
                 <span class="toggle-indicator" aria-hidden="true"></span>
               </div>
               <div class="lamp-row">
                 <span class="lamp-icon green"></span>
                 <div>
-                  <strong>Setup Govee</strong>
-                  <small>RGB / groupe Mac</small>
+                  <strong>Govee setup</strong>
+                  <small>RGB / Mac group</small>
                 </div>
                 <span class="toggle-indicator" aria-hidden="true"></span>
               </div>
             </div>
             <div class="terminal-strip">
-              <span>$ premium.unlock</span>
-              <strong>unlimited_lamps=true</strong>
+              <span>$ lumobar.config</span>
+              <strong>lamp_limit=none</strong>
             </div>
           </figure>
         </div>
       </section>
 
-      <section class="proof-strip shell" aria-label="Signaux de confiance LampControl">
+      <section class="proof-strip shell" aria-label="LumoBar highlights">
         <div>
-          <strong>7 marques</strong>
-          <span>Hue · LIFX · Tuya · Govee · Yeelight · Nanoleaf · WiZ — pilote aussi Ledvance &amp; Sylvania Smart Wi-Fi via Tuya</span>
+          <strong>7 providers</strong>
+          <span>Hue · LIFX · Tuya · Govee · Yeelight · Nanoleaf · WiZ — also runs Ledvance &amp; Sylvania Smart Wi-Fi via Tuya</span>
         </div>
         <div>
-          <strong>Barre de menu</strong>
-          <span>une action, sans ouvrir d'app mobile</span>
+          <strong>Menu bar</strong>
+          <span>one click, no mobile app required</span>
         </div>
         <div>
           <strong>Keychain</strong>
-          <span>tokens stockés localement sur macOS</span>
+          <span>secrets stored locally on macOS</span>
         </div>
       </section>
 
       <section id="features" class="section shell">
         <div class="section-heading">
-          <span class="eyebrow">PROBLÈME</span>
-          <h2>Changer la lumière de son bureau ne devrait pas interrompre le travail.</h2>
+          <span class="eyebrow">PROBLEM</span>
+          <h2>Changing your desk lighting should not interrupt your work.</h2>
           <p>
-            Quand vos lampes dépendent de plusieurs marques, le moindre réglage
-            devient lent: téléphone à retrouver, apps différentes, cloud qui
-            répond plus ou moins vite, scènes dispersées.
+            When your lights come from multiple brands, every small change gets slow: find your phone, open another app, wait for a cloud call, repeat for the next ecosystem.
           </p>
         </div>
       </section>
@@ -273,271 +251,173 @@
       <section class="section shell tight-section">
         <div class="section-heading">
           <span class="eyebrow">SOLUTION</span>
-          <h2>LampControl met le contrôle lumière là où vous êtes déjà: sur votre Mac.</h2>
+          <h2>LumoBar puts light control where you already are: on your Mac.</h2>
           <p>
-            Depuis la barre de menu macOS, vous pilotez vos lampes Hue, LIFX,
-            Govee, Yeelight et Tuya dans une seule interface légère.
+            From the macOS menu bar, control Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ and Tuya lights in one lightweight native interface.
           </p>
         </div>
         <div class="feature-grid">
           <article class="feature-card">
             <span class="feature-index">01</span>
-            <h3>Un seul endroit pour toutes les marques</h3>
-            <p>Mélangez Hue, LIFX, Govee, Yeelight et Tuya sans reconstruire toute votre maison connectée.</p>
+            <h3>One place for every brand</h3>
+            <p>Mix Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ and Tuya without rebuilding your smart home.</p>
           </article>
           <article class="feature-card">
             <span class="feature-index">02</span>
-            <h3>Native, légère, invisible</h3>
-            <p>Une app de barre de menu macOS, sans fenêtre Dock permanente, pensée pour rester hors du chemin.</p>
+            <h3>Native, light, invisible</h3>
+            <p>A menu bar app of about 5 MB with no Dock window and no Electron. Secrets stay in the Keychain and updates arrive through Sparkle.</p>
           </article>
           <article class="feature-card">
             <span class="feature-index">03</span>
-            <h3>Scènes et groupes pour travailler vite</h3>
-            <p>Appliquez une ambiance à plusieurs lampes, gardez vos presets, changez l'état du bureau en quelques secondes.</p>
+            <h3>Rooms, groups and scenes</h3>
+            <p>Apply one mood to several lights across brands and change your desk state in seconds.</p>
           </article>
           <article class="feature-card">
             <span class="feature-index">04</span>
-            <h3>Automations et éclairage adaptatif</h3>
-            <p>Premium débloque les routines, les scènes personnalisées et l'éclairage qui suit votre journée.</p>
+            <h3>Automations, adaptive lighting and Focus</h3>
+            <p>Routines, custom scenes, lighting that follows your day, and macOS Focus modes mapped to scenes.</p>
           </article>
         </div>
-        <div class="benefit-table" role="table" aria-label="Fonctions LampControl et bénéfices">
+      </section>
+
+      <section class="section shell">
+        <div class="section-heading">
+          <span class="eyebrow">WHAT IS DIFFERENT</span>
+          <h2>A fork of LampControl with the paywall gone and a few things improved.</h2>
+        </div>
+        <div class="benefit-table" role="table" aria-label="Changes in LumoBar">
           <div class="benefit-row benefit-head" role="row">
-            <span role="columnheader">Fonction</span>
-            <span role="columnheader">Ce que ça change pour vous</span>
+            <span role="columnheader">Change</span>
+            <span role="columnheader">What you get</span>
           </div>
           <div class="benefit-row" role="row">
-            <span role="cell">Contrôle multi-marques</span>
-            <span role="cell">Pilotez Hue, LIFX, Govee, Yeelight et Tuya sans changer d'app.</span>
+            <span role="cell">Everything included</span>
+            <span role="cell">Groups, custom scenes, automations and adaptive lighting for any number of lamps.</span>
           </div>
           <div class="benefit-row" role="row">
-            <span role="cell">Barre de menu macOS</span>
-            <span role="cell">Changez l'ambiance du bureau en un clic, sans téléphone.</span>
+            <span role="cell">Live Yeelight state</span>
+            <span role="cell">Push notifications keep the state current, and network discovery follows IP changes.</span>
           </div>
           <div class="benefit-row" role="row">
-            <span role="cell">Groupes et scènes</span>
-            <span role="cell">Appliquez une ambiance à plusieurs lampes en même temps.</span>
+            <span role="cell">Adaptive lighting</span>
+            <span role="cell">The schedule is editable.</span>
           </div>
           <div class="benefit-row" role="row">
-            <span role="cell">Automations Premium</span>
-            <span role="cell">Automatisez vos routines lumière sans abonnement.</span>
+            <span role="cell">Scenes</span>
+            <span role="cell">Built-in scenes can be edited or deleted, and “Restore default scenes” brings them back.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Launch at login</span>
+            <span role="cell">A simple toggle in settings.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Menu bar icon</span>
+            <span role="cell">Tinted with the colour of the active lamp.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Live dragging</span>
+            <span role="cell">Colour, brightness and temperature update while you drag.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Languages</span>
+            <span role="cell">The app UI ships in English, French, Spanish and Czech.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Reliability</span>
+            <span role="cell">Many fixes under the hood.</span>
           </div>
         </div>
       </section>
 
-      <section class="mid-cta shell" aria-label="Essayer LampControl">
-        <div>
-          <span class="eyebrow">ESSAI GRATUIT</span>
-          <h2>Essayez LampControl avec deux lampes gratuitement.</h2>
-        </div>
-        <nav class="hero-actions" aria-label="Actions essai gratuit">
-          <a class="button button-primary" href="https://github.com/hugoinformatique/LampControl/releases/latest">Télécharger pour macOS</a>
-          <a class="button button-secondary" href="#pricing">Voir Gratuit vs Premium</a>
-        </nav>
-      </section>
-
-      <section class="section section-band">
+      <section id="install" class="section section-band">
         <div class="how-it-works shell">
           <div class="section-heading compact">
-            <span class="eyebrow">COMMENT ÇA MARCHE</span>
-            <h2>Installez, connectez, contrôlez.</h2>
+            <span class="eyebrow">HOW IT WORKS</span>
+            <h2>Install, open, connect.</h2>
           </div>
           <ol class="steps-list">
             <li>
               <span>01</span>
-              <strong>Téléchargez LampControl</strong>
-              <p>Installez le DMG depuis la dernière release et lancez l'app dans la barre de menu macOS.</p>
+              <strong>Download LumoBar</strong>
+              <p>Get the DMG from the latest release, drag LumoBar to Applications and launch it.</p>
             </li>
             <li>
               <span>02</span>
-              <strong>Ajoutez vos fournisseurs</strong>
-              <p>Connectez Hue, LIFX, Govee, Yeelight ou Tuya avec les identifiants requis par chaque écosystème.</p>
+              <strong>Allow the first launch</strong>
+              <p>LumoBar is ad-hoc signed, not notarised, so macOS blocks the first launch. Open System Settings → Privacy &amp; Security and click Open Anyway.</p>
             </li>
             <li>
               <span>03</span>
-              <strong>Débloquez ce qui compte</strong>
-              <p>Gardez le gratuit pour tester, ou activez Premium lifetime pour les lampes illimitées, groupes et automations.</p>
+              <strong>Add your providers</strong>
+              <p>Connect Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ or Tuya with the credentials each ecosystem requires. The number of lamps is not limited.</p>
             </li>
           </ol>
-        </div>
-      </section>
-
-      <section class="section section-band">
-        <div class="comparison shell">
-          <div class="section-heading compact">
-            <span class="eyebrow">AVANT / APRÈS</span>
-            <h2>Moins de friction, plus de lumière juste.</h2>
-          </div>
-          <div class="compare-grid">
-            <div class="compare-column muted">
-              <h3>Avant</h3>
-              <p>Téléphone, apps par marque, menus cloud, pièces séparées, réglages perdus.</p>
-            </div>
-            <div class="compare-column">
-              <h3>Avec LampControl</h3>
-              <p>Un clic dans la barre de menu. Toutes les lampes utiles. Couleurs, groupes, scènes et sync silencieuse.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section shell">
-        <div class="section-heading">
-          <span class="eyebrow">COMPARAISON</span>
-          <h2>LampControl est fait pour le bureau Mac, pas pour remplacer toute votre smart home.</h2>
-        </div>
-        <div class="comparison-table" role="table" aria-label="Comparaison entre LampControl et les alternatives">
-          <div class="comparison-row comparison-head" role="row">
-            <span role="columnheader">Option</span>
-            <span role="columnheader">Là où c'est fort</span>
-            <span role="columnheader">La friction</span>
-          </div>
-          <div class="comparison-row" role="row">
-            <span role="cell">LampControl</span>
-            <span role="cell">Contrôle rapide multi-marques depuis macOS, app native, prix lifetime bas.</span>
-            <span role="cell">Mac uniquement et configuration fournisseur parfois nécessaire.</span>
-          </div>
-          <div class="comparison-row" role="row">
-            <span role="cell">Apps Hue, LIFX, Govee, Tuya</span>
-            <span role="cell">Complètes pour chaque écosystème, souvent meilleures pour l'installation initiale.</span>
-            <span role="cell">Une app par marque, souvent sur téléphone, moins pratique au bureau.</span>
-          </div>
-          <div class="comparison-row" role="row">
-            <span role="cell">HomeKit</span>
-            <span role="cell">Très bon pour l'automatisation Apple et les foyers déjà compatibles.</span>
-            <span role="cell">Compatibilité variable et moins direct pour certains setups multi-marques.</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" class="section shell">
-        <div class="section-heading">
-          <span class="eyebrow">PRIX SIMPLE</span>
-          <h2>Commencez gratuitement. Payez une fois si LampControl devient votre réflexe.</h2>
-        </div>
-
-        <div class="pricing-grid">
-          <article class="price-card">
-            <div class="price-top">
-              <h3>Gratuit</h3>
-              <strong>0 EUR</strong>
-            </div>
-            <p>Pour tester le flow et piloter vos premières lampes depuis macOS.</p>
-            <ul>
-              <li>Jusqu'à 2 lampes</li>
-              <li>Contrôle de base on/off</li>
-              <li>Ambiances rapides incluses</li>
-              <li>Updates via releases GitHub</li>
-            </ul>
-            <a class="button button-muted" href="https://github.com/hugoinformatique/LampControl/releases/latest">Télécharger</a>
-          </article>
-
-          <article class="price-card featured">
-            <div class="price-badge">MEILLEUR CHOIX</div>
-            <div class="price-top">
-              <h3>Premium lifetime</h3>
-              <strong>5,99 EUR</strong>
-            </div>
-            <p>Tout débloquer sans abonnement. Idéal si votre setup lumière vit vraiment autour du Mac.</p>
-            <ul>
-              <li>Lampes illimitées</li>
-              <li>Groupes multi-marques</li>
-              <li>Scènes personnalisées</li>
-              <li>Automations</li>
-              <li>Éclairage adaptatif</li>
-            </ul>
-            <a class="button button-primary" href="https://lampcontrol.lemonsqueezy.com/checkout/buy/12d32ac2-9a5a-4120-a95e-36a10afb51d9">
-              Acheter la licence
-            </a>
-          </article>
-        </div>
-      </section>
-
-      <section class="section shell">
-        <div class="quote-block">
-          <span class="eyebrow">NOTE DU CRÉATEUR</span>
-          <p>
-            "J'ai fait LampControl parce que changer la lumière de mon bureau
-            ne devrait pas demander de déverrouiller mon téléphone, ouvrir une
-            app, attendre le cloud, puis répéter pour une autre marque."
-          </p>
-          <strong>Hugo Informatique, créateur de LampControl</strong>
         </div>
       </section>
 
       <section id="faq" class="section shell">
         <div class="section-heading compact">
           <span class="eyebrow">FAQ</span>
-          <h2>Les objections normales avant d'installer une app lumière.</h2>
+          <h2>Normal questions before installing a light control app.</h2>
         </div>
         <div class="faq-list">
           <details>
-            <summary>LampControl est-il gratuit ?</summary>
-            <p>Oui. L'offre gratuite permet de commencer avec les contrôles de base et jusqu'à 2 lampes.</p>
+            <summary>Is LumoBar free?</summary>
+            <p>Yes. LumoBar is free and MIT open source. There is no account, no lamp limit and no paid tier.</p>
           </details>
           <details>
-            <summary>Est-ce un abonnement ?</summary>
-            <p>Non. Premium est une licence lifetime à 5,99 EUR via Lemon Squeezy.</p>
+            <summary>How is LumoBar related to LampControl?</summary>
+            <p>LumoBar is a fork of LampControl by Hugo Informatique, released under the MIT licence. It removes the paid tier, includes every feature and adds a few improvements. The original author is credited in the footer.</p>
           </details>
           <details>
-            <summary>Quelles marques de lampes connectées sont compatibles ?</summary>
-            <p>LampControl prend en charge Tuya / Smart Life, Philips Hue, LIFX, Govee, Yeelight, Nanoleaf et WiZ. Les ampoules Ledvance Smart+ Wi-Fi et Sylvania Smart Wi-Fi fonctionnent via l'intégration Tuya car elles utilisent le backend Smart Life.</p>
+            <summary>Why does macOS block the first launch?</summary>
+            <p>The app is ad-hoc signed and not notarised, because notarisation needs a paid Apple Developer account. Open the app once, then go to System Settings → Privacy &amp; Security and click Open Anyway.</p>
           </details>
           <details>
-            <summary>Comment installer LampControl sur Mac ?</summary>
-            <p>Téléchargez la dernière release GitHub, ouvrez le DMG, glissez l'app dans Applications, puis lancez LampControl.</p>
+            <summary>Which smart light brands are supported?</summary>
+            <p>LumoBar supports Philips Hue (local bridge), LIFX (cloud), Tuya / Smart Life (cloud), Govee (cloud), Yeelight (LAN), Nanoleaf (LAN) and WiZ (LAN, UDP). Ledvance Smart+ Wi-Fi and Sylvania Smart Wi-Fi bulbs work via the Tuya integration since they use the Smart Life backend.</p>
           </details>
           <details>
-            <summary>Mes clés API sont-elles envoyées ailleurs ?</summary>
-            <p>Les secrets sont stockés dans le Keychain macOS. LampControl appelle les APIs nécessaires pour piloter vos fournisseurs, sans secret Lemon Squeezy embarqué.</p>
+            <summary>How do I install LumoBar?</summary>
+            <p>Download the DMG from the latest GitHub release, drag LumoBar to Applications and launch it. Follow the first-launch step above. The terminal command at the top of the page does the download for you.</p>
           </details>
           <details>
-            <summary>LampControl remplace-t-il HomeKit ?</summary>
-            <p>Non. LampControl est un contrôle rapide depuis la barre de menu Mac. HomeKit reste utile si votre maison connectée est déjà bien configurée.</p>
+            <summary>Are my API keys sent anywhere else?</summary>
+            <p>Secrets are stored in the macOS Keychain. LumoBar only calls the APIs needed to control your providers, and there is no LumoBar account.</p>
           </details>
           <details>
-            <summary>Pourquoi utiliser LampControl plutôt que les apps Hue, LIFX ou Govee ?</summary>
-            <p>LampControl évite de changer d'app pour chaque marque et met les contrôles utiles dans une seule interface macOS.</p>
+            <summary>Does LumoBar replace HomeKit?</summary>
+            <p>No. LumoBar is a quick control from the Mac menu bar for several providers. HomeKit stays useful if your smart home is already set up around it.</p>
           </details>
           <details>
-            <summary>Pourquoi une app Mac plutôt qu'une app mobile ?</summary>
-            <p>Parce que beaucoup de setups lumière servent le bureau: visio, focus, gaming, création, streaming. Le contrôle doit être là où vous travaillez.</p>
-          </details>
-          <details>
-            <summary>Quelle version de macOS est nécessaire ?</summary>
-            <p>LampControl est prévu pour macOS 13 ou plus récent.</p>
-          </details>
-          <details>
-            <summary>Puis-je utiliser plusieurs marques de lampes ensemble ?</summary>
-            <p>Oui. LampControl sert à regrouper plusieurs écosystèmes de lampes connectées dans une seule app Mac.</p>
-          </details>
-          <details>
-            <summary>Que se passe-t-il après l'achat ?</summary>
-            <p>Lemon Squeezy vous donne une clé. Collez-la dans Réglages > Premium pour activer les fonctionnalités débloquées.</p>
+            <summary>What macOS version is required?</summary>
+            <p>LumoBar is built for macOS 13 or newer.</p>
           </details>
         </div>
       </section>
 
       <section class="final-cta section-band">
         <div class="shell">
-          <span class="eyebrow">PRÊT POUR LE BUREAU</span>
-          <h2>Installez LampControl, connectez deux lampes, voyez si le réflexe prend.</h2>
-          <p class="final-copy">Gratuit pour tester. Premium à 5,99 EUR si vous voulez tout débloquer.</p>
-          <nav class="hero-actions centered" aria-label="Actions finales">
-            <a class="button button-primary" href="https://github.com/hugoinformatique/LampControl/releases/latest">Télécharger gratuit</a>
-            <a class="button button-secondary" href="https://lampcontrol.lemonsqueezy.com/checkout/buy/12d32ac2-9a5a-4120-a95e-36a10afb51d9">Passer Premium</a>
+          <span class="eyebrow">READY FOR YOUR DESK</span>
+          <h2>Install LumoBar and see if the habit sticks.</h2>
+          <p class="final-copy">Free, open source, no account. Nothing to buy.</p>
+          <nav class="hero-actions centered" aria-label="Final actions">
+            <a class="button button-primary" href="https://github.com/petrfilip/LumoBar/releases/latest">Download free</a>
+            <a class="button button-secondary" href="https://github.com/petrfilip/LumoBar">Source on GitHub</a>
           </nav>
         </div>
       </section>
     </main>
 
     <footer class="site-footer shell">
-      <span>LampControl © 2026 Hugo Informatique</span>
+      <span>LumoBar © 2026 · MIT licence</span>
       <div>
-        <a href="https://github.com/hugoinformatique/LampControl">GitHub</a>
-        <a href="https://github.com/hugoinformatique/LampControl/releases/latest">Releases</a>
-        <a href="https://lampcontrol.lemonsqueezy.com/checkout/buy/12d32ac2-9a5a-4120-a95e-36a10afb51d9">Premium</a>
+        <a href="https://github.com/petrfilip/LumoBar">GitHub</a>
+        <a href="https://github.com/petrfilip/LumoBar/releases/latest">Releases</a>
       </div>
+      <p class="footer-credit">
+        LumoBar is a fork of <a href="https://github.com/hugoinformatique/LampControl">LampControl by Hugo Informatique</a> (MIT). Thank you to Hugo Informatique for building the original and releasing it as open source.
+      </p>
     </footer>
 
     <script src="./script.js" defer></script>

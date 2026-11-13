@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LumoBar - bezplatná aplikace pro chytrá světla v liště macOS</title>
+    <meta name="description" content="Ovládejte chytrá světla Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ a Tuya z horní lišty macOS. Zdarma, open source (MIT), bez účtu a bez limitů." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://petrfilip.github.io/LumoBar/cs/" />
+    <link rel="alternate" hreflang="en" href="https://petrfilip.github.io/LumoBar/" />
+    <link rel="alternate" hreflang="fr" href="https://petrfilip.github.io/LumoBar/fr/" />
+    <link rel="alternate" hreflang="es" href="https://petrfilip.github.io/LumoBar/es/" />
+    <link rel="alternate" hreflang="cs" href="https://petrfilip.github.io/LumoBar/cs/" />
+    <link rel="alternate" hreflang="x-default" href="https://petrfilip.github.io/LumoBar/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://petrfilip.github.io/LumoBar/cs/" />
+    <meta property="og:title" content="LumoBar - chytrá světla v liště vašeho Macu" />
+    <meta property="og:description" content="Bezplatná open source aplikace pro macOS, která ovládá Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ a Tuya, takže nemusíte otevírat sedm různých aplikací." />
+    <meta property="og:image" content="https://petrfilip.github.io/LumoBar/og-image.svg" />
+    <meta property="og:image:alt" content="LumoBar, bezplatná open source aplikace pro macOS, která ovládá chytrá světla z horní lišty" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LumoBar - bezplatná aplikace pro chytrá světla" />
+    <meta name="twitter:description" content="Sedm značek chytrých světel v jedné bezplatné open source aplikaci v liště macOS." />
+    <meta name="twitter:image" content="https://petrfilip.github.io/LumoBar/og-image.svg" />
+    <meta name="twitter:image:alt" content="LumoBar, bezplatná open source aplikace pro macOS, která ovládá chytrá světla z horní lišty" />
+    <meta name="theme-color" content="#101010" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "LumoBar",
+        "url": "https://petrfilip.github.io/LumoBar/cs/",
+        "downloadUrl": "https://github.com/petrfilip/LumoBar/releases/latest",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "macOS 13+",
+        "license": "https://opensource.org/licenses/MIT",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR",
+          "availability": "https://schema.org/InStock"
+        },
+        "image": "https://petrfilip.github.io/LumoBar/og-image.svg",
+        "author": {
+          "@type": "Person",
+          "name": "petrfilip",
+          "url": "https://github.com/petrfilip"
+        },
+        "description": "Bezplatná open source aplikace v liště macOS, která z jednoho nativního rozhraní ovládá chytrá světla více značek."
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Je LumoBar zdarma?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ano. LumoBar je zdarma a open source pod licencí MIT. Nepotřebujete účet, počet světel není omezen a neexistuje žádná placená verze."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Jak souvisí LumoBar s aplikací LampControl?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "LumoBar je fork aplikace LampControl od Hugo Informatique, vydané pod licencí MIT. Odstraňuje placenou verzi, zahrnuje všechny funkce a přidává několik vylepšení. Původní autor je uveden v patičce stránky."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Proč macOS blokuje první spuštění?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Aplikace je podepsaná jen ad hoc a není notarizovaná, protože notarizace vyžaduje placený účet Apple Developer. Aplikaci jednou otevřete, pak v Nastavení systému → Soukromí a zabezpečení klikněte na Přesto otevřít."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Která chytrá světla jsou podporována?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "LumoBar podporuje Philips Hue (přes lokální bridge), LIFX (cloud), Tuya / Smart Life (cloud), Govee (cloud), Yeelight (LAN), Nanoleaf (LAN) a WiZ (LAN, UDP). Žárovky Ledvance Smart+ Wi-Fi a Sylvania Smart Wi-Fi fungují přes integraci Tuya, protože používají backend Smart Life."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Jak LumoBar nainstaluji?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Stáhněte DMG z nejnovějšího vydání na GitHubu, přetáhněte LumoBar do složky Aplikace a spusťte ho. Při prvním spuštění postupujte podle kroku výše. Příkaz pro Terminál nahoře na stránce stažení udělá za vás."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Posílají se mé klíče API někam jinam?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Přístupové údaje se ukládají do Klíčenky macOS. LumoBar volá jen ta API, která jsou nutná k ovládání vašich poskytovatelů, a žádný účet LumoBar neexistuje."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Nahrazuje LumoBar HomeKit?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ne. LumoBar je rychlé ovládání z lišty Macu pro několik poskytovatelů. HomeKit zůstává užitečný, pokud už máte chytrou domácnost postavenou na něm."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Jakou verzi macOS potřebuji?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "LumoBar je určený pro macOS 13 a novější."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Přejít na obsah</a>
+    <header class="site-header" data-header>
+      <a class="brand" href="#main" aria-label="LumoBar, úvod">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>LumoBar</span>
+      </a>
+      <nav class="nav-links" aria-label="Hlavní navigace">
+        <a href="#features">Funkce</a>
+        <a href="#install">Instalace</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <nav class="language-switcher" aria-label="Změnit jazyk">
+        <a href="../">EN</a>
+        <a href="../fr/">FR</a>
+        <a href="../es/">ES</a>
+        <a aria-current="page" href="./">CS</a>
+      </nav>
+      <a class="header-cta" href="https://github.com/petrfilip/LumoBar/releases/latest">Stáhnout</a>
+    </header>
+
+    <main id="main">
+      <section class="hero section-band">
+        <div class="pixel-field" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="hero-grid shell">
+          <div class="hero-copy">
+            <div class="status-pill">
+              <span></span>
+              macOS 13+ / Zdarma / Open source MIT
+            </div>
+            <h1>Hue, LIFX, Govee, Yeelight a další světla ovládejte z lišty svého Macu.</h1>
+            <blockquote class="aeo-answer">
+              LumoBar je bezplatná open source aplikace v liště macOS, která z jednoho nativního rozhraní ovládá chytrá světla Philips Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ a Tuya / Smart Life.
+            </blockquote>
+            <p class="hero-subtitle">
+              Nemusíte sahat po telefonu ani přepínat mezi aplikacemi jednotlivých výrobců. Zapnutí, barvy, scény, skupiny i automatizace máte při práci na jedno kliknutí.
+            </p>
+            <nav class="hero-actions" aria-label="Hlavní akce">
+              <a class="button button-primary" href="https://github.com/petrfilip/LumoBar/releases/latest">
+                Stáhnout pro macOS
+              </a>
+              <a class="button button-secondary" href="https://github.com/petrfilip/LumoBar">
+                Zobrazit na GitHubu
+              </a>
+            </nav>
+            <p class="microcopy">Zdarma a open source pod licencí MIT. Bez účtu, bez limitu počtu světel, bez Electronu.</p>
+            <div class="install-command" aria-label="Instalace z příkazové řádky">
+              <div class="install-command-top">
+                <span>Terminal</span>
+                <button type="button" data-copy-command>Kopírovat</button>
+              </div>
+              <code data-install-command>curl -fsSL https://api.github.com/repos/petrfilip/LumoBar/releases/latest | grep browser_download_url | grep -m1 '\.dmg' | cut -d '"' -f 4 | xargs curl -L -o ~/Downloads/LumoBar.dmg &amp;&amp; open ~/Downloads/LumoBar.dmg</code>
+            </div>
+          </div>
+
+          <figure class="product-panel">
+            <figcaption class="visually-hidden">Náhled rozhraní LumoBar s několika synchronizovanými světly.</figcaption>
+            <div class="panel-top">
+              <span class="window-dot"></span>
+              <span>LumoBar.menu</span>
+              <strong>SYNC OK</strong>
+            </div>
+            <div class="lamp-list">
+              <div class="lamp-row active">
+                <span class="lamp-icon"></span>
+                <div>
+                  <strong>Obývák Hue</strong>
+                  <small>ON / 64% / teplá</small>
+                </div>
+                <span class="toggle-indicator" aria-hidden="true"></span>
+              </div>
+              <div class="lamp-row">
+                <span class="lamp-icon amber"></span>
+                <div>
+                  <strong>Stůl LIFX</strong>
+                  <small>Scéna Focus</small>
+                </div>
+                <span class="toggle-indicator" aria-hidden="true"></span>
+              </div>
+              <div class="lamp-row">
+                <span class="lamp-icon green"></span>
+                <div>
+                  <strong>Govee u počítače</strong>
+                  <small>RGB / skupina Mac</small>
+                </div>
+                <span class="toggle-indicator" aria-hidden="true"></span>
+              </div>
+            </div>
+            <div class="terminal-strip">
+              <span>$ lumobar.config</span>
+              <strong>lamp_limit=none</strong>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="proof-strip shell" aria-label="Přednosti LumoBar">
+        <div>
+          <strong>7 poskytovatelů</strong>
+          <span>Hue · LIFX · Tuya · Govee · Yeelight · Nanoleaf · WiZ — přes Tuya ovládá i Ledvance &amp; Sylvania Smart Wi-Fi</span>
+        </div>
+        <div>
+          <strong>Lišta menu</strong>
+          <span>jedno kliknutí, bez mobilní aplikace</span>
+        </div>
+        <div>
+          <strong>Klíčenka</strong>
+          <span>přístupové údaje uložené lokálně v macOS</span>
+        </div>
+      </section>
+
+      <section id="features" class="section shell">
+        <div class="section-heading">
+          <span class="eyebrow">PROBLÉM</span>
+          <h2>Změna světla na pracovním stole by neměla přerušit práci.</h2>
+          <p>
+            Pokud máte světla od více výrobců, každá drobnost trvá: najít telefon, otevřít další aplikaci, počkat na cloud a totéž zopakovat u dalšího výrobce.
+          </p>
+        </div>
+      </section>
+
+      <section class="section shell tight-section">
+        <div class="section-heading">
+          <span class="eyebrow">ŘEŠENÍ</span>
+          <h2>LumoBar dává ovládání světel tam, kde už jste: na Macu.</h2>
+          <p>
+            Z horní lišty macOS ovládáte světla Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ i Tuya v jednom lehkém nativním rozhraní.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-index">01</span>
+            <h3>Všechny značky na jednom místě</h3>
+            <p>Kombinujte Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ a Tuya, aniž byste museli předělávat chytrou domácnost.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">02</span>
+            <h3>Nativní, lehká, nenápadná</h3>
+            <p>Aplikace v liště o velikosti kolem 5 MB, bez okna v Docku a bez Electronu. Přístupové údaje zůstávají v Klíčence a aktualizace zajišťuje Sparkle.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">03</span>
+            <h3>Místnosti, skupiny a scény</h3>
+            <p>Jednu atmosféru nastavíte více světlům najednou, i napříč značkami, a nastavení stolu změníte za pár vteřin.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">04</span>
+            <h3>Automatizace, adaptivní osvětlení a Soustředění</h3>
+            <p>Rutiny, vlastní scény, světlo, které sleduje váš den, a režimy Soustředění v macOS přiřazené ke scénám.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell">
+        <div class="section-heading">
+          <span class="eyebrow">CO JE JINAK</span>
+          <h2>Fork aplikace LampControl bez placené verze a s několika vylepšeními.</h2>
+        </div>
+        <div class="benefit-table" role="table" aria-label="Změny v LumoBar">
+          <div class="benefit-row benefit-head" role="row">
+            <span role="columnheader">Změna</span>
+            <span role="columnheader">Co z toho máte</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Všechno k dispozici</span>
+            <span role="cell">Skupiny, vlastní scény, automatizace i adaptivní osvětlení pro libovolný počet světel.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Yeelight v reálném čase</span>
+            <span role="cell">Stav žárovky se drží aktuální přes push notifikace a vyhledávání v síti sleduje změny IP adresy.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Adaptivní osvětlení</span>
+            <span role="cell">Časový rozvrh si můžete upravit.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Scény</span>
+            <span role="cell">Vestavěné scény lze upravit i smazat a volba „Obnovit výchozí scény“ je vrátí zpět.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Spuštění po přihlášení</span>
+            <span role="cell">Přepínač v nastavení.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Ikona v liště</span>
+            <span role="cell">Přebírá barvu aktivního světla.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Živé ovládání</span>
+            <span role="cell">Barva, jas i teplota se mění už při tažení posuvníku.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Jazyky</span>
+            <span role="cell">Rozhraní aplikace je v angličtině, francouzštině, španělštině a češtině.</span>
+          </div>
+          <div class="benefit-row" role="row">
+            <span role="cell">Spolehlivost</span>
+            <span role="cell">Řada oprav chyb.</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="install" class="section section-band">
+        <div class="how-it-works shell">
+          <div class="section-heading compact">
+            <span class="eyebrow">JAK TO FUNGUJE</span>
+            <h2>Nainstalujte, otevřete, připojte.</h2>
+          </div>
+          <ol class="steps-list">
+            <li>
+              <span>01</span>
+              <strong>Stáhněte LumoBar</strong>
+              <p>Z nejnovějšího vydání stáhněte DMG, přetáhněte LumoBar do složky Aplikace a spusťte ho.</p>
+            </li>
+            <li>
+              <span>02</span>
+              <strong>Povolte první spuštění</strong>
+              <p>LumoBar je podepsaný jen ad hoc a není notarizovaný, proto ho macOS při prvním spuštění zablokuje. Otevřete Nastavení systému → Soukromí a zabezpečení a klikněte na Přesto otevřít (Open Anyway).</p>
+            </li>
+            <li>
+              <span>03</span>
+              <strong>Přidejte své poskytovatele</strong>
+              <p>Připojte Hue, LIFX, Govee, Yeelight, Nanoleaf, WiZ nebo Tuya pomocí údajů, které každý ekosystém vyžaduje. Počet světel není omezen.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="faq" class="section shell">
+        <div class="section-heading compact">
+          <span class="eyebrow">FAQ</span>
+          <h2>Běžné otázky před instalací aplikace pro světla.</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Je LumoBar zdarma?</summary>
+            <p>Ano. LumoBar je zdarma a open source pod licencí MIT. Nepotřebujete účet, počet světel není omezen a neexistuje žádná placená verze.</p>
+          </details>
+          <details>
+            <summary>Jak souvisí LumoBar s aplikací LampControl?</summary>
+            <p>LumoBar je fork aplikace LampControl od Hugo Informatique, vydané pod licencí MIT. Odstraňuje placenou verzi, zahrnuje všechny funkce a přidává několik vylepšení. Původní autor je uveden v patičce stránky.</p>
+          </details>
+          <details>
+            <summary>Proč macOS blokuje první spuštění?</summary>
+            <p>Aplikace je podepsaná jen ad hoc a není notarizovaná, protože notarizace vyžaduje placený účet Apple Developer. Aplikaci jednou otevřete, pak v Nastavení systému → Soukromí a zabezpečení klikněte na Přesto otevřít.</p>
+          </details>
+          <details>
+            <summary>Která chytrá světla jsou podporována?</summary>
+            <p>LumoBar podporuje Philips Hue (přes lokální bridge), LIFX (cloud), Tuya / Smart Life (cloud), Govee (cloud), Yeelight (LAN), Nanoleaf (LAN) a WiZ (LAN, UDP). Žárovky Ledvance Smart+ Wi-Fi a Sylvania Smart Wi-Fi fungují přes integraci Tuya, protože používají backend Smart Life.</p>
+          </details>
+          <details>
+            <summary>Jak LumoBar nainstaluji?</summary>
+            <p>Stáhněte DMG z nejnovějšího vydání na GitHubu, přetáhněte LumoBar do složky Aplikace a spusťte ho. Při prvním spuštění postupujte podle kroku výše. Příkaz pro Terminál nahoře na stránce stažení udělá za vás.</p>
+          </details>
+          <details>
+            <summary>Posílají se mé klíče API někam jinam?</summary>
+            <p>Přístupové údaje se ukládají do Klíčenky macOS. LumoBar volá jen ta API, která jsou nutná k ovládání vašich poskytovatelů, a žádný účet LumoBar neexistuje.</p>
+          </details>
+          <details>
+            <summary>Nahrazuje LumoBar HomeKit?</summary>
+            <p>Ne. LumoBar je rychlé ovládání z lišty Macu pro několik poskytovatelů. HomeKit zůstává užitečný, pokud už máte chytrou domácnost postavenou na něm.</p>
+          </details>
+          <details>
+            <summary>Jakou verzi macOS potřebuji?</summary>
+            <p>LumoBar je určený pro macOS 13 a novější.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final-cta section-band">
+        <div class="shell">
+          <span class="eyebrow">PŘIPRAVENO PRO VÁŠ STŮL</span>
+          <h2>Nainstalujte LumoBar a zjistěte, jestli se vám zalíbí.</h2>
+          <p class="final-copy">Zdarma, open source, bez účtu. Není co kupovat.</p>
+          <nav class="hero-actions centered" aria-label="Závěrečné akce">
+            <a class="button button-primary" href="https://github.com/petrfilip/LumoBar/releases/latest">Stáhnout zdarma</a>
+            <a class="button button-secondary" href="https://github.com/petrfilip/LumoBar">Zdrojový kód na GitHubu</a>
+          </nav>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <span>LumoBar © 2026 · Licence MIT</span>
+      <div>
+        <a href="https://github.com/petrfilip/LumoBar">GitHub</a>
+        <a href="https://github.com/petrfilip/LumoBar/releases/latest">Vydání</a>
+      </div>
+      <p class="footer-credit">
+        LumoBar je fork aplikace <a href="https://github.com/hugoinformatique/LampControl">LampControl od Hugo Informatique</a> (MIT). Děkujeme Hugo Informatique za původní aplikaci a za její zveřejnění jako open source.
+      </p>
+    </footer>
+
+    <script src="../script.js" defer></script>
+  </body>
+</html>
