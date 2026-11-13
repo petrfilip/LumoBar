@@ -1,12 +1,79 @@
 # Changelog
 
-All notable changes to LampControl are documented here. The format follows
+All notable changes to LumoBar are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Planned
+## [2.0.0] - Unreleased
+
+First release of **LumoBar**, a fork of
+[LampControl](https://github.com/hugoinformatique/LampControl) 1.3.3 by
+Hugo Informatique. LumoBar keeps LampControl's bundle identifier, settings
+folder and Keychain entries, so an existing LampControl install carries over:
+quit LampControl, delete it and install LumoBar.
+
+### Changed
+
+- **Renamed to LumoBar.** Updates come from the fork's own Sparkle feed
+  (`petrfilip.github.io/LumoBar/appcast.xml`).
+- **Everything is free.** The Premium tier and licence activation are gone:
+  rooms, scenes, automations, adaptive lighting and Focus modes work for any
+  number of lamps.
+- Background polling pauses while the Mac sleeps or the screen is locked and
+  refreshes right after wake.
+- Built-in scenes are regular scenes (edit, delete, restore defaults).
+- Network requests have explicit timeouts (5 s on the LAN, 15 s for clouds).
+
+### Removed
+
+- Global keyboard shortcuts.
+- The home-screen widget snapshot and other dead code.
+- The French README and configuration guide (docs are English-only; the app
+  stays localised in English, French, Spanish and Czech).
+
+### Added
+
+- Yeelight live state via push notifications, network discovery that follows
+  a bulb whose IP changed, and a back-off when a bulb drops the listener.
+- White light: a white swatch and *White* preset using colour-temperature mode.
+- Editable adaptive-lighting schedule and an adaptive toggle in the header.
+- Reset all settings, launch at login, a menu-bar icon tinted with the active
+  lamp's colour, and live colour/brightness/temperature while dragging.
+- Czech localisation, VoiceOver labels and tooltips for icon-only controls.
+- A dismiss button on status banners; errors expire after 15 s, data-recovery
+  notices stay until dismissed.
+- A unit test suite (370+ tests).
+
+### Fixed
+
+- **Data safety:** a settings file that cannot be read is moved aside as
+  `<name>.corrupt-<date>.json` and reported, instead of being overwritten;
+  files are decoded leniently so one bad entry no longer loses the rest.
+- **Secrets:** the Nanoleaf token moved from JSON to the Keychain.
+- **Concurrency:** the busy state is re-entrant, stale polls can no longer
+  overwrite newer state, and background tasks are owned and cancelled.
+- Yeelight replies are matched by request ID; colours decode correctly; white
+  mode is kept when changing temperature.
+- Scenes restore power state, survive a failing lamp and keep snapshots when
+  edited; deleting a scene closes its editor and clears references to it.
+- Adaptive lighting converts percent/Kelvin to each lamp's native scale.
+- Changing brightness or temperature turns an off lamp on; failed previews are
+  undone; no slider flicker.
+- The popover opens on the clicked display, sized for it, and the close button
+  no longer quits the app.
+- Room drag-reorder resets correctly when a drag is cancelled.
+- Settings no longer demand Tuya setup when other providers are used.
+- Release workflow: actions pinned by SHA, the release no longer wipes the
+  landing site, and a missing Sparkle key fails the build instead of shipping
+  an app that can never update.
+
+---
+
+## LampControl history
+
+The entries below are from the original LampControl project.
 
 ## [1.3.3] - 2026-05-14
 
