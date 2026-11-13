@@ -21,15 +21,18 @@ final class AppState: ObservableObject {
     @Published var discoveredHueBridges: [HueBridge] = []
     @Published var lamps: [LampDevice] = []
     @Published var selectedTab: ControlTab = .lamps
-    /// Banner text. Informational messages auto-hide after a few seconds;
-    /// errors (set via `showError`) stay until the next message.
+    /// Banner text. Informational messages auto-hide after a few seconds, errors (set via
+    /// `showError`) after a longer one, and sticky errors (data recovery) stay until the user
+    /// dismisses them (see `BannerPolicy`).
     @Published var message = "" {
         didSet {
             messageIsError = false
+            messageIsSticky = false
             scheduleMessageDismiss()
         }
     }
     @Published private(set) var messageIsError = false
+    @Published private(set) var messageIsSticky = false
     private var messageDismissTask: Task<Void, Never>?
     @Published var isBusy = false
     @Published var hasSecret = false
@@ -158,7 +161,7 @@ final class AppState: ObservableObject {
         } catch {
             // Neither read nor moved aside: keep the file as it is and do not run the migration,
             // which would write a fresh rooms.json over it.
-            showError(L10n.dataReadFailed("rooms.json"))
+            showError(L10n.dataReadFailed("rooms.json"), sticky: true)
             return
         }
         let plan = RoomLayout.migrationPlan(
@@ -324,7 +327,7 @@ final class AppState: ObservableObject {
         do {
             focusMappings = try focusMappingStore.loadMappings()
         } catch {
-            showError(L10n.dataReadFailed("focusMappings.json"))
+            showError(L10n.dataReadFailed("focusMappings.json"), sticky: true)
         }
     }
 
@@ -1696,7 +1699,7 @@ final class AppState: ObservableObject {
         do {
             automations = try automationStore.load()
         } catch {
-            showError(L10n.dataReadFailed("automations.json"))
+            showError(L10n.dataReadFailed("automations.json"), sticky: true)
         }
     }
 
@@ -1789,7 +1792,7 @@ final class AppState: ObservableObject {
         do {
             circadianSettings = try circadianSettingsStore.load()
         } catch {
-            showError(L10n.dataReadFailed("circadian-settings.json"))
+            showError(L10n.dataReadFailed("circadian-settings.json"), sticky: true)
         }
     }
 
@@ -1798,7 +1801,7 @@ final class AppState: ObservableObject {
     private func reportDataRecoveries() {
         let events = RecoveryLog.shared.drain()
         guard !events.isEmpty else { return }
-        showError(L10n.dataRecovered(events))
+        showError(L10n.dataRecovered(events), sticky: true)
     }
 
     private func presentOnboardingIfNeeded() {
@@ -1812,7 +1815,7 @@ final class AppState: ObservableObject {
             userScenes = try sceneStore.load()
             seedPresetScenesIfNeeded()
         } catch {
-            showError(L10n.scenesUnreadable)
+            showError(L10n.scenesUnreadable, sticky: true)
         }
     }
 
@@ -2127,18 +2130,28 @@ final class AppState: ObservableObject {
         showError(error.localizedDescription)
     }
 
-    func showError(_ text: String) {
+    /// `sticky` keeps the banner until the user dismisses it: for notices that must not be
+    /// missed, such as a data file that was set aside.
+    func showError(_ text: String, sticky: Bool = false) {
         message = text
         messageIsError = true
+        messageIsSticky = sticky
+        scheduleMessageDismiss()
+    }
+
+    /// The banner's × button.
+    func dismissMessage() {
+        message = ""
     }
 
     private func scheduleMessageDismiss() {
         messageDismissTask?.cancel()
-        guard !message.isEmpty else { return }
+        guard !message.isEmpty,
+              let lifetime = BannerPolicy.lifetime(isError: messageIsError, isSticky: messageIsSticky) else { return }
         let shown = message
         messageDismissTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 6_000_000_000)
-            guard let self, !Task.isCancelled, self.message == shown, !self.messageIsError else { return }
+            try? await Task.sleep(nanoseconds: UInt64(lifetime * 1_000_000_000))
+            guard let self, !Task.isCancelled, self.message == shown else { return }
             self.message = ""
         }
     }

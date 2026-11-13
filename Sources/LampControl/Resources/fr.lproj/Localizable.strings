@@ -529,6 +529,7 @@
 "a11y.adaptive.enabled" = "Éclairage adaptatif";
 "a11y.scene.icon" = "Icône de la scène";
 "a11y.automation.action" = "Action";
+"banner.dismiss" = "Fermer";
 "tuya.region.eu" = "Europe";
 "tuya.region.us" = "États-Unis (Ouest)";
 "tuya.region.usEast" = "États-Unis (Est)";

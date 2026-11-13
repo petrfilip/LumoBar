@@ -208,3 +208,19 @@ final class LampDragRulesTests: XCTestCase {
         XCTAssertTrue(LampDragRules.isDragFinished(pressedMouseButtons: 2), "only the right button is down")
     }
 }
+
+final class BannerPolicyTests: XCTestCase {
+    func testInformationalMessagesExpireQuickly() {
+        XCTAssertEqual(BannerPolicy.lifetime(isError: false, isSticky: false), BannerPolicy.informationalLifetime)
+    }
+
+    func testOrdinaryErrorsExpireAfterALongerWhile() throws {
+        let lifetime = try XCTUnwrap(BannerPolicy.lifetime(isError: true, isSticky: false))
+        XCTAssertEqual(lifetime, 15)
+        XCTAssertGreaterThan(lifetime, BannerPolicy.informationalLifetime)
+    }
+
+    func testStickyErrorsNeverExpire() {
+        XCTAssertNil(BannerPolicy.lifetime(isError: true, isSticky: true))
+    }
+}

@@ -155,8 +155,19 @@ struct ControlCenterView: View {
             Text(appState.message)
                 .font(LCTypo.caption())
                 .foregroundStyle(LCPalette.ink)
-                .lineLimit(2)
+                .lineLimit(isErrorMessage ? 3 : 2)
             Spacer(minLength: 0)
+            Button {
+                appState.dismissMessage()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(LCPalette.muted)
+                    .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(LCPressableButtonStyle())
+            .lcIconLabel("banner.dismiss")
         }
         .padding(.horizontal, LCSpacing.sm)
         .padding(.vertical, LCSpacing.xs + 2)

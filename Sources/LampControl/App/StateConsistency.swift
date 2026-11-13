@@ -185,3 +185,16 @@ enum LampDragRules {
         pressedMouseButtons & 1 == 0
     }
 }
+
+/// How long the status banner stays up.
+enum BannerPolicy {
+    static let informationalLifetime: TimeInterval = 6
+    static let errorLifetime: TimeInterval = 15
+
+    /// `nil` means "until the user dismisses it". Sticky errors are the ones that must not be
+    /// missed (a data file that was set aside), so they never expire.
+    static func lifetime(isError: Bool, isSticky: Bool) -> TimeInterval? {
+        if isError { return isSticky ? nil : errorLifetime }
+        return informationalLifetime
+    }
+}

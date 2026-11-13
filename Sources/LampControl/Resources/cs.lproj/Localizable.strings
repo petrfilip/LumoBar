@@ -529,6 +529,7 @@
 "a11y.adaptive.enabled" = "Adaptivní osvětlení";
 "a11y.scene.icon" = "Ikona scény";
 "a11y.automation.action" = "Akce";
+"banner.dismiss" = "Zavřít";
 "tuya.region.eu" = "Evropa";
 "tuya.region.us" = "USA (západ)";
 "tuya.region.usEast" = "USA (východ)";
