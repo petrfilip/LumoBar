@@ -1,0 +1,181 @@
+import Foundation
+
+// Small value types and helpers behind AppState's concurrency handling. They hold no UI and no
+// I/O so they can be unit-tested.
+
+/// Counts overlapping busy operations: the first one to finish must not clear the busy state
+/// while others are still running.
+struct BusyCounter {
+    private(set) var count = 0
+
+    var isBusy: Bool { count > 0 }
+
+    mutating func begin() { count += 1 }
+
+    mutating func end() { count = max(0, count - 1) }
+}
+
+/// A token that changes whenever the state a background poll was started against becomes
+/// outdated (a user action, a settings save). A poll remembers the value when it starts and
+/// drops its result when the value moved on in the meantime.
+struct SyncGeneration {
+    private(set) var value = 0
+
+    mutating func bump() { value += 1 }
+
+    func isCurrent(_ token: Int) -> Bool { token == value }
+}
+
+/// Owns at most one task. Replacing it cancels the previous one, so a task is never orphaned
+/// and can be cancelled on reset.
+@MainActor
+final class TaskSlot {
+    private var task: Task<Void, Never>?
+
+    var isRunning: Bool { task != nil }
+
+    /// Cancels the running task and starts `operation`. The new task first waits for the
+    /// cancelled one to wind down, so two runs never overlap (they are serialized).
+    func replace(_ operation: @escaping @MainActor () async -> Void) {
+        let previous = task
+        previous?.cancel()
+        let token = UUID()
+        currentToken = token
+        task = Task { @MainActor [weak self] in
+            await previous?.value
+            if !Task.isCancelled { await operation() }
+            if self?.currentToken == token { self?.task = nil }
+        }
+    }
+
+    /// Starts `operation` unless the previous one is still running. For work that must be
+    /// allowed to finish (rate-limited discovery) instead of being aborted by the next trigger.
+    func startIfIdle(_ operation: @escaping @MainActor () async -> Void) {
+        guard task == nil else { return }
+        let token = UUID()
+        currentToken = token
+        task = Task { @MainActor [weak self] in
+            await operation()
+            if self?.currentToken == token { self?.task = nil }
+        }
+    }
+
+    func cancel() {
+        task?.cancel()
+        task = nil
+        currentToken = nil
+    }
+
+    private var currentToken: UUID?
+}
+
+/// One owned task per key (e.g. per automation): a new run for a key replaces the previous one,
+/// runs for different keys are independent.
+@MainActor
+final class KeyedTasks<Key: Hashable> {
+    private var slots: [Key: TaskSlot] = [:]
+
+    func replace(_ key: Key, _ operation: @escaping @MainActor () async -> Void) {
+        let slot = slots[key] ?? TaskSlot()
+        slots[key] = slot
+        slot.replace(operation)
+    }
+
+    func cancelAll() {
+        for slot in slots.values { slot.cancel() }
+        slots.removeAll()
+    }
+}
+
+/// Which form an editable list section currently shows. One value per section replaces the
+/// separate "is creating" / "editing id" flags, which could both be set at once.
+enum SectionEditor<ID: Hashable>: Equatable {
+    case none
+    case create
+    case edit(ID)
+
+    var isOpen: Bool { self != .none }
+
+    var editingID: ID? {
+        if case .edit(let id) = self { return id }
+        return nil
+    }
+
+    /// Closes the editor when the item being edited no longer exists.
+    func resolved(existingIDs: [ID]) -> SectionEditor<ID> {
+        if case .edit(let id) = self, !existingIDs.contains(id) { return .none }
+        return self
+    }
+}
+
+/// What deleting a scene does to the things that point at it.
+struct SceneDeletionCleanup {
+    var automations: [Automation]
+    var focusMappings: [FocusMapping]
+    /// Automations and Focus mappings that were switched off because their scene is gone.
+    var disabledCount: Int
+
+    static func apply(deleting sceneID: UUID, automations: [Automation], focusMappings: [FocusMapping]) -> SceneDeletionCleanup {
+        var disabled = 0
+        let nextAutomations = automations.map { automation -> Automation in
+            guard automation.isEnabled, automation.action == .applyProfile(id: sceneID) else { return automation }
+            var copy = automation
+            copy.isEnabled = false
+            disabled += 1
+            return copy
+        }
+        let nextMappings = focusMappings.map { mapping -> FocusMapping in
+            guard mapping.sceneId == sceneID else { return mapping }
+            var copy = mapping
+            if copy.isEnabled { disabled += 1 }
+            copy.isEnabled = false
+            copy.sceneId = nil
+            return copy
+        }
+        return SceneDeletionCleanup(automations: nextAutomations, focusMappings: nextMappings, disabledCount: disabled)
+    }
+
+    /// How many enabled automations / Focus mappings would be switched off by deleting the scene.
+    static func referenceCount(for sceneID: UUID, automations: [Automation], focusMappings: [FocusMapping]) -> Int {
+        apply(deleting: sceneID, automations: automations, focusMappings: focusMappings).disabledCount
+    }
+}
+
+extension FocusMapping {
+    /// Adds `mapping`, or, when a mapping for the same Focus already exists (identifiers match
+    /// case-insensitively, like the URL scheme resolves them), points that one at the new scene
+    /// and enables it instead of creating a second entry that could never win.
+    static func adding(_ mapping: FocusMapping, to mappings: [FocusMapping]) -> [FocusMapping] {
+        var result = mappings
+        if let index = result.firstIndex(where: { $0.id == mapping.id || $0.matches(focusIdentifier: mapping.focusIdentifier) }) {
+            result[index].sceneId = mapping.sceneId
+            result[index].isEnabled = true
+        } else {
+            result.append(mapping)
+        }
+        return result
+    }
+
+    /// Replaces the mapping with `mapping.id`. A different mapping for the same Focus is
+    /// dropped (the edited one takes over), so editing cannot create a duplicate either.
+    static func updating(_ mapping: FocusMapping, in mappings: [FocusMapping]) -> [FocusMapping] {
+        guard let index = mappings.firstIndex(where: { $0.id == mapping.id }) else { return mappings }
+        var result = mappings
+        result[index] = mapping
+        return result.filter { $0.id == mapping.id || !$0.matches(focusIdentifier: mapping.focusIdentifier) }
+    }
+}
+
+/// The payload of a lamp row being dragged to reorder the list. Prefixed so a drop of foreign
+/// text (a selection dragged from another app) is not mistaken for a lamp.
+enum LampDragPayload {
+    private static let prefix = "lumobar.lamp:"
+
+    static func encode(_ lampID: String) -> String { prefix + lampID }
+
+    static func decode(_ text: String) -> String? {
+        guard text.hasPrefix(prefix) else { return nil }
+        let id = String(text.dropFirst(prefix.count))
+        return id.isEmpty ? nil : id
+    }
+}

@@ -16,7 +16,8 @@ final class CircadianService {
 
         // Fire every 15 minutes
         timer = Timer.scheduledTimer(withTimeInterval: 15 * 60, repeats: true) { [weak self] _ in
-            self?.applyNow()
+            // Scheduled on the main run loop, so this is already the main actor.
+            MainActor.assumeIsolated { self?.applyNow() }
         }
     }
 

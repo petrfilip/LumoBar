@@ -7,6 +7,9 @@ enum BulkLampAction {
     struct Outcome {
         var updatedCount = 0
         var firstError: Error?
+        /// The surrounding task was cancelled: the rest of the lamps was left alone and the
+        /// cancellation is not reported as an error.
+        var wasCancelled = false
     }
 
     static func run(
@@ -16,10 +19,18 @@ enum BulkLampAction {
     ) async -> Outcome {
         var outcome = Outcome()
         for lamp in lamps {
+            guard !Task.isCancelled else {
+                outcome.wasCancelled = true
+                break
+            }
             do {
                 onUpdate(try await operation(lamp))
                 outcome.updatedCount += 1
             } catch {
+                if Task.isCancelled || error is CancellationError {
+                    outcome.wasCancelled = true
+                    break
+                }
                 if outcome.firstError == nil { outcome.firstError = error }
             }
         }

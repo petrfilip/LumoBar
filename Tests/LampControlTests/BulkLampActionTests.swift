@@ -46,4 +46,30 @@ final class BulkLampActionTests: XCTestCase {
             onUpdate: { order.append("up-\($0.id)") })
         XCTAssertEqual(order, ["op-a", "up-a", "op-b", "up-b"])
     }
+
+    func testCancellationStopsBetweenLampsWithoutReportingAnError() async {
+        var applied: [String] = []
+        let task = Task { () -> BulkLampAction.Outcome in
+            await BulkLampAction.run(
+                on: [lamp("a"), lamp("b"), lamp("c")],
+                operation: { l in
+                    if l.id == "a" { withUnsafeCurrentTask { $0?.cancel() } }
+                    return l
+                },
+                onUpdate: { applied.append($0.id) })
+        }
+        let outcome = await task.value
+        XCTAssertEqual(applied, ["a"])
+        XCTAssertTrue(outcome.wasCancelled)
+        XCTAssertNil(outcome.firstError)
+    }
+
+    func testCancellationErrorFromALampIsNotAnError() async {
+        let outcome = await BulkLampAction.run(
+            on: [lamp("a"), lamp("b")],
+            operation: { _ in throw CancellationError() },
+            onUpdate: { _ in XCTFail("nothing succeeded") })
+        XCTAssertTrue(outcome.wasCancelled)
+        XCTAssertNil(outcome.firstError)
+    }
 }

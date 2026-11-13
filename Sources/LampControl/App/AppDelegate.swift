@@ -16,8 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         configurePopover()
         configureStatusItem()
         appState.updateService.start()
-        appState.startAutomationScheduler()
-        appState.startCircadianService()
+        // The automation scheduler, adaptive lighting and auto-sync are started by AppState once
+        // its data has loaded (`runStartupSequence`).
     }
 
     /// Handles `lampcontrol://focus?mode=<identifier|off>` (Shortcuts automations).

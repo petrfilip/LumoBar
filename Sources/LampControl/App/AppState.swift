@@ -31,7 +31,6 @@ final class AppState: ObservableObject {
     }
     @Published private(set) var messageIsError = false
     private var messageDismissTask: Task<Void, Never>?
-    private var pendingAdaptiveNotice = false
     @Published var isBusy = false
     @Published var hasSecret = false
     @Published var selectedLampIds = Set<String>()
@@ -95,7 +94,19 @@ final class AppState: ObservableObject {
     private var holdExpiryTasks: [String: Task<Void, Never>] = [:]
     private var lastYeelightDiscovery: Date?
     private var isRecoveringYeelight = false
-    private var yeelightRecoveryTask: Task<Void, Never>?
+    private let yeelightRecovery = TaskSlot()
+    // Concurrency state (see StateConsistency.swift).
+    private var busy = BusyCounter()
+    /// Bumped by every user operation and settings save; a background poll that started before
+    /// the bump is stale when it finishes and is dropped.
+    private var syncGeneration = SyncGeneration()
+    private let focusSceneTask = TaskSlot()
+    private let circadianApplyTask = TaskSlot()
+    private let automationTasks = KeyedTasks<UUID>()
+    /// True once a sync answered: before that `lamps` is empty and there is nothing to adjust.
+    private var hasSyncedOnce = false
+    /// Adaptive lighting wanted to apply before the first sync; it is applied right after it.
+    private var circadianApplyPending = false
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
@@ -109,28 +120,35 @@ final class AppState: ObservableObject {
         configureYeelightLiveSync()
         loadScenes()
         lampOrderIds = settingsStore.loadLampOrder()
-        Task {
-            await loadSettings()
-            loadHueSettings()
-            loadLifxSettings()
-            loadGoveeSettings()
-            loadYeelightSettings()
-            loadNanoleafSettings()
-            loadWizSettings()
-            loadAutomations()
-            loadCircadianSettings()
-            reportDataRecoveries()
-            // Only now do all providers' settings exist, so "nothing configured" is meaningful.
-            presentOnboardingIfNeeded()
-            await syncLamps(silent: true)
-            // Load rooms after initial sync and ensure default migration
-            await loadRoomsAndMigrateIfNeeded()
-            loadFocusMappings()
-            reportDataRecoveries()
-            startAutoSync()
-            finishFocusAutomationSetup()
-            reconcileYeelightLiveSync()
-        }
+        Task { await runStartupSequence() }
+    }
+
+    /// The one place that orders launch: settings and data load first, then the first sync, and
+    /// only then the services that act on that data (auto-sync, Yeelight listeners, the
+    /// automation scheduler, adaptive lighting). `AppDelegate` starts none of them itself.
+    private func runStartupSequence() async {
+        await loadSettings()
+        loadHueSettings()
+        loadLifxSettings()
+        loadGoveeSettings()
+        loadYeelightSettings()
+        loadNanoleafSettings()
+        loadWizSettings()
+        loadAutomations()
+        loadCircadianSettings()
+        reportDataRecoveries()
+        // Only now do all providers' settings exist, so "nothing configured" is meaningful.
+        presentOnboardingIfNeeded()
+        await syncLamps(silent: true)
+        // Load rooms after initial sync and ensure default migration
+        await loadRoomsAndMigrateIfNeeded()
+        loadFocusMappings()
+        reportDataRecoveries()
+        startAutoSync()
+        finishFocusAutomationSetup()
+        reconcileYeelightLiveSync()
+        startAutomationScheduler()
+        startCircadianService()
     }
 
     func loadRoomsAndMigrateIfNeeded() async {
@@ -235,13 +253,14 @@ final class AppState: ObservableObject {
             room.lampIds.contains($0.id) && $0.online && (scene.isCapture || $0.capabilities.colorCode != nil)
         }
         guard !targets.isEmpty else { showError(scene.isCapture ? L10n.roomNoOnlineLamp : L10n.roomNoOnlineRGB); return }
-        if byUser { await pauseAdaptiveForScene() }
+        let paused = await pauseAdaptiveForScene(byUser: byUser)
 
-        await runBusy {
+        await runBusy(adaptiveNotice: paused) {
             if let snapshots = scene.snapshots {
                 let outcome = await restoreSnapshots(snapshots, on: targets)
                 for lamp in outcome.updated { updateLamp(lamp) }
                 if let error = outcome.firstError { throw error }
+                try Task.checkCancellation()
             } else {
                 try await applyColorToEach(scene.color, on: targets)
             }
@@ -257,7 +276,9 @@ final class AppState: ObservableObject {
         var updated: [LampDevice] = []
         var firstError: Error?
         for snap in snapshots {
+            guard !Task.isCancelled else { break }
             guard let lamp = candidates.first(where: { $0.id == snap.lampId && $0.online }) else { continue }
+            noteUserActivity(lamp.id)
             var latest: LampDevice?
             do {
                 let provider = try makeLightProvider(for: lamp)
@@ -270,9 +291,14 @@ final class AppState: ObservableObject {
                     }
                 }
             } catch {
+                // A superseded run (cancelled Focus change) stops quietly.
+                if Task.isCancelled || error is CancellationError { break }
                 if firstError == nil { firstError = error }
             }
-            if let latest { updated.append(latest) }
+            if let latest {
+                noteUserActivity(lamp.id)
+                updated.append(latest)
+            }
         }
         return (updated, firstError)
     }
@@ -389,13 +415,17 @@ final class AppState: ObservableObject {
         switch event {
         case .off:
             currentFocusIdentifier = nil
+            // Turning a Focus off must not let a scene that is still being applied finish.
+            focusSceneTask.cancel()
         case .activate(let mode):
             guard let known = knownFocusIdentifiers.first(where: { $0.caseInsensitiveCompare(mode) == .orderedSame }) else {
                 Self.focusLog.error("Ignoring unknown focus mode: \(mode, privacy: .public)")
                 return
             }
             currentFocusIdentifier = known
-            Task { await applySceneForCurrentFocus() }
+            // One run at a time: a newer Focus change cancels the previous run (it stops between
+            // lamps) and starts only after that has wound down.
+            focusSceneTask.replace { [weak self] in await self?.applySceneForCurrentFocus() }
         }
     }
 
@@ -636,7 +666,12 @@ final class AppState: ObservableObject {
             isAutoSyncing = true
             defer { isAutoSyncing = false }
 
+            let generation = syncGeneration.value
             let merged = await syncConfiguredProviders()
+            // The user acted (or settings changed) while the providers were answering: this
+            // result describes the state from before, and would revert their change in the UI
+            // or bring back a device they just removed. The next poll starts fresh.
+            guard syncGeneration.isCurrent(generation) else { return }
             applySync(merged)
             reportSyncFailures(merged, silent: true)
             if merged.didSync {
@@ -657,13 +692,19 @@ final class AppState: ObservableObject {
     }
 
     func toggle(_ lamp: LampDevice) async -> Bool {
+        // A poll already in flight describes the lamp from before this click: hold the lamp
+        // (and drop that poll) so the new state is not reverted until the lamp has answered.
+        syncGeneration.bump()
+        noteUserActivity(lamp.id)
         updateLamp(lamp.withPower(!lamp.power))
 
         do {
             let updated = try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: !lamp.power)
+            noteUserActivity(lamp.id)
             updateLamp(updated)
             return true
         } catch {
+            noteUserActivity(lamp.id)
             updateLamp(lamp)
             showError(error)
             return false
@@ -1077,11 +1118,12 @@ final class AppState: ObservableObject {
 
     private func applyCapture(snapshots: [LampSnapshot], name: String, byUser: Bool) async {
         guard !snapshots.isEmpty else { return }
-        if byUser { await pauseAdaptiveForScene() }
-        await runBusy {
+        let paused = await pauseAdaptiveForScene(byUser: byUser)
+        await runBusy(adaptiveNotice: paused) {
             let outcome = await restoreSnapshots(snapshots, on: lamps.filter(\.online))
             for lamp in outcome.updated { updateLamp(lamp) }
             if let error = outcome.firstError { throw error }
+            try Task.checkCancellation()
             message = L10n.sceneApplied(name)
         }
     }
@@ -1105,11 +1147,11 @@ final class AppState: ObservableObject {
             showError(L10n.ambianceNoRGB)
             return
         }
-        if byUser { await pauseAdaptiveForScene() }
+        let paused = await pauseAdaptiveForScene(byUser: byUser)
 
         groupColor = color
 
-        await runBusy {
+        await runBusy(adaptiveNotice: paused) {
             let count = try await applyColorToEach(color, on: targets)
             message = selectedTargets.isEmpty
                 ? L10n.ambianceAppliedToAll(title)
@@ -1215,8 +1257,15 @@ final class AppState: ObservableObject {
     }
 
     private func applyToEach(_ targets: [LampDevice], _ operation: (LampDevice) async throws -> LampDevice) async throws -> Int {
-        let outcome = await BulkLampAction.run(on: targets, operation: operation, onUpdate: { updateLamp($0) })
+        // Hold every target while the action runs, so a poll answering in between does not
+        // put the old state back on a lamp that was already updated.
+        for lamp in targets { noteUserActivity(lamp.id) }
+        let outcome = await BulkLampAction.run(on: targets, operation: operation, onUpdate: { updated in
+            noteUserActivity(updated.id)
+            updateLamp(updated)
+        })
         if let error = outcome.firstError { throw error }
+        if outcome.wasCancelled { throw CancellationError() }
         return outcome.updatedCount
     }
 
@@ -1280,14 +1329,32 @@ final class AppState: ObservableObject {
     }
 
     /// Publishes a finished sync: the lamp list, the selections that still apply and the sync time.
+    /// Every property is assigned only when its value changed: each assignment makes SwiftUI
+    /// re-render the popover, and a background poll usually finds nothing new.
     @discardableResult
     private func applySync(_ merged: ProviderSyncMerge) -> [LampDevice] {
         setSyncedLamps(merged.lamps)
         let ids = Set(merged.lamps.map(\.id))
-        selectedLampIds = selectedLampIds.intersection(ids)
-        expandedLampIds = expandedLampIds.intersection(ids)
-        if merged.didSync { lastSyncDate = Date() }
+        let selected = selectedLampIds.intersection(ids)
+        if selected != selectedLampIds { selectedLampIds = selected }
+        let expanded = expandedLampIds.intersection(ids)
+        if expanded != expandedLampIds { expandedLampIds = expanded }
+        if merged.didSync {
+            let now = Date()
+            // The status line shows the time to the minute: a newer second changes nothing visible.
+            let isNewMinute = lastSyncDate.map { !Calendar.current.isDate($0, equalTo: now, toGranularity: .minute) } ?? true
+            if isNewMinute { lastSyncDate = now }
+            noteSyncSucceeded()
+        }
         return merged.lamps
+    }
+
+    private func noteSyncSucceeded() {
+        hasSyncedOnce = true
+        if circadianApplyPending {
+            circadianApplyPending = false
+            scheduleCircadianApply()
+        }
     }
 
     /// Ends a manual sync: shows `text`, then any provider failures (which replace it, so the
@@ -1304,6 +1371,10 @@ final class AppState: ObservableObject {
     private func reportSyncFailures(_ merged: ProviderSyncMerge, silent: Bool) {
         var failures = merged.failures
         if silent {
+            // A background poll must not talk over an error the user has not seen yet (a data
+            // recovery notice, a failed save). Nothing is marked as reported, so a provider that
+            // is still failing is announced by a later poll, once the banner has moved on.
+            if messageIsError && !message.isEmpty { return }
             let fresh = syncFailureTracker.newlyFailed(merged.failedKinds)
             failures = failures.filter { fresh.contains($0.kind) }
         } else {
@@ -1576,7 +1647,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    func startAutomationScheduler() {
+    private func startAutomationScheduler() {
         automationScheduler.onFire = { [weak self] automation in
             guard let self else { return }
             var updated = automation
@@ -1584,7 +1655,9 @@ final class AppState: ObservableObject {
             if let idx = self.automations.firstIndex(where: { $0.id == automation.id }) {
                 self.automations[idx] = updated
             }
-            Task { await self.executeAutomationAction(automation.action) }
+            self.automationTasks.replace(automation.id) { [weak self] in
+                await self?.executeAutomationAction(automation.action)
+            }
         }
         automationScheduler.start(with: automations)
     }
@@ -1599,12 +1672,12 @@ final class AppState: ObservableObject {
 
     // MARK: - Adaptive Lighting
 
-    /// Turns adaptive lighting off before a user-picked scene and remembers
-    /// to say so in the scene's confirmation message.
-    private func pauseAdaptiveForScene() async {
-        guard circadianSettings.isEnabled else { return }
+    /// Turns adaptive lighting off before a user-picked scene. Returns true when it was on, so
+    /// the caller can have its own confirmation message say so (`runBusy(adaptiveNotice:)`).
+    private func pauseAdaptiveForScene(byUser: Bool) async -> Bool {
+        guard byUser, circadianSettings.isEnabled else { return false }
         await setAdaptiveLighting(enabled: false)
-        pendingAdaptiveNotice = true
+        return true
     }
 
     func setAdaptiveLighting(enabled: Bool) async {
@@ -1632,7 +1705,13 @@ final class AppState: ObservableObject {
     }
 
     func applyCircadianNow() async {
-        guard circadianSettings.isEnabled else { return }
+        guard circadianSettings.isEnabled, !isResettingApp else { return }
+        // Before the first sync `lamps` is empty and there is nothing to adjust: apply right
+        // after that sync instead of waiting for the next 15-minute tick.
+        guard hasSyncedOnce else {
+            circadianApplyPending = true
+            return
+        }
         let (brightness, temperature) = circadianService.currentValues()
         // Only adjust lamps that are already on: adaptive lighting must not
         // switch lamps on, and bulbs reject CT/brightness while off anyway.
@@ -1641,27 +1720,35 @@ final class AppState: ObservableObject {
         // Runs every 15 min in the background: no busy state and no banner,
         // which used to dim the UI and resize the popover on every tick.
         for lamp in targets {
-            guard let provider = try? makeLightProvider(for: lamp) else { continue }
+            guard !Task.isCancelled else { return }
+            // A lamp the user is adjusting belongs to them; the next tick catches up.
+            guard !isHolding(lamp.id), let provider = try? makeLightProvider(for: lamp) else { continue }
             // Providers take each lamp's native range: convert from % / Kelvin.
             if circadianSettings.applyBrightness, let capability = lamp.capabilities.brightness,
                let updated = try? await provider.setBrightness(
                    deviceId: lamp.nativeID,
-                   value: LampScale.nativeBrightness(percent: brightness, capability: capability)) {
+                   value: LampScale.nativeBrightness(percent: brightness, capability: capability)),
+               !isHolding(lamp.id) {
                 updateLamp(updated)
             }
             if circadianSettings.applyTemperature, let capability = lamp.capabilities.temperature,
+               !isHolding(lamp.id),
                let updated = try? await provider.setTemperature(
                    deviceId: lamp.nativeID,
-                   value: LampScale.nativeTemperature(kelvin: temperature, capability: capability)) {
+                   value: LampScale.nativeTemperature(kelvin: temperature, capability: capability)),
+               !isHolding(lamp.id) {
                 updateLamp(updated)
             }
         }
     }
 
-    func startCircadianService() {
-        circadianService.onApply = { [weak self] brightness, temperature in
-            guard let self else { return }
-            Task { await self.applyCircadianNow() }
+    private func scheduleCircadianApply() {
+        circadianApplyTask.replace { [weak self] in await self?.applyCircadianNow() }
+    }
+
+    private func startCircadianService() {
+        circadianService.onApply = { [weak self] _, _ in
+            self?.scheduleCircadianApply()
         }
         if circadianSettings.isEnabled {
             circadianService.start(with: circadianSettings)
@@ -1723,8 +1810,10 @@ final class AppState: ObservableObject {
     func resetAllSettings() {
         isResettingApp = true
         autoSyncTask?.cancel()
-        yeelightRecoveryTask?.cancel()
-        yeelightRecoveryTask = nil
+        yeelightRecovery.cancel()
+        focusSceneTask.cancel()
+        circadianApplyTask.cancel()
+        automationTasks.cancelAll()
         automationScheduler.stop()
         circadianService.stop()
         yeelightLiveSync.stopAll()
@@ -1803,7 +1892,7 @@ final class AppState: ObservableObject {
         }
         yeelightLiveSync.onRepeatedFailure = { [weak self] _ in
             guard let self else { return }
-            self.yeelightRecoveryTask = Task { @MainActor in await self.recoverYeelightAddressesIfNeeded() }
+            self.scheduleYeelightRecovery()
         }
 
         // Sockets die with the process anyway; closing them politely frees the bulb's
@@ -1817,9 +1906,12 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// A recovery that is already running is left to finish rather than replaced: the search is
+    /// rate-limited and not cancellable, so aborting it for the next poll would only discard
+    /// what it found.
     private func scheduleYeelightRecovery() {
         guard yeelightSettings.isConfigured else { return }
-        yeelightRecoveryTask = Task { await recoverYeelightAddressesIfNeeded() }
+        yeelightRecovery.startIfIdle { [weak self] in await self?.recoverYeelightAddressesIfNeeded() }
     }
 
     /// Starts/stops/re-points one listener per configured bulb.
@@ -1978,22 +2070,30 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func runBusy(_ operation: () async throws -> Void) async {
+    /// Runs a user operation with the busy state on. Re-entrant: `isBusy` stays on until the last
+    /// of the overlapping operations is done. `adaptiveNotice` belongs to this operation only
+    /// (its scene switched adaptive lighting off), so another operation never shows or clears it.
+    private func runBusy(adaptiveNotice: Bool = false, _ operation: () async throws -> Void) async {
         // The previous message is kept until the operation sets a new one:
         // clearing it first made the banner vanish and reappear on every click
         // (visible flicker).
-        isBusy = true
+        busy.begin()
+        if !isBusy { isBusy = true }
+        // Whatever poll is in flight describes the state from before this operation.
+        syncGeneration.bump()
         defer {
-            isBusy = false
-            pendingAdaptiveNotice = false
+            busy.end()
+            if isBusy != busy.isBusy { isBusy = busy.isBusy }
         }
 
         do {
             try await operation()
-            if pendingAdaptiveNotice {
-                let notice = NSLocalizedString("adaptive.paused.by.scene", comment: "")
+            let notice = NSLocalizedString("adaptive.paused.by.scene", comment: "")
+            if adaptiveNotice, !messageIsError, !message.contains(notice) {
                 message = message.isEmpty ? notice : "\(message) \(notice)"
             }
+        } catch is CancellationError {
+            // Superseded (a newer Focus change): not a failure to report.
         } catch {
             showError(error)
         }
