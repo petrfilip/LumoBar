@@ -5,9 +5,9 @@ struct LampsView: View {
     @EnvironmentObject private var appState: AppState
     @State private var draggedLampID: String?
     @State private var dragWatch: Task<Void, Never>?
-    private let ink = LCTheme.ink
-    private let muted = LCTheme.muted
-    private let accent = LCTheme.accent
+    private let ink = LCPalette.ink
+    private let muted = LCPalette.muted
+    private let accent = LCPalette.accent
 
     var body: some View {
         if #available(macOS 26.0, *) {
@@ -309,7 +309,7 @@ struct LampsView: View {
             Button { Task { await appState.syncLamps() } } label: {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(appState.isAutoSyncing ? LCPalette.muted : LCPalette.muted)
+                    .foregroundStyle(LCPalette.muted)
                     .frame(width: 24, height: 24)
                     .contentShape(Rectangle())
                     .rotationEffect(.degrees(appState.isAutoSyncing ? 360 : 0))
@@ -380,9 +380,9 @@ private struct ScenePresetBar: View {
                             Text("lamps.scene.button")
                                 .font(.system(size: 10, weight: .semibold))
                         }
-                        .foregroundStyle(LCTheme.accent)
+                        .foregroundStyle(LCPalette.accent)
                         .frame(width: 56).frame(height: 52)
-                        .liquidGlassSurface(radius: 15, tint: LCTheme.accent.opacity(0.10), interactive: true)
+                        .liquidGlassSurface(radius: 15, tint: LCPalette.accent.opacity(0.10), interactive: true)
                     }
                     .buttonStyle(.plain)
                 }
@@ -441,7 +441,7 @@ private struct ScenePresetBar: View {
             Text(L10n.sceneDeleteConfirm(scene.title, isCapture: scene.isCapture,
                                          isUsed: appState.sceneReferenceCount(scene) > 0))
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(LCTheme.ink)
+                .foregroundStyle(LCPalette.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
@@ -508,26 +508,26 @@ private struct ScenePresetBar: View {
                 HStack(spacing: 10) {
                     Image(systemName: "square.stack.3d.up.fill")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(LCTheme.accent)
+                        .foregroundStyle(LCPalette.accent)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L10n.captureState(keepsStoredSnapshots ? (editedScene?.snapshots?.count ?? 0) : appState.lamps.count))
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(LCTheme.ink)
+                            .foregroundStyle(LCPalette.ink)
                         Text("lamps.capture.state.detail")
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(LCTheme.muted)
+                            .foregroundStyle(LCPalette.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
                 }
                 .padding(10)
-                .liquidGlassSurface(radius: 12, tint: LCTheme.accent.opacity(0.06))
+                .liquidGlassSurface(radius: 12, tint: LCPalette.accent.opacity(0.06))
 
                 if editingId != nil {
                     Toggle(isOn: $recaptureState) {
                         Text("lamps.scene.recapture")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(LCTheme.ink)
+                            .foregroundStyle(LCPalette.ink)
                     }
                     .toggleStyle(.switch)
                     .controlSize(.small)
@@ -595,9 +595,9 @@ private struct ScenePresetBar: View {
                 Image(systemName: icon).font(.system(size: 11, weight: .semibold))
                 Text(label).font(.system(size: 11, weight: .semibold))
             }
-            .foregroundStyle(selected ? .white : LCTheme.muted)
+            .foregroundStyle(selected ? .white : LCPalette.muted)
             .frame(maxWidth: .infinity).frame(height: 28)
-            .liquidGlassSurface(radius: 11, tint: selected ? LCTheme.accent.opacity(0.55) : Color.clear)
+            .liquidGlassSurface(radius: 11, tint: selected ? LCPalette.accent.opacity(0.55) : Color.clear)
         }
         .buttonStyle(.plain)
     }
@@ -635,23 +635,23 @@ private struct SceneChip: View {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isCapture ? LCTheme.accent : Color(hsv: color))
+                    .foregroundStyle(isCapture ? LCPalette.accent : Color(hsv: color))
                     .frame(height: 13)
                 if isCapture {
                     Image(systemName: "square.stack.3d.up.fill")
                         .font(.system(size: 7, weight: .bold))
-                        .foregroundStyle(LCTheme.accent)
+                        .foregroundStyle(LCPalette.accent)
                         .offset(x: 8, y: -4)
                 }
             }
             Text(title)
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(LCTheme.ink)
+                .foregroundStyle(LCPalette.ink)
                 .lineLimit(1)
         }
         .frame(width: 62)
         .frame(height: 52)
-        .liquidGlassSurface(radius: 15, tint: (isCapture ? LCTheme.accent : Color(hsv: color)).opacity(0.10), interactive: true)
+        .liquidGlassSurface(radius: 15, tint: (isCapture ? LCPalette.accent : Color(hsv: color)).opacity(0.10), interactive: true)
         .shadow(color: Color.black.opacity(0.10), radius: 4, y: 2)
     }
 }
@@ -670,8 +670,8 @@ private struct GroupControlEntry: View {
 
 private struct GroupCompactBar: View {
     @EnvironmentObject private var appState: AppState
-    private let muted = LCTheme.muted
-    private let accent = LCTheme.accent
+    private let muted = LCPalette.muted
+    private let accent = LCPalette.accent
 
     var body: some View {
         HStack(spacing: 10) {
@@ -684,7 +684,7 @@ private struct GroupCompactBar: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("lamps.group.title")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(LCTheme.ink)
+                    .foregroundStyle(LCPalette.ink)
                 Text(appState.selectedLampIds.isEmpty
                      ? NSLocalizedString("lamps.group.select.hint", comment: "")
                      : L10n.groupSelected(appState.selectedLampIds.count))
@@ -727,9 +727,9 @@ private struct GroupCompactBar: View {
 
 private struct GroupControlPanel: View {
     @EnvironmentObject private var appState: AppState
-    private let ink = LCTheme.ink
-    private let muted = LCTheme.muted
-    private let accent = LCTheme.accent
+    private let ink = LCPalette.ink
+    private let muted = LCPalette.muted
+    private let accent = LCPalette.accent
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -828,9 +828,9 @@ private struct LampRow: View {
     let lamp: LampDevice
     @State private var showingFeedback = false
 
-    private let ink = LCTheme.ink
-    private let muted = LCTheme.muted
-    private let accent = LCTheme.accent
+    private let ink = LCPalette.ink
+    private let muted = LCPalette.muted
+    private let accent = LCPalette.accent
 
     var body: some View {
         VStack(spacing: showsAdvancedControls ? 10 : 0) {

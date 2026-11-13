@@ -49,7 +49,7 @@ final class AppState: ObservableObject {
     @Published var rooms: [Room] = []
     /// Rooms the user folded in the lamp list. Persisted: the lamp list is rebuilt on every
     /// Settings <-> Lamps switch, and rooms are expanded unless listed here.
-    @Published private(set) var collapsedRoomIds: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "LampControl.rooms.collapsed") ?? [])
+    @Published private(set) var collapsedRoomIds: Set<String> = Set(UserDefaults.standard.stringArray(forKey: AppState.collapsedRoomsKey) ?? [])
     @Published var focusMappings: [FocusMapping] = []
     @Published var currentFocusIdentifier: String?
     @Published var availableFocusModes: [FocusMode] = [
@@ -65,7 +65,6 @@ final class AppState: ObservableObject {
     private let settingsStore = SettingsStore()
     private let roomStore = RoomStore()
     private let focusMappingStore = FocusMappingStore()
-    private let widgetSnapshotStore = WidgetSnapshotStore()
     private let hueSettingsStore = HueSettingsStore()
     private let lifxSettingsStore = LifxSettingsStore()
     private let goveeSettingsStore = GoveeSettingsStore()
@@ -110,7 +109,7 @@ final class AppState: ObservableObject {
     /// Minimum delay between automatic (background) network searches.
     private let yeelightDiscoveryInterval: TimeInterval = 5 * 60
     private let onboardingDismissedKey = "LampControl.onboarding.dismissed"
-    private let collapsedRoomsKey = "LampControl.rooms.collapsed"
+    private static let collapsedRoomsKey = "LampControl.rooms.collapsed"
     private let roomsMigratedKey = "LampControl.rooms.migrated"
     /// True while "Reset all settings" runs: blocks background persistence so
     /// nothing re-creates the files that were just removed.
@@ -191,7 +190,7 @@ final class AppState: ObservableObject {
             collapsedRoomIds.insert(roomId)
         }
         guard !isResettingApp else { return }
-        UserDefaults.standard.set(Array(collapsedRoomIds).sorted(), forKey: collapsedRoomsKey)
+        UserDefaults.standard.set(Array(collapsedRoomIds).sorted(), forKey: Self.collapsedRoomsKey)
     }
 
     func persistRooms() {
@@ -453,10 +452,6 @@ final class AppState: ObservableObject {
         pending.forEach(handleFocusURL)
     }
 
-    deinit {
-        autoSyncTask?.cancel()
-    }
-
     var canSync: Bool {
         // Was missing Nanoleaf and WiZ, so users with only those could not sync.
         !configuredProviderKinds.isEmpty
@@ -692,7 +687,6 @@ final class AppState: ObservableObject {
             applySync(merged)
             reportSyncFailures(merged, silent: true)
             if merged.didSync {
-                persistWidgetSnapshot()
                 scheduleYeelightRecovery()
             }
 
@@ -703,7 +697,6 @@ final class AppState: ObservableObject {
             let merged = await syncConfiguredProviders()
             let synced = applySync(merged)
             finishManualSync(merged, message: synced.isEmpty ? L10n.lampsNoneFound : L10n.lampsSynced(synced.count))
-            persistWidgetSnapshot()
             scheduleYeelightRecovery()
         }
     }
@@ -848,8 +841,6 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// The window closed: show the bulb's own latest state (this also corrects the UI if a
-    /// command was lost). Other providers have no push channel; their next poll does it.
     /// Initial cache of a freshly created Yeelight provider. The provider skips commands that
     /// match what its cache says the bulb shows, so the cache must describe the *bulb*, never
     /// the optimistic value on screen: prefer the state the bulb pushed, and leave out lamps the
@@ -1157,7 +1148,6 @@ final class AppState: ObservableObject {
     func deleteUserScene(_ scene: UserLightScene) {
         userScenes.removeAll { $0.id == scene.id }
         persistScenes()
-        persistWidgetSnapshot()
 
         let cleanup = SceneDeletionCleanup.apply(deleting: scene.id, automations: automations, focusMappings: focusMappings)
         if cleanup.automations.map(\.isEnabled) != automations.map(\.isEnabled) {
@@ -1833,7 +1823,6 @@ final class AppState: ObservableObject {
         userScenes = PresetScenes.restored(userScenes)
         UserDefaults.standard.set(true, forKey: PresetScenes.seededDefaultsKey)
         persistScenes()
-        persistWidgetSnapshot()
         message = L10n.scenesRestored
     }
 
@@ -2094,11 +2083,6 @@ final class AppState: ObservableObject {
         // result and push echo repeats the optimistic value): skip no-ops.
         guard previous != next else { return }
         lamps[index] = next
-        // The snapshot only holds counts; writing it on every slider tick
-        // (previews call this continuously) was needless disk I/O.
-        if previous.power != next.power || previous.online != next.online {
-            persistWidgetSnapshot()
-        }
     }
 
     private func startAutoSync() {
@@ -2158,21 +2142,6 @@ final class AppState: ObservableObject {
             guard let self, !Task.isCancelled, self.message == shown, !self.messageIsError else { return }
             self.message = ""
         }
-    }
-
-    private func persistWidgetSnapshot() {
-        guard !isResettingApp else { return }
-        let snapshot = WidgetDashboardSnapshot(
-            totalLampCount: lamps.count,
-            onlineLampCount: lamps.filter(\.online).count,
-            poweredOnLampCount: lamps.filter(\.power).count,
-            sceneCount: userScenes.count,
-            sceneTitles: userScenes.map(\.title),
-            activeRoomCount: rooms.count,
-            roomTitles: rooms.map(\.name)
-        )
-
-        try? widgetSnapshotStore.save(snapshot)
     }
 }
 

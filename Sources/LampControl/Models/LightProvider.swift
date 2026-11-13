@@ -20,8 +20,6 @@ enum LightProviderKind: String, Codable, CaseIterable, Hashable {
         case .wiz:       "WiZ (Signify)"
         }
     }
-
-    var isImplemented: Bool { true }
 }
 
 protocol LightProvider: AnyObject {

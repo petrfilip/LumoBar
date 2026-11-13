@@ -45,17 +45,6 @@ final class KeychainStore: SecretStoring {
         }
     }
 
-    private let defaultService = Item.tuya.service
-    private let defaultAccount = Item.tuya.account
-
-    func readSecret() throws -> String {
-        try readSecret(service: defaultService, account: defaultAccount)
-    }
-
-    func saveSecret(_ secret: String) throws {
-        try saveSecret(secret, service: defaultService, account: defaultAccount)
-    }
-
     func readSecret(service: String, account: String) throws -> String {
         var query = baseQuery(service: service, account: account)
         query[kSecReturnData as String] = true

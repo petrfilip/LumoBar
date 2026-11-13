@@ -10,7 +10,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let popover = NSPopover()
     private let appState = AppState()
     private var cancellables = Set<AnyCancellable>()
-    private var contextMenu: NSMenu?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configurePopover()
@@ -56,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 // them on the next main-queue turn.
                 DispatchQueue.main.async {
                     guard let self, self.popover.isShown else { return }
-                    self.updatePopoverSize(animated: false)
+                    self.updatePopoverSize()
                 }
             }
             .store(in: &cancellables)
@@ -170,7 +169,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         quitItem.target = self
         menu.addItem(quitItem)
 
-        contextMenu = menu
         statusItem?.menu = menu
         button.performClick(nil)
         statusItem?.menu = nil
@@ -197,7 +195,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                appState.popoverScreenVisibleHeight != screen.visibleFrame.height {
                 appState.popoverScreenVisibleHeight = screen.visibleFrame.height
             }
-            updatePopoverSize(animated: false)
+            updatePopoverSize()
             popover.show(relativeTo: rect, of: view, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
             logPopoverPlacement(anchor: rect, in: view, phase: "show")
@@ -280,19 +278,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         anchorWindow.orderOut(nil)
     }
 
-    private func updatePopoverSize(animated: Bool) {
+    private func updatePopoverSize() {
         let size = appState.preferredPopoverSize
-
         guard popover.contentSize != size else { return }
-
-        if animated, popover.isShown {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.10
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                popover.contentSize = size
-            }
-        } else {
-            popover.contentSize = size
-        }
+        popover.contentSize = size
     }
 }

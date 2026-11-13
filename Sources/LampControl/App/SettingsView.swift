@@ -10,7 +10,6 @@ struct SettingsView: View {
     @State private var newNanoleafName: String = ""
     @State private var newWizHost: String = ""
     @State private var newWizName: String = ""
-    @State private var editingAutomation: Automation?
     @State private var isAddingAutomation = false
     /// One editor per section: the create and the edit form can never be open together.
     @State private var roomEditor: SectionEditor<String> = .none
@@ -32,9 +31,9 @@ struct SettingsView: View {
     @State private var goveeKeyDraft: String?
     @State private var tuyaDraft: TuyaSettings?
 
-    private let ink = LCTheme.ink
-    private let muted = LCTheme.muted
-    private let accent = LCTheme.accent
+    private let ink = LCPalette.ink
+    private let muted = LCPalette.muted
+    private let accent = LCPalette.accent
 
     var body: some View {
         if #available(macOS 26.0, *) {
@@ -226,7 +225,7 @@ struct SettingsView: View {
             HStack(spacing: LCSpacing.sm) {
                 Image(systemName: providerIcon(provider))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(isConfigured ? Color.green.opacity(0.85) : (provider.isImplemented ? accent : muted))
+                    .foregroundStyle(isConfigured ? Color.green.opacity(0.85) : accent)
                     .frame(width: 34, height: 34)
                     .lcCard(radius: 17, tint: isConfigured ? Color.green.opacity(0.15) : nil)
 
@@ -1353,10 +1352,10 @@ struct SettingsView: View {
                         .frame(width: 44, alignment: .leading)
                     Text(L10n.circadianKeyframeBrightness(kf.brightness))
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(LCTheme.muted)
+                        .foregroundStyle(LCPalette.muted)
                     Text("\(kf.temperature) K")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(LCTheme.muted)
+                        .foregroundStyle(LCPalette.muted)
                     Spacer()
                     Circle()
                         .fill(Color(nsColor: StatusItemIcon.kelvinColor(kf.temperature)))
@@ -1563,7 +1562,7 @@ struct SettingsView: View {
                     .font(.system(size: 11, weight: .semibold).monospacedDigit())
                     .foregroundStyle(LCPalette.muted)
 
-                Button(action: openConfigurationGuide) {
+                Button(action: appState.openConfigurationGuide) {
                     Image(systemName: "questionmark.circle")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(LCPalette.muted)
@@ -2050,7 +2049,7 @@ struct SettingsView: View {
             }
 
             Button {
-                openConfigurationGuide()
+                appState.openConfigurationGuide()
             } label: {
                 Label("about.config.guide", systemImage: "book")
                     .font(.system(size: 13, weight: .semibold))
@@ -2212,13 +2211,7 @@ struct SettingsView: View {
     }
 
     private var completedSetupCount: Int { setupSteps.filter(\.isComplete).count }
-    private var setupProgress: CGFloat  { CGFloat(completedSetupCount) / CGFloat(max(setupSteps.count, 1)) }
     private var isSetupComplete: Bool   { completedSetupCount == setupSteps.count }
-
-    private func openConfigurationGuide() {
-        guard let url = URL(string: "https://github.com/petrfilip/LumoBar/blob/main/docs/CONFIGURATION.md") else { return }
-        NSWorkspace.shared.open(url)
-    }
 }
 
 /// Observes the update service directly: `AppState` only holds it, and a nested
@@ -2287,7 +2280,7 @@ private struct AutomationEditor: View {
             HStack(spacing: 6) {
                 Text("automation.days")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(LCTheme.muted)
+                    .foregroundStyle(LCPalette.muted)
                 ForEach(1...7, id: \.self) { day in
                     Button {
                         if weekdays.contains(day) { weekdays.remove(day) }
@@ -2295,9 +2288,9 @@ private struct AutomationEditor: View {
                     } label: {
                         Text(L10n.dayLetters[safe: day - 1] ?? "")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(weekdays.contains(day) ? Color.white : LCTheme.muted)
+                            .foregroundStyle(weekdays.contains(day) ? Color.white : LCPalette.muted)
                             .frame(width: 24, height: 24)
-                            .liquidGlassCircle(tint: weekdays.contains(day) ? LCTheme.accent.opacity(0.50) : nil)
+                            .liquidGlassCircle(tint: weekdays.contains(day) ? LCPalette.accent.opacity(0.50) : nil)
                     }
                     .buttonStyle(.plain)
                 }
@@ -2327,7 +2320,7 @@ private struct AutomationEditor: View {
                 }
                 .liquidGlassButtonStyle()
                 .help("app.close")
-                .foregroundStyle(LCTheme.muted)
+                .foregroundStyle(LCPalette.muted)
             }
         }
         .padding(12)
@@ -2413,28 +2406,6 @@ private struct SetupStep: Identifiable {
     let icon: String
     let isComplete: Bool
     var id: String { title }
-}
-
-private struct SetupStepPill: View {
-    let step: SetupStep
-
-    var body: some View {
-        HStack(spacing: 5) {
-            Image(systemName: step.isComplete ? "checkmark.circle.fill" : step.icon)
-                .font(.system(size: 10, weight: .bold))
-            Text(step.title)
-                .font(.system(size: 10, weight: .semibold))
-                .lineLimit(1)
-        }
-        .foregroundStyle(step.isComplete ? LCTheme.accent : LCTheme.muted)
-        .padding(.horizontal, 8)
-        .frame(maxWidth: .infinity)
-        .frame(height: 26)
-        .liquidGlassSurface(
-            radius: 13,
-            tint: step.isComplete ? Color.green.opacity(0.12) : Color.white.opacity(0.06)
-        )
-    }
 }
 
 private extension String {
