@@ -205,11 +205,7 @@ final class AppState: ObservableObject {
         guard !targets.isEmpty else { showError(L10n.roomNoOnlineLamp); return }
 
         await runBusy {
-            var updated: [LampDevice] = []
-            for lamp in targets {
-                updated.append(try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value))
-            }
-            for lamp in updated { updateLamp(lamp) }
+            try await setPower(value, on: targets)
             message = L10n.roomPower(value)
         }
     }
@@ -230,11 +226,7 @@ final class AppState: ObservableObject {
                 for lamp in outcome.updated { updateLamp(lamp) }
                 if let error = outcome.firstError { throw error }
             } else {
-                var updated: [LampDevice] = []
-                for lamp in targets {
-                    updated.append(try await applyColor(scene.color, to: lamp))
-                }
-                for lamp in updated { updateLamp(lamp) }
+                try await applyColorToEach(scene.color, on: targets)
             }
             message = L10n.roomSceneApplied(scene.title)
         }
@@ -950,14 +942,8 @@ final class AppState: ObservableObject {
         }
 
         await runBusy {
-            var updated: [LampDevice] = []
-            for lamp in targets {
-                updated.append(try await applyColor(groupColor, to: lamp))
-            }
-            for lamp in updated {
-                updateLamp(lamp)
-            }
-            message = L10n.colorApplied(updated.count)
+            let count = try await applyColorToEach(groupColor, on: targets)
+            message = L10n.colorApplied(count)
         }
     }
 
@@ -1057,34 +1043,27 @@ final class AppState: ObservableObject {
         groupColor = color
 
         await runBusy {
-            var updated: [LampDevice] = []
-            for lamp in targets {
-                updated.append(try await applyColor(color, to: lamp))
-            }
-            for lamp in updated {
-                updateLamp(lamp)
-            }
+            let count = try await applyColorToEach(color, on: targets)
             message = selectedTargets.isEmpty
                 ? L10n.ambianceAppliedToAll(title)
-                : L10n.ambianceApplied(title, count: updated.count)
+                : L10n.ambianceApplied(title, count: count)
         }
     }
 
     func applyGroupPower(_ value: Bool) async {
-        let targets = lamps.filter { selectedLampIds.contains($0.id) }
-        guard !targets.isEmpty else {
+        guard lamps.contains(where: { selectedLampIds.contains($0.id) }) else {
             showError(L10n.selectLamp)
+            return
+        }
+        // Offline lamps cannot answer: skip them instead of failing the whole group.
+        let targets = lamps.filter { selectedLampIds.contains($0.id) && $0.online }
+        guard !targets.isEmpty else {
+            showError(L10n.roomNoOnlineLamp)
             return
         }
 
         await runBusy {
-            var updated: [LampDevice] = []
-            for lamp in targets {
-                updated.append(try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value))
-            }
-            for lamp in updated {
-                updateLamp(lamp)
-            }
+            try await setPower(value, on: targets)
             message = L10n.groupPower(value)
         }
     }
@@ -1150,6 +1129,28 @@ final class AppState: ObservableObject {
             updated = try await provider.setBrightness(deviceId: lamp.nativeID, value: value, transition: transition)
         }
         return updated
+    }
+
+    // MARK: - Multi-lamp actions
+
+    /// Switches every lamp of `targets`. A failing lamp does not stop the others; what worked is
+    /// shown, then the first error is thrown (see `BulkLampAction`).
+    @discardableResult
+    private func setPower(_ value: Bool, on targets: [LampDevice]) async throws -> Int {
+        try await applyToEach(targets) { lamp in
+            try await self.makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value)
+        }
+    }
+
+    @discardableResult
+    private func applyColorToEach(_ color: HSVColor, on targets: [LampDevice]) async throws -> Int {
+        try await applyToEach(targets) { lamp in try await self.applyColor(color, to: lamp) }
+    }
+
+    private func applyToEach(_ targets: [LampDevice], _ operation: (LampDevice) async throws -> LampDevice) async throws -> Int {
+        let outcome = await BulkLampAction.run(on: targets, operation: operation, onUpdate: { updateLamp($0) })
+        if let error = outcome.firstError { throw error }
+        return outcome.updatedCount
     }
 
     /// Closes the menu-bar popover without quitting. Set by `AppDelegate`.
@@ -1430,11 +1431,7 @@ final class AppState: ObservableObject {
         let targets = lamps.filter { $0.online }
         guard !targets.isEmpty else { return }
         await runBusy {
-            var updated: [LampDevice] = []
-            for lamp in targets {
-                updated.append(try await makeLightProvider(for: lamp).setPower(deviceId: lamp.nativeID, value: value))
-            }
-            for lamp in updated { updateLamp(lamp) }
+            try await setPower(value, on: targets)
             message = L10n.allLampsPower(value)
         }
     }
