@@ -119,12 +119,14 @@ final class AppState: ObservableObject {
             loadWizSettings()
             loadAutomations()
             loadCircadianSettings()
+            reportDataRecoveries()
             // Only now do all providers' settings exist, so "nothing configured" is meaningful.
             presentOnboardingIfNeeded()
             await syncLamps(silent: true)
             // Load rooms after initial sync and ensure default migration
             await loadRoomsAndMigrateIfNeeded()
             loadFocusMappings()
+            reportDataRecoveries()
             startAutoSync()
             finishFocusAutomationSetup()
             reconcileYeelightLiveSync()
@@ -133,8 +135,17 @@ final class AppState: ObservableObject {
 
     func loadRoomsAndMigrateIfNeeded() async {
         let defaults = UserDefaults.standard
+        let loadedRooms: [Room]
+        do {
+            loadedRooms = try roomStore.loadRooms()
+        } catch {
+            // Neither read nor moved aside: keep the file as it is and do not run the migration,
+            // which would write a fresh rooms.json over it.
+            showError(L10n.dataReadFailed("rooms.json"))
+            return
+        }
         let plan = RoomLayout.migrationPlan(
-            loaded: roomStore.loadRooms(),
+            loaded: loadedRooms,
             hasRoomsFile: roomStore.hasRoomsFile,
             alreadyMigrated: defaults.bool(forKey: roomsMigratedKey),
             lampIds: lamps.map(\.id),
@@ -269,7 +280,11 @@ final class AppState: ObservableObject {
     // MARK: - Focus Mode Mappings
 
     func loadFocusMappings() {
-        focusMappings = focusMappingStore.loadMappings()
+        do {
+            focusMappings = try focusMappingStore.loadMappings()
+        } catch {
+            showError(L10n.dataReadFailed("focusMappings.json"))
+        }
     }
 
     func persistFocusMappings() {
@@ -1436,7 +1451,9 @@ final class AppState: ObservableObject {
     }
 
     private func loadNanoleafSettings() {
-        do { nanoleafSettings = try nanoleafSettingsStore.load() } catch { }
+        do { nanoleafSettings = try nanoleafSettingsStore.load() } catch {
+            showError(L10n.settingsUnreadable("Nanoleaf"))
+        }
     }
 
     // MARK: - WiZ
@@ -1482,7 +1499,9 @@ final class AppState: ObservableObject {
     }
 
     private func loadWizSettings() {
-        do { wizSettings = try wizSettingsStore.load() } catch { }
+        do { wizSettings = try wizSettingsStore.load() } catch {
+            showError(L10n.settingsUnreadable("WiZ"))
+        }
     }
 
     // MARK: - Power all
@@ -1571,7 +1590,11 @@ final class AppState: ObservableObject {
     }
 
     private func loadAutomations() {
-        automations = (try? automationStore.load()) ?? []
+        do {
+            automations = try automationStore.load()
+        } catch {
+            showError(L10n.dataReadFailed("automations.json"))
+        }
     }
 
     // MARK: - Adaptive Lighting
@@ -1646,7 +1669,19 @@ final class AppState: ObservableObject {
     }
 
     private func loadCircadianSettings() {
-        circadianSettings = (try? circadianSettingsStore.load()) ?? .default
+        do {
+            circadianSettings = try circadianSettingsStore.load()
+        } catch {
+            showError(L10n.dataReadFailed("circadian-settings.json"))
+        }
+    }
+
+    /// Tells the user, once, about files the stores had to set aside while loading (see
+    /// `JSONFileStore` for the policy).
+    private func reportDataRecoveries() {
+        let events = RecoveryLog.shared.drain()
+        guard !events.isEmpty else { return }
+        showError(L10n.dataRecovered(events))
     }
 
     private func presentOnboardingIfNeeded() {

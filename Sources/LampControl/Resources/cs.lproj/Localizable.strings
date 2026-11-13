@@ -524,3 +524,9 @@
 "error.wiz.not.applied" = "žárovka příkaz neprovedla";
 "error.hue.unauthorized" = "Hue: bridge tuto aplikaci už nepřijímá. Spárujte bridge znovu v Nastavení.";
 "error.yeelight.refused" = "Yeelight: spojení bylo odmítnuto. Ujistěte se, že je pro tuto žárovku zapnuto LAN Control.";
+
+/* Data safety (B3) */
+"status.data.read.failed" = "Soubor %@ se nepodařilo přečíst. Zatím se použijí výchozí hodnoty.";
+"status.data.recovered.unreadable" = "Soubor %1$@ nešlo přečíst. Poškozený soubor byl uložen jako %2$@ a aplikace se spustila s výchozími hodnotami.";
+"status.data.recovered.partial" = "Některé položky v souboru %1$@ nešlo přečíst a byly přeskočeny. Kopie původního souboru byla uložena jako %2$@.";
+"status.data.recovered.many" = "Datové soubory (%d) se nepodařilo přečíst celé. Kopie originálů byly uloženy jako soubory .corrupt ve složce LampControl.";

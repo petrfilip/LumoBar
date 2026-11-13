@@ -1,22 +1,18 @@
 import Foundation
 
+/// `circadian-settings.json`.
 final class CircadianSettingsStore {
-    func load() throws -> CircadianSettings {
-        guard FileManager.default.fileExists(atPath: url.path) else { return .default }
-        let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode(CircadianSettings.self, from: data)
+    private let file: JSONFileStore<CircadianSettings>
+
+    init(directory: URL = AppDirectories.support, recovery: RecoveryLog = .shared) {
+        file = JSONFileStore(directory: directory, fileName: "circadian-settings.json",
+                             defaultValue: .default, recovery: recovery)
     }
+
+    func load() throws -> CircadianSettings { try file.load() }
 
     func save(_ settings: CircadianSettings) throws -> CircadianSettings {
-        let data = try JSONEncoder().encode(settings)
-        try data.write(to: url, options: .atomic)
+        try file.save(settings)
         return try load()
-    }
-
-    private var url: URL {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("circadian-settings.json")
     }
 }

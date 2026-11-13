@@ -1,14 +1,6 @@
 import XCTest
 @testable import LampControl
 
-private final class MemorySecrets: SecretStoring {
-    var items: [String: String] = [:]
-    private func key(_ service: String, _ account: String) -> String { service + "/" + account }
-    func readSecret(service: String, account: String) throws -> String { items[key(service, account)] ?? "" }
-    func saveSecret(_ secret: String, service: String, account: String) throws { items[key(service, account)] = secret }
-    func deleteSecret(service: String, account: String) throws { items[key(service, account)] = nil }
-}
-
 final class CredentialStoreTests: XCTestCase {
     func testLifxSavesTrimmedTokenAndReloadsIt() throws {
         let secrets = MemorySecrets()

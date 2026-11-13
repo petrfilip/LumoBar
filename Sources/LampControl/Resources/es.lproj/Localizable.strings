@@ -530,3 +530,9 @@
 "error.wiz.not.applied" = "la bombilla no aplicó el comando";
 "error.hue.unauthorized" = "Hue: el bridge ya no acepta esta app. Vuelve a emparejar el bridge en Ajustes.";
 "error.yeelight.refused" = "Yeelight: conexión rechazada. Comprueba que LAN Control esté activado para esta bombilla.";
+
+/* Data safety (B3) */
+"status.data.read.failed" = "No se pudo leer %@. Se usan los valores predeterminados por ahora.";
+"status.data.recovered.unreadable" = "No se pudo leer %1$@. El archivo dañado se guardó como %2$@ y la app arrancó con los valores predeterminados.";
+"status.data.recovered.partial" = "Algunas entradas de %1$@ no se pudieron leer y se omitieron. Se guardó una copia del original como %2$@.";
+"status.data.recovered.many" = "No se pudieron leer por completo %d archivos de datos. Se guardaron copias de los originales como archivos .corrupt en la carpeta LampControl.";

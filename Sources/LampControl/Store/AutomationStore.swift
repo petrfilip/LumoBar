@@ -1,21 +1,13 @@
 import Foundation
 
+/// `automations.json`.
 final class AutomationStore {
-    func load() throws -> [Automation] {
-        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
-        let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode([Automation].self, from: data)
+    private let file: JSONListStore<Automation>
+
+    init(directory: URL = AppDirectories.support, recovery: RecoveryLog = .shared) {
+        file = JSONListStore(directory: directory, fileName: "automations.json", recovery: recovery)
     }
 
-    func save(_ automations: [Automation]) throws {
-        let data = try JSONEncoder().encode(automations)
-        try data.write(to: url, options: .atomic)
-    }
-
-    private var url: URL {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("automations.json")
-    }
+    func load() throws -> [Automation] { try file.load() }
+    func save(_ automations: [Automation]) throws { try file.save(automations) }
 }

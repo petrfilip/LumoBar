@@ -1,11 +1,25 @@
 import Foundation
 
+/// Tuya settings (`settings.json`, secret in the Keychain) and the custom lamp order
+/// (`lampOrder.json`).
 final class SettingsStore {
-    private let keychain = KeychainStore()
+    private let keychain: SecretStoring
+    private let settingsFile: JSONFileStore<StoredSettings>
+    private let orderFile: JSONListStore<String>
+
+    init(directory: URL = AppDirectories.support, keychain: SecretStoring = KeychainStore(),
+         recovery: RecoveryLog = .shared) {
+        self.keychain = keychain
+        settingsFile = JSONFileStore(directory: directory, fileName: "settings.json",
+                                     defaultValue: StoredSettings(settings: TuyaSettings()), recovery: recovery)
+        orderFile = JSONListStore(directory: directory, fileName: "lampOrder.json", recovery: recovery)
+    }
+
+    private var tuya: KeychainStore.Item { .tuya }
 
     func load() throws -> SettingsSnapshot {
-        let settings = try readStoredSettings().toSettings()
-        let secret = try keychain.readSecret()
+        let settings = try settingsFile.load().toSettings()
+        let secret = try keychain.readSecret(service: tuya.service, account: tuya.account)
         return SettingsSnapshot(settings: settings, hasSecret: !secret.isEmpty)
     }
 
@@ -13,69 +27,27 @@ final class SettingsStore {
     /// the form); only `clearSecret` removes it from the Keychain.
     func save(_ input: TuyaSettings, clearSecret: Bool = false) throws -> SettingsSnapshot {
         let stored = StoredSettings(settings: input)
+        let secret = input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if clearSecret {
-            try keychain.deleteSecret(service: KeychainStore.Item.tuya.service, account: KeychainStore.Item.tuya.account)
-        } else if !input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            try keychain.saveSecret(input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines))
+            try keychain.deleteSecret(service: tuya.service, account: tuya.account)
+        } else if !secret.isEmpty {
+            try keychain.saveSecret(secret, service: tuya.service, account: tuya.account)
         }
 
-        let data = try JSONEncoder().encode(stored)
-        try data.write(to: settingsURL, options: .atomic)
-
+        try settingsFile.save(stored)
         return try load()
     }
 
     func accessSecret() throws -> String {
-        try keychain.readSecret()
+        try keychain.readSecret(service: tuya.service, account: tuya.account)
     }
 
     func saveLampOrder(_ order: [String]) {
-        if let data = try? JSONEncoder().encode(order) {
-            try? data.write(to: lampOrderURL, options: .atomic)
-        }
+        try? orderFile.save(order)
     }
 
     func loadLampOrder() -> [String] {
-        guard FileManager.default.fileExists(atPath: lampOrderURL.path) else {
-            return []
-        }
-        let data = try? Data(contentsOf: lampOrderURL)
-          if let data,
-              let order = try? JSONDecoder().decode([String].self, from: data) {
-            return order
-        }
-        return []
-    }
-
-    private var lampOrderURL: URL {
-        let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
-
-        if !FileManager.default.fileExists(atPath: directory.path) {
-            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        }
-
-        return directory.appendingPathComponent("lampOrder.json")
-    }
-
-    private func readStoredSettings() throws -> StoredSettings {
-        guard FileManager.default.fileExists(atPath: settingsURL.path) else {
-            return StoredSettings(settings: TuyaSettings())
-        }
-
-        let data = try Data(contentsOf: settingsURL)
-        return try JSONDecoder().decode(StoredSettings.self, from: data)
-    }
-
-    private var settingsURL: URL {
-        let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
-
-        if !FileManager.default.fileExists(atPath: directory.path) {
-            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        }
-
-        return directory.appendingPathComponent("settings.json")
+        (try? orderFile.load()) ?? []
     }
 }

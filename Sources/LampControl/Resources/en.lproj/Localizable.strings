@@ -524,3 +524,9 @@
 "error.wiz.not.applied" = "the bulb did not apply the command";
 "error.hue.unauthorized" = "Hue: the bridge no longer accepts this app. Pair the bridge again in Settings.";
 "error.yeelight.refused" = "Yeelight: connection refused. Make sure LAN Control is enabled for this bulb.";
+
+/* Data safety (B3) */
+"status.data.read.failed" = "Couldn't read %@. Using defaults for now.";
+"status.data.recovered.unreadable" = "%1$@ could not be read. The damaged file was kept as %2$@ and the app started with defaults.";
+"status.data.recovered.partial" = "Some entries in %1$@ could not be read and were skipped. A copy of the original was kept as %2$@.";
+"status.data.recovered.many" = "%d data files could not be fully read. Copies of the originals were kept as .corrupt files in the LampControl folder.";

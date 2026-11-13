@@ -333,6 +333,20 @@ enum L10n {
     static var sceneDeleted: String { s("status.scene.deleted") }
     static var scenesUnreadable: String { s("status.scenes.unreadable") }
     static var scenesRestored: String { s("status.scenes.restored") }
+    /// `file` is a file name and is not translated.
+    static func dataReadFailed(_ file: String) -> String { String(format: s("status.data.read.failed"), file) }
+    /// One message for everything the stores set aside while loading (see `JSONFileStore`).
+    static func dataRecovered(_ events: [DataRecovery]) -> String {
+        guard events.count == 1, let event = events.first else {
+            return String(format: s("status.data.recovered.many"), events.count)
+        }
+        switch event.kind {
+        case .unreadable:
+            return String(format: s("status.data.recovered.unreadable"), event.fileName, event.backupName)
+        case .partial:
+            return String(format: s("status.data.recovered.partial"), event.fileName, event.backupName)
+        }
+    }
     static func resetFailed(_ items: String) -> String { String(format: s("status.reset.failed"), items) }
     static var ambianceNoRGB: String { s("status.ambiance.no.rgb") }
     static func ambianceAppliedToAll(_ title: String) -> String {
