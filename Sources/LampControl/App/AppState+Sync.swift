@@ -154,8 +154,12 @@ extension AppState {
         lamps[index] = next
     }
 
+    /// Starts the 60 s poll loop. While the Mac sleeps or the session is locked it stays off; the
+    /// resume path (see `AppState+PowerState.swift`) starts it again.
     func startAutoSync() {
         autoSyncTask?.cancel()
+        autoSyncTask = nil
+        guard !pollingGate.isPaused else { return }
         autoSyncTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 60_000_000_000)

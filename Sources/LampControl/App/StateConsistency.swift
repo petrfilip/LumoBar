@@ -26,6 +26,40 @@ struct SyncGeneration {
     func isCurrent(_ token: Int) -> Bool { token == value }
 }
 
+/// Why background polling is paused. Each reason is cleared only by its own "back" event.
+enum PollingPauseReason: Hashable, CaseIterable {
+    case systemSleep
+    case displaySleep
+    case sessionInactive
+    case screenLocked
+}
+
+/// Decides whether the background poll may run. It tracks the set of active pause reasons, so
+/// polling resumes only when all of them have cleared (a wake while the screen is still locked
+/// keeps it paused). `pause` / `resume` report whether the gate changed between running and
+/// paused, so a burst of wake notifications resumes only once.
+struct PollingGate {
+    private(set) var reasons: Set<PollingPauseReason> = []
+
+    var isPaused: Bool { !reasons.isEmpty }
+
+    /// Returns true when this call moved the gate from running to paused.
+    @discardableResult
+    mutating func pause(_ reason: PollingPauseReason) -> Bool {
+        let wasPaused = isPaused
+        reasons.insert(reason)
+        return !wasPaused
+    }
+
+    /// Returns true when this call moved the gate from paused to running.
+    @discardableResult
+    mutating func resume(_ reason: PollingPauseReason) -> Bool {
+        let wasPaused = isPaused
+        reasons.remove(reason)
+        return wasPaused && !isPaused
+    }
+}
+
 /// Owns at most one task. Replacing it cancels the previous one, so a task is never orphaned
 /// and can be cancelled on reset.
 @MainActor

@@ -82,6 +82,10 @@ final class AppState: ObservableObject {
     let sceneStore = LightSceneStore()
     var lightProviders: [LightProviderKind: any LightProvider] = [:]
     var autoSyncTask: Task<Void, Never>?
+    /// Pauses the background poll while the Mac sleeps or the session is locked (see `AppState+PowerState.swift`).
+    var pollingGate = PollingGate()
+    let pollResumeTask = TaskSlot()
+    var powerObservers: [PowerObserver] = []
     var syncFailureTracker = SyncFailureTracker()
     let yeelightLiveSync = YeelightLiveSync()
     /// Coalesces and paces what sliders / the color picker stream while the user drags.
@@ -120,6 +124,7 @@ final class AppState: ObservableObject {
 
     init() {
         configureYeelightLiveSync()
+        configurePollingGate()
         loadScenes()
         lampOrderIds = settingsStore.loadLampOrder()
         Task { await runStartupSequence() }

@@ -32,6 +32,7 @@ extension AppState {
     }
 
     func quit() {
+        removePowerObservers()
         yeelightLiveSync.stopAll()
         NSApplication.shared.terminate(nil)
     }
@@ -50,6 +51,7 @@ extension AppState {
     func resetAllSettings() {
         isResettingApp = true
         autoSyncTask?.cancel()
+        pollResumeTask.cancel()
         yeelightRecovery.cancel()
         focusSceneTask.cancel()
         circadianApplyTask.cancel()

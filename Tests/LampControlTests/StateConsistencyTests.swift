@@ -224,3 +224,48 @@ final class BannerPolicyTests: XCTestCase {
         XCTAssertNil(BannerPolicy.lifetime(isError: true, isSticky: true))
     }
 }
+
+final class PollingGateTests: XCTestCase {
+    func testStartsRunning() {
+        XCTAssertFalse(PollingGate().isPaused)
+    }
+
+    func testPauseThenResumeReportsTransitionsOnce() {
+        var gate = PollingGate()
+        XCTAssertTrue(gate.pause(.systemSleep))
+        XCTAssertTrue(gate.isPaused)
+        XCTAssertTrue(gate.resume(.systemSleep))
+        XCTAssertFalse(gate.isPaused)
+    }
+
+    func testStaysPausedUntilEveryReasonHasCleared() {
+        var gate = PollingGate()
+        XCTAssertTrue(gate.pause(.systemSleep))
+        XCTAssertFalse(gate.pause(.screenLocked), "already paused: not a new transition")
+        XCTAssertFalse(gate.resume(.systemSleep), "the screen is still locked after the wake")
+        XCTAssertTrue(gate.isPaused)
+        XCTAssertTrue(gate.resume(.screenLocked))
+        XCTAssertFalse(gate.isPaused)
+    }
+
+    func testRepeatedResumeNotificationsTriggerOnlyOneResume() {
+        var gate = PollingGate()
+        gate.pause(.systemSleep)
+        gate.pause(.displaySleep)
+        let transitions = [gate.resume(.systemSleep), gate.resume(.displaySleep), gate.resume(.displaySleep), gate.resume(.systemSleep)]
+        XCTAssertEqual(transitions, [false, true, false, false])
+    }
+
+    func testResumeWithoutPauseIsANoOp() {
+        var gate = PollingGate()
+        XCTAssertFalse(gate.resume(.screenLocked))
+        XCTAssertFalse(gate.isPaused)
+    }
+
+    func testDuplicatePauseNeedsOnlyOneResume() {
+        var gate = PollingGate()
+        gate.pause(.sessionInactive)
+        gate.pause(.sessionInactive)
+        XCTAssertTrue(gate.resume(.sessionInactive))
+    }
+}
