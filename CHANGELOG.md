@@ -10,12 +10,24 @@ All notable changes to LumoBar are documented here. The format follows
 
 First release of **LumoBar**, a fork of
 [LampControl](https://github.com/hugoinformatique/LampControl) 1.3.3 by
-Hugo Informatique. LumoBar keeps LampControl's bundle identifier, settings
-folder and Keychain entries, so an existing LampControl install carries over:
-quit LampControl, delete it and install LumoBar.
+Hugo Informatique. LumoBar has its own identity (see below) and imports an
+existing LampControl setup once, on first launch, so the two apps can be
+installed side by side.
 
 ### Changed
 
+- **New bundle identifier `cz.tix.lumobar`**, with its own settings folder
+  (`~/Library/Application Support/LumoBar`), Keychain services (`LumoBar.*`),
+  preferences and log subsystem. The Swift package, target and executable are
+  renamed to LumoBar.
+- **New URL scheme `lumobar://`** for Focus automations (the app shows and
+  copies these URLs). `lampcontrol://` is still accepted, so existing
+  Shortcuts automations keep working.
+- **One-time import from LampControl.** On first launch LumoBar copies
+  LampControl's data files, Keychain secrets and preferences (including
+  Sparkle's update choices) and shows a notice. Nothing is moved, overwritten
+  or deleted, so LampControl can stay installed. "Launch at login" belongs to
+  the old app and has to be enabled again.
 - **Renamed to LumoBar.** Updates come from the fork's own Sparkle feed
   (`petrfilip.github.io/LumoBar/appcast.xml`).
 - **Everything is free.** The Premium tier and licence activation are gone:

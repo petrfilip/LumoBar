@@ -49,7 +49,7 @@ provider show up in a single list.
 - 🎨 **Scenes** — built-in and custom scenes, capture the current state of a room and restore it later.
 - ⏰ **Automations** — schedule scenes, power on/off and adaptive lighting at set times.
 - 🌅 **Adaptive lighting** — colour temperature and brightness follow an editable daily schedule.
-- 🎯 **Focus modes** — map a macOS Focus to a scene through Shortcuts automations (`lampcontrol://` URL scheme).
+- 🎯 **Focus modes** — map a macOS Focus to a scene through Shortcuts automations (`lumobar://` URL scheme; the old `lampcontrol://` links keep working).
 - 🔐 **Keychain-stored secrets** — tokens, API keys and bridge keys never touch plain text files.
 - 🌍 **English, French, Spanish and Czech** UI.
 - 🚀 **In-app updates via Sparkle**, EdDSA-signed.
@@ -114,9 +114,10 @@ LumoBar started from LampControl 1.3.3. Changes in this fork:
 1. Grab the latest DMG from the
    [Releases page](https://github.com/petrfilip/LumoBar/releases/latest).
 2. Open `LumoBar-<version>.dmg`, drag `LumoBar.app` to `/Applications`.
-   If you had LampControl installed, quit it and delete
-   `/Applications/LampControl.app` — LumoBar keeps your existing settings,
-   lamps and Keychain secrets.
+   If you had LampControl installed, you can keep it: LumoBar has its own
+   bundle identifier and imports LampControl's settings, lamps and Keychain
+   secrets once, on its first launch. Deleting `/Applications/LampControl.app`
+   is optional.
 3. **First launch — bypass Gatekeeper** (the app is ad-hoc signed, not
    notarised; see [known limitations](#known-limitations)).
    On macOS 14+ the right-click → Open trick no longer works on its own:
@@ -182,9 +183,12 @@ LumoBar uses [Sparkle](https://sparkle-project.org/) for in-app updates.
 
 - 🔓 **Ad-hoc signature only.** The app is not notarised, so Gatekeeper
   warns on first launch (see the install steps above).
-- 🔁 LumoBar uses the same bundle identifier as LampControl so it can take
-  over your existing settings. That also means the two apps can't be
-  installed side by side.
+- 🔁 On first launch LumoBar imports LampControl's settings, data files and
+  Keychain secrets (it copies them and never changes or deletes the originals),
+  so it can be installed alongside LampControl. The import happens once. A
+  Launch at login set up in LampControl belongs to that app: turn it on again
+  in LumoBar. Both apps asking Keychain for the same secrets may make macOS
+  ask for your password once.
 
 ## Contributing
 

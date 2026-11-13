@@ -207,9 +207,9 @@ Govee use their respective clouds.
 
 **Where is my Access Secret stored?**
 
-In the macOS Keychain under the service `LampControl.Tuya`, account
+In the macOS Keychain under the service `LumoBar.Tuya`, account
 `tuya-access-secret`. Other settings live in
-`~/Library/Application Support/LampControl/settings.json` in plain JSON.
+`~/Library/Application Support/LumoBar/settings.json` in plain JSON.
 
 **Can I use multiple Tuya accounts?**
 
@@ -250,7 +250,7 @@ Hue cloud dependency.
 1. **Physically press the round button** in the centre of the Hue bridge.
 2. Within 30 seconds, click **Connect Hue** in LumoBar.
 3. An application key is generated and stored in the macOS Keychain under
-   the service `LampControl.Hue`.
+   the service `LumoBar.Hue`.
 
 Your Hue bulbs show up in the **Lamps** tab, with colour and temperature
 matching their hardware capabilities.
@@ -285,7 +285,7 @@ LIFX exposes an official cloud API. You need a **personal token**.
 3. **Save and sync**.
 
 The token is stored in the macOS Keychain under the service
-`LampControl.LIFX`. Bulbs appear in the **Lamps** tab.
+`LumoBar.LIFX`. Bulbs appear in the **Lamps** tab.
 
 ### LIFX troubleshooting
 
@@ -319,7 +319,7 @@ requested from their mobile app.
 3. **Save and sync**.
 
 The key is stored in the macOS Keychain under the service
-`LampControl.Govee`.
+`LumoBar.Govee`.
 
 ### Govee troubleshooting
 
@@ -364,7 +364,7 @@ LumoBar subscribes to each bulb's push notifications, so changes made in the
 Yeelight app or with a wall switch show up immediately.
 
 The list is stored in plain JSON at
-`~/Library/Application Support/LampControl/yeelight-settings.json` (no
+`~/Library/Application Support/LumoBar/yeelight-settings.json` (no
 secret to protect — there's no key or password).
 
 ### Yeelight troubleshooting

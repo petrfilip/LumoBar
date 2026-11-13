@@ -58,7 +58,7 @@ to support so we can coordinate.
 ## Pull requests
 
 - Open the PR against `main`.
-- Run `swift build` and confirm `./scripts/build_app.sh` produces a working
+- Run `swift build` and `swift test`, and confirm `./scripts/build_app.sh` produces a working
   `.app` before requesting review.
 - Describe the user-facing change and any setup it requires.
 - One vendor / feature per PR — keeps reviews tight.
@@ -68,10 +68,10 @@ to support so we can coordinate.
 Open an issue with:
 
 - macOS version and chip (Intel / M-series).
-- LumoBar version (Settings → Updates section, or `defaults read fr.hugoinformatique.lampcontrol`).
+- LumoBar version (Settings → Updates section, or `defaults read cz.tix.lumobar`).
 - Steps to reproduce.
 - Vendor and lamp model that triggered the bug, if applicable.
-- Console logs (`Console.app` → search `fr.hugoinformatique.lampcontrol`).
+- Console logs (`Console.app` → search `cz.tix.lumobar`).
 
 ## Licence
 
