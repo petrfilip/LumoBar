@@ -295,11 +295,13 @@ enum L10n {
         String(format: s("status.nanoleaf.added"), count)
     }
     static var nanoleafRemoved: String { s("status.nanoleaf.removed") }
+    static var nanoleafAlreadyAdded: String { s("status.nanoleaf.already.added") }
     static var wizIPRequired: String { s("status.wiz.ip.required") }
     static func wizAdded(_ count: Int) -> String {
         String(format: s("status.wiz.added"), count)
     }
     static var wizRemoved: String { s("status.wiz.removed") }
+    static var wizAlreadyAdded: String { s("status.wiz.already.added") }
     static var hueNoneFound: String { s("status.hue.none.found") }
     static func hueBridgesFound(_ count: Int) -> String {
         String(format: s("status.hue.found"), count)

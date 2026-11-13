@@ -1302,18 +1302,27 @@ final class AppState: ObservableObject {
 
     // MARK: - Nanoleaf
 
-    func addNanoleafDevice(host: String, name: String) async {
+    /// Returns true when the device was paired and saved (the form may then be cleared); false
+    /// when it was rejected (missing address, duplicate) or failed, after surfacing the reason.
+    @discardableResult
+    func addNanoleafDevice(host: String, name: String) async -> Bool {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanHost.isEmpty else { showError(L10n.nanoleafIPRequired); return }
+        guard !cleanHost.isEmpty else { showError(L10n.nanoleafIPRequired); return false }
+        guard !DeviceHost.isDuplicate(cleanHost, among: nanoleafSettings.devices.map(\.host)) else {
+            showError(L10n.nanoleafAlreadyAdded)
+            return false
+        }
 
+        var saved = false
         await runBusy {
             let client = NanoleafClient()
             let token = try await client.pairDevice(host: cleanHost)
-            let device = NanoleafDevice(name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? cleanHost : name.trimmingCharacters(in: .whitespacesAndNewlines),
-                                        host: cleanHost, authToken: token)
+            let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let device = NanoleafDevice(name: cleanName.isEmpty ? cleanHost : cleanName, host: cleanHost, authToken: token)
             var next = nanoleafSettings
             next.devices.append(device)
             nanoleafSettings = try nanoleafSettingsStore.save(next)
+            saved = true
             lightProviders[.nanoleaf] = nil
             let synced = try await syncConfiguredProviders()
             setSyncedLamps(synced)
@@ -1322,6 +1331,7 @@ final class AppState: ObservableObject {
             lastSyncDate = Date()
             message = L10n.nanoleafAdded(synced.count)
         }
+        return saved
     }
 
     func removeNanoleafDevice(_ device: NanoleafDevice) async {
@@ -1345,17 +1355,26 @@ final class AppState: ObservableObject {
 
     // MARK: - WiZ
 
-    func addWizDevice(host: String, name: String) async {
+    /// Returns true when the device was saved (the form may then be cleared); false when it was
+    /// rejected (missing address, duplicate) or saving failed, after surfacing the reason.
+    @discardableResult
+    func addWizDevice(host: String, name: String) async -> Bool {
         let cleanHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanHost.isEmpty else { showError(L10n.wizIPRequired); return }
+        guard !cleanHost.isEmpty else { showError(L10n.wizIPRequired); return false }
+        guard !DeviceHost.isDuplicate(cleanHost, among: wizSettings.devices.map(\.host)) else {
+            showError(L10n.wizAlreadyAdded)
+            return false
+        }
 
-        let device = WizDevice(name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? cleanHost : name.trimmingCharacters(in: .whitespacesAndNewlines),
-                               host: cleanHost)
+        let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let device = WizDevice(name: cleanName.isEmpty ? cleanHost : cleanName, host: cleanHost)
         var next = wizSettings
         next.devices.append(device)
 
+        var saved = false
         await runBusy {
             wizSettings = try wizSettingsStore.save(next)
+            saved = true
             lightProviders[.wiz] = nil
             let synced = try await syncConfiguredProviders()
             setSyncedLamps(synced)
@@ -1364,6 +1383,7 @@ final class AppState: ObservableObject {
             lastSyncDate = Date()
             message = L10n.wizAdded(synced.count)
         }
+        return saved
     }
 
     func removeWizDevice(_ device: WizDevice) async {

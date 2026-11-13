@@ -620,9 +620,11 @@ struct SettingsView: View {
 
                 Button {
                     Task {
-                        await appState.addNanoleafDevice(host: newNanoleafHost, name: newNanoleafName)
-                        newNanoleafHost = ""
-                        newNanoleafName = ""
+                        // Keep what was typed when the add failed so it can be corrected.
+                        if await appState.addNanoleafDevice(host: newNanoleafHost, name: newNanoleafName) {
+                            newNanoleafHost = ""
+                            newNanoleafName = ""
+                        }
                     }
                 } label: {
                     Label("nanoleaf.pair.button", systemImage: "link.badge.plus")
@@ -704,9 +706,11 @@ struct SettingsView: View {
 
                 Button {
                     Task {
-                        await appState.addWizDevice(host: newWizHost, name: newWizName)
-                        newWizHost = ""
-                        newWizName = ""
+                        // Keep what was typed when the add failed so it can be corrected.
+                        if await appState.addWizDevice(host: newWizHost, name: newWizName) {
+                            newWizHost = ""
+                            newWizName = ""
+                        }
                     }
                 } label: {
                     Label("device.add.sync", systemImage: "plus.circle.fill")

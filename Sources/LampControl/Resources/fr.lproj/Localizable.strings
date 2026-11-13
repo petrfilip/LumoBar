@@ -514,3 +514,7 @@
 "route.focus.sub.active" = "%d actif(s)";
 "lamps.scene.recapture" = "Recapturer l’état actuel";
 "rooms.default.name" = "Mes lampes";
+
+/* App fixes (B2) */
+"status.nanoleaf.already.added" = "Cet appareil Nanoleaf est déjà ajouté.";
+"status.wiz.already.added" = "Cette ampoule WiZ est déjà ajoutée.";
