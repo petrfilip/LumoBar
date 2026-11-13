@@ -127,7 +127,7 @@ struct ControlCenterView: View {
     }
 
     private var headerTitle: LocalizedStringKey {
-        appState.selectedTab == .settings ? "settings.title" : "LampControl"
+        appState.selectedTab == .settings ? "settings.title" : "LumoBar"
     }
 
     private func circleIconButton(icon: String,

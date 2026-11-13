@@ -1,1 +1,1 @@
-NSLocalNetworkUsageDescription = "LampControl usa tu red local para encontrar lámparas Yeelight, controlarlas y mostrar su estado en tiempo real.";
+NSLocalNetworkUsageDescription = "LumoBar usa tu red local para encontrar lámparas Yeelight, controlarlas y mostrar su estado en tiempo real.";

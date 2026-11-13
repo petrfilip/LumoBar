@@ -123,7 +123,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
 
         let symbolName = activeLamp != nil ? "lightbulb.fill" : "lightbulb"
-        item.button?.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "LampControl")
+        item.button?.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "LumoBar")
 
         // Tint color based on state
         if activeLamp != nil {

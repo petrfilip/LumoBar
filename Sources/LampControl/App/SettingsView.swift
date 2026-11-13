@@ -2021,7 +2021,7 @@ struct SettingsView: View {
     private var aboutSettings: some View {
         VStack(spacing: 12) {
             settingsGroup {
-                infoRow("about.app",     value: "LampControl", icon: "lightbulb.led")
+                infoRow("about.app",     value: "LumoBar", icon: "lightbulb.led")
                 infoRow("about.version", value: "\(appState.updateService.currentVersion) build \(appState.updateService.currentBuild)", icon: "shippingbox")
                 infoRow("about.storage", value: NSLocalizedString("about.storage.value", comment: ""), icon: "lock.square")
             }
@@ -2193,7 +2193,7 @@ struct SettingsView: View {
     private var isSetupComplete: Bool   { completedSetupCount == setupSteps.count }
 
     private func openConfigurationGuide() {
-        guard let url = URL(string: "https://github.com/hugoinformatique/LampControl/blob/main/docs/CONFIGURATION.fr.md") else { return }
+        guard let url = URL(string: "https://github.com/petrfilip/LumoBar/blob/main/docs/CONFIGURATION.md") else { return }
         NSWorkspace.shared.open(url)
     }
 }

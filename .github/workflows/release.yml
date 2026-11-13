@@ -116,14 +116,14 @@ jobs:
             echo "Skipping notarization — Apple credentials are not set. The DMG will be ad-hoc signed only."
             exit 0
           fi
-          ditto -c -k --sequesterRsrc --keepParent dist/LampControl.app dist/LampControl-notarize.zip
-          xcrun notarytool submit dist/LampControl-notarize.zip \
+          ditto -c -k --sequesterRsrc --keepParent dist/LumoBar.app dist/LumoBar-notarize.zip
+          xcrun notarytool submit dist/LumoBar-notarize.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait
-          xcrun stapler staple dist/LampControl.app
-          rm dist/LampControl-notarize.zip
+          xcrun stapler staple dist/LumoBar.app
+          rm dist/LumoBar-notarize.zip
 
       - name: Build DMG
         env:
@@ -135,8 +135,8 @@ jobs:
       - name: Stage release artifact (rename DMG with version)
         id: stage
         run: |
-          VERSIONED_DMG="dist/LampControl-${{ steps.version.outputs.marketing }}.dmg"
-          mv dist/LampControl.dmg "$VERSIONED_DMG"
+          VERSIONED_DMG="dist/LumoBar-${{ steps.version.outputs.marketing }}.dmg"
+          mv dist/LumoBar.dmg "$VERSIONED_DMG"
           echo "dmg=$VERSIONED_DMG" >> "$GITHUB_OUTPUT"
 
       - name: Sign DMG with Sparkle EdDSA private key
@@ -192,9 +192,9 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
             <channel>
-              <title>LampControl</title>
+              <title>LumoBar</title>
               <link>https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/appcast.xml</link>
-              <description>Most recent LampControl updates</description>
+              <description>Most recent LumoBar updates</description>
               <language>en</language>
               <item>
                 <title>Version ${MARKETING_VERSION}</title>
@@ -224,7 +224,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.marketing }}
-          name: LampControl v${{ steps.version.outputs.marketing }}
+          name: LumoBar v${{ steps.version.outputs.marketing }}
           generate_release_notes: true
           files: ${{ steps.stage.outputs.dmg }}
 

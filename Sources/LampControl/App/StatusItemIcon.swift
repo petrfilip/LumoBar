@@ -35,7 +35,7 @@ enum StatusItemIcon {
             return true
         }
         image.isTemplate = false
-        image.accessibilityDescription = "LampControl"
+        image.accessibilityDescription = "LumoBar"
         return image
     }
 

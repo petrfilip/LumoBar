@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/.build/release"
-APP_DIR="$ROOT_DIR/dist/LampControl.app"
+APP_DIR="$ROOT_DIR/dist/LumoBar.app"
 INFO_PLIST_SRC="$ROOT_DIR/Info.plist"
 INFO_PLIST_DST="$APP_DIR/Contents/Info.plist"
 

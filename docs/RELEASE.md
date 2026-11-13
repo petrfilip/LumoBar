@@ -1,6 +1,6 @@
 # Release process
 
-LampControl ships via GitHub Releases. The release pipeline is fully
+LumoBar ships via GitHub Releases. The release pipeline is fully
 automated by the workflow at `.github/workflows/release.yml` and triggered
 by pushing a `v*.*.*` tag.
 
@@ -53,7 +53,7 @@ users on first launch.
 - **Source:** *GitHub Actions*
 
  The workflow uploads the appcast to Pages automatically; this just lets the
- deployment land on `https://hugoinformatique.github.io/LampControl/appcast.xml`,
+ deployment land on `https://petrfilip.github.io/LumoBar/appcast.xml`,
  which is the URL embedded in `Info.plist` (`SUFeedURL`).
 
 ## Cutting a release
@@ -69,7 +69,7 @@ users on first launch.
    ```
 5. The workflow builds, signs, packages, signs the appcast, creates the
    GitHub Release with the DMG, and updates Pages with the new appcast.
-6. Within a minute or two, every running LampControl instance will pick up
+6. Within a minute or two, every running LumoBar instance will pick up
    the new appcast on its next scheduled check (or immediately if the user
    clicks **Vérifier maintenant**).
 

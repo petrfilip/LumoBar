@@ -2,7 +2,7 @@
 
 > 🇬🇧 [Read this guide in English](CONFIGURATION.md)
 
-LampControl gère cinq écosystèmes en parallèle. Vous pouvez en activer un seul
+LumoBar gère cinq écosystèmes en parallèle. Vous pouvez en activer un seul
 ou les cinq — la liste de lampes est fusionnée et triée par nom.
 
 | Marque | Type d'accès | Internet requis ? |
@@ -26,7 +26,7 @@ Sautez directement à la section correspondante :
 
 ## Tuya / Smart Life
 
-LampControl a besoin de quatre informations pour communiquer avec le cloud
+LumoBar a besoin de quatre informations pour communiquer avec le cloud
 Tuya :
 
 1. Un **Access ID**
@@ -45,7 +45,7 @@ minutes la première fois — c'est à faire une seule fois.
 
 ## 1. Appairer vos lampes dans l'application mobile
 
-Avant que LampControl puisse parler à vos lampes, elles doivent être
+Avant que LumoBar puisse parler à vos lampes, elles doivent être
 appairées dans l'écosystème Tuya.
 
 - Installez **Smart Life** ([iOS](https://apps.apple.com/app/smart-life-smart-living/id1115101477) /
@@ -70,7 +70,7 @@ Notez :
 2. Dans la barre latérale gauche, choisissez **Cloud → Development**.
 3. Cliquez sur **Create Cloud Project**.
 4. Remplissez :
-   - **Project name** : ce que vous voulez (ex. `LampControl`).
+   - **Project name** : ce que vous voulez (ex. `LumoBar`).
    - **Industry** : *Smart Home*.
    - **Development Method** : *Custom Development* (ou *Smart Home* si
      Custom n'est pas dispo).
@@ -102,7 +102,7 @@ Cliquez sur **Authorize**.
    - **Access ID / Client ID** → c'est votre **Access ID**.
    - **Access Secret / Client Secret** → c'est votre **Access Secret**.
 
-> Traitez l'Access Secret comme un mot de passe. LampControl le stocke dans
+> Traitez l'Access Secret comme un mot de passe. LumoBar le stocke dans
 > le Keychain macOS, jamais en clair.
 
 ---
@@ -125,7 +125,7 @@ La page liste maintenant votre compte lié, avec son **UID**. Copiez-le.
 
 ## 5. Choisir le bon endpoint
 
-LampControl remplit automatiquement le champ endpoint quand vous choisissez
+LumoBar remplit automatiquement le champ endpoint quand vous choisissez
 une région dans **Réglages**. La correspondance :
 
 | Région | Endpoint |
@@ -141,14 +141,14 @@ collez l'URL fournie par Tuya dans l'onglet **Overview** de votre projet.
 
 ---
 
-## 6. Saisir tout ça dans LampControl
+## 6. Saisir tout ça dans LumoBar
 
 1. Cliquez sur l'ampoule dans la barre de menu.
 2. Ouvrez **Réglages**.
 3. Collez :
    - Access ID
    - Access Secret
-   - Région (LampControl remplit l'endpoint)
+   - Région (LumoBar remplit l'endpoint)
    - UID
 4. Cliquez sur **Enregistrer**.
 
@@ -185,27 +185,27 @@ vérifiez que tous les produits listés à l'étape 2 sont bien activés.
 
 Ouvrez la lampe dans Smart Life et confirmez qu'elle répond. Si oui, notez
 le modèle de la lampe et ouvrez une
-[issue](https://github.com/hugoinformatique/LampControl/issues) — certains
+[issue](https://github.com/petrfilip/LumoBar/issues) — certains
 firmwares exposent des codes de capacités inhabituels que nous ne gérons
 peut-être pas encore.
 
 ### Erreurs `token expired`
 
-LampControl gère le rafraîchissement de token automatiquement. Si l'erreur
+LumoBar gère le rafraîchissement de token automatiquement. Si l'erreur
 persiste, cliquez à nouveau sur **Enregistrer** pour forcer un refresh du
 client mis en cache.
 
 ### `device offline`
 
 La lampe est hors-ligne côté Tuya. Coupez/rebranchez la lampe et patientez
-une minute. LampControl reflète la vue du cloud ; on ne peut pas joindre une
+une minute. LumoBar reflète la vue du cloud ; on ne peut pas joindre une
 lampe que le cloud ne joint pas.
 
 ---
 
 ## FAQ
 
-**LampControl fonctionne-t-il sans internet ?**
+**LumoBar fonctionne-t-il sans internet ?**
 
 Oui, partiellement : Hue et Yeelight fonctionnent entièrement en LAN local.
 Tuya, LIFX et Govee passent par leur cloud respectif.
@@ -221,7 +221,7 @@ Dans le Keychain macOS sous le service `LampControl.Tuya`, compte
 Pas encore — l'abstraction multi-fournisseurs de la Phase 2 supportera
 plusieurs comptes et plusieurs fournisseurs côte à côte.
 
-**LampControl supportera-t-il les lampes Bluetooth uniquement ?**
+**LumoBar supportera-t-il les lampes Bluetooth uniquement ?**
 
 Seules les lampes visibles dans l'API Tuya Cloud sont accessibles. Les
 lampes Bluetooth qui ne se synchronisent jamais avec le cloud sont hors
@@ -229,15 +229,15 @@ périmètre.
 
 **Où signaler un bug ?**
 
-[GitHub Issues](https://github.com/hugoinformatique/LampControl/issues) — merci
-d'indiquer la version macOS, la version LampControl, et le modèle de la
+[GitHub Issues](https://github.com/petrfilip/LumoBar/issues) — merci
+d'indiquer la version macOS, la version LumoBar, et le modèle de la
 lampe.
 
 ---
 
 ## Philips Hue
 
-LampControl parle directement à votre **bridge Hue** sur le réseau local —
+LumoBar parle directement à votre **bridge Hue** sur le réseau local —
 aucune dépendance au cloud Hue.
 
 ### Étape 1 — Repérer le bridge
@@ -245,17 +245,17 @@ aucune dépendance au cloud Hue.
 1. Branchez le bridge Hue sur votre box internet (câble Ethernet) et
    alimentez-le. La diode du milieu doit être allumée.
 2. Vérifiez qu'il est sur le **même réseau Wi-Fi** que votre Mac.
-3. Dans LampControl, ouvrez **Réglages → Fournisseurs → Philips Hue → Détecter
-   les bridges**. LampControl interroge `discovery.meethue.com` et liste les
+3. Dans LumoBar, ouvrez **Réglages → Fournisseurs → Philips Hue → Détecter
+   les bridges**. LumoBar interroge `discovery.meethue.com` et liste les
    bridges visibles. Sélectionnez le vôtre.
 
 > Si la détection ne renvoie rien, saisissez l'IP manuellement (visible dans
 > l'app Hue → Réglages → Mes appareils Hue → Bridge → Informations réseau).
 
-### Étape 2 — Appairer LampControl
+### Étape 2 — Appairer LumoBar
 
 1. **Appuyez physiquement sur le gros bouton rond** au centre du bridge Hue.
-2. Dans les 30 secondes, cliquez sur **Connecter Hue** dans LampControl.
+2. Dans les 30 secondes, cliquez sur **Connecter Hue** dans LumoBar.
 3. Une clé d'application est générée et stockée dans le Keychain macOS sous le
    service `LampControl.Hue`.
 
@@ -282,10 +282,10 @@ LIFX expose une API cloud officielle. Il vous faut un **token personnel**.
 1. Connectez-vous sur <https://cloud.lifx.com/sign_in>.
 2. Allez dans **Settings → Personal Access Tokens** (ou directement
    <https://cloud.lifx.com/settings>).
-3. Cliquez sur **Generate New Token**, donnez-lui un nom (ex. `LampControl`).
+3. Cliquez sur **Generate New Token**, donnez-lui un nom (ex. `LumoBar`).
 4. Copiez le token affiché — il ne sera plus jamais montré en clair.
 
-### Étape 2 — Saisir dans LampControl
+### Étape 2 — Saisir dans LumoBar
 
 1. **Réglages → Fournisseurs → LIFX**.
 2. Collez le token dans **Token LIFX**.
@@ -301,7 +301,7 @@ Les lampes apparaissent dans l'onglet **Lampes**.
 - **Aucune lampe** — vérifiez que vos ampoules sont bien synchronisées avec
   l'app LIFX officielle (donc visibles dans le cloud LIFX).
 - **HTTP 429 (rate limit)** — l'API LIFX limite à ~120 requêtes/minute par
-  token. LampControl rafraîchit toutes les minutes ; si vous spammez les
+  token. LumoBar rafraîchit toutes les minutes ; si vous spammez les
   contrôles, attendez 30 secondes.
 
 ---
@@ -320,7 +320,7 @@ demandée depuis l'app mobile.
 4. Vous recevez la clé par email sous quelques minutes (parfois quelques
    heures).
 
-### Étape 2 — Saisir dans LampControl
+### Étape 2 — Saisir dans LumoBar
 
 1. **Réglages → Fournisseurs → Govee**.
 2. Collez la **clé API** reçue par email.
@@ -335,7 +335,7 @@ La clé est stockée dans le Keychain macOS sous le service `LampControl.Govee`.
 - **HTTP 429** — la limite Govee est de **60 requêtes/minute** par clé.
   Espacez les actions ou attendez la prochaine synchronisation auto.
 - **Lampe absente** — Govee n'expose qu'une partie de son catalogue via l'API
-  publique. Si l'app Govee Home la pilote mais pas LampControl, c'est que le
+  publique. Si l'app Govee Home la pilote mais pas LumoBar, c'est que le
   modèle n'est pas dans la whitelist Govee Developer (ouvrez une issue avec
   le numéro de modèle, mais le contournement est côté Govee).
 
@@ -359,12 +359,12 @@ chaque ampoule.
 > À refaire pour chaque ampoule. Si LAN Control n'apparaît pas, mettez à jour
 > le firmware de l'ampoule depuis l'app.
 
-### Étape 2 — Saisir dans LampControl
+### Étape 2 — Saisir dans LumoBar
 
 1. **Réglages → Fournisseurs → Yeelight**.
 2. Saisissez l'**IP** (par exemple `192.168.1.42`) — vous pouvez ajouter `:port`
    si votre lampe écoute sur un port custom (rare).
-3. Optionnel : un **nom** (sinon LampControl utilise celui rapporté par la
+3. Optionnel : un **nom** (sinon LumoBar utilise celui rapporté par la
    lampe).
 4. **Ajouter et synchroniser**. Répétez pour chaque ampoule.
 

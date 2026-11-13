@@ -1,17 +1,17 @@
-# Contributing to LampControl
+# Contributing to LumoBar
 
-Thanks for considering a contribution. LampControl is a small native macOS
+Thanks for considering a contribution. LumoBar is a small native macOS
 menu-bar app written in Swift / SwiftUI. Anything that improves vendor
 coverage, reliability, accessibility, or polish is welcome.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/hugoinformatique/LampControl.git
-cd LampControl
+git clone https://github.com/petrfilip/LumoBar.git
+cd LumoBar
 swift build
 ./scripts/build_app.sh
-open dist/LampControl.app
+open dist/LumoBar.app
 ```
 
 You need:
@@ -69,10 +69,10 @@ to support so we can coordinate.
 Open an issue with:
 
 - macOS version and chip (Intel / M-series).
-- LampControl version (Settings → Updates section, or `defaults read fr.hugoinformatique.lampcontrol`).
+- LumoBar version (Settings → Updates section, or `defaults read fr.hugoinformatique.lampcontrol`).
 - Steps to reproduce.
 - Vendor and lamp model that triggered the bug, if applicable.
-- Console logs (`Console.app` → search `LampControl`).
+- Console logs (`Console.app` → search `fr.hugoinformatique.lampcontrol`).
 
 ## Licence
 

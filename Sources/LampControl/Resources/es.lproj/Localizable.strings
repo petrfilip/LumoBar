@@ -1,7 +1,7 @@
-/* LampControl — Español */
+/* LumoBar — Español */
 
 /* App */
-"app.quit" = "Salir de LampControl";
+"app.quit" = "Salir de LumoBar";
 "adaptive.paused.by.scene" = "Iluminación adaptativa desactivada para mantener la escena.";
 "setup.providers.connected" = "Conectado: %@";
 "setup.providers.none" = "Conecte al menos un proveedor de lámparas.";
@@ -13,7 +13,7 @@
 "action.save" = "Guardar";
 
 /* Vista de lámparas */
-"lamps.welcome.title" = "Bienvenido a LampControl";
+"lamps.welcome.title" = "Bienvenido a LumoBar";
 "lamps.welcome.subtitle" = "Añade tus credenciales Tuya para comenzar";
 "lamps.open.settings" = "Abrir ajustes Tuya";
 "lamps.empty.title" = "No se encontraron lámparas";
@@ -62,14 +62,14 @@
 "tab.settings" = "Ajustes";
 
 /* Configuración inicial */
-"onboarding.title" = "Configurar LampControl";
+"onboarding.title" = "Configurar LumoBar";
 "onboarding.subtitle" = "Tres datos de Tuya son suficientes para comenzar.";
 "onboarding.step1.title" = "Crear o abrir el proyecto Tuya";
 "onboarding.step1.detail" = "Smart Life debe estar vinculado al proyecto Cloud.";
 "onboarding.step2.title" = "Pegar Access ID, Secret y UID";
 "onboarding.step2.detail" = "El Secret se guarda en el Keychain.";
 "onboarding.step3.title" = "Probar la sincronización";
-"onboarding.step3.detail" = "LampControl detectará las lámparas compatibles.";
+"onboarding.step3.detail" = "LumoBar detectará las lámparas compatibles.";
 "onboarding.next" = "Siguiente";
 "onboarding.configure" = "Configurar";
 "onboarding.guide" = "Abrir guía";
@@ -158,7 +158,7 @@
 "hue.bridge.ip" = "IP del bridge";
 "hue.reconnect" = "Reconectar Hue";
 "hue.connect.button" = "Conectar Hue";
-"hue.hint" = "Antes de conectar, presiona el botón físico del bridge Hue. LampControl recibirá una clave local guardada en el Keychain.";
+"hue.hint" = "Antes de conectar, presiona el botón físico del bridge Hue. LumoBar recibirá una clave local guardada en el Keychain.";
 
 /* LIFX */
 "lifx.connected" = "LIFX conectado";
@@ -275,7 +275,7 @@
 
 /* Acerca de */
 "about.title" = "Acerca de";
-"about.subtitle" = "LampControl y diagnósticos";
+"about.subtitle" = "LumoBar y diagnósticos";
 "about.app" = "Aplicación";
 "about.version" = "Versión";
 "about.storage" = "Almacenamiento";
@@ -304,9 +304,9 @@
 "sync.never" = "Nunca";
 
 /* Menú contextual */
-"menu.open" = "Abrir LampControl";
+"menu.open" = "Abrir LumoBar";
 "menu.check.updates" = "Buscar actualizaciones\u{2026}";
-"menu.about" = "Acerca de LampControl v%@";
+"menu.about" = "Acerca de LumoBar v%@";
 "menu.quit" = "Salir";
 
 /* Habitaciones */
@@ -393,7 +393,7 @@
 "status.lifx.connected" = "LIFX conectado. %ld lámpara(s) sincronizada(s).";
 "status.govee.connected" = "Govee conectado. %ld lámpara(s) sincronizada(s).";
 "status.yeelight.ip.required" = "Se requiere la dirección IP de Yeelight.";
-"status.reset.relaunch.failed" = "Los ajustes se han borrado, pero LampControl no pudo reiniciarse. Ciérrala y vuelve a abrirla manualmente.";
+"status.reset.relaunch.failed" = "Los ajustes se han borrado, pero LumoBar no pudo reiniciarse. Ciérrala y vuelve a abrirla manualmente.";
 "status.yeelight.already.added" = "Esta bombilla Yeelight ya está añadida.";
 "status.yeelight.added" = "Yeelight añadida. %ld lámpara(s) sincronizada(s).";
 "status.yeelight.removed" = "Yeelight eliminada.";
@@ -476,8 +476,8 @@
 "focus.automation.off" = "Enfoque desactivado";
 "focus.automation.copy.help" = "Copiar URL";
 "login.item.title" = "Abrir al iniciar sesión";
-"login.item.detail" = "Inicia LampControl automáticamente al iniciar sesión";
-"login.item.approval.hint" = "Se requiere aprobación: permite LampControl en Ajustes del Sistema › General › Ítems de inicio.";
+"login.item.detail" = "Inicia LumoBar automáticamente al iniciar sesión";
+"login.item.approval.hint" = "Se requiere aprobación: permite LumoBar en Ajustes del Sistema › General › Ítems de inicio.";
 "login.item.open.settings" = "Abrir ítems de inicio";
 "login.item.error.register" = "No se pudo activar el inicio al iniciar sesión: %@";
 "login.item.error.unregister" = "No se pudo desactivar el inicio al iniciar sesión: %@";
@@ -489,7 +489,7 @@
 "yeelight.search.none" = "No se encontró ninguna lámpara Yeelight. Comprueba que LAN Control esté activado y que tu Mac esté en la misma red que la lámpara.";
 "yeelight.search.added" = "Añadida";
 "yeelight.search.add.help" = "Añadir esta lámpara";
-"error.yeelight.search.failed" = "La búsqueda en la red falló. Comprueba que LampControl tenga permiso para acceder a la red local en Ajustes del Sistema → Privacidad y seguridad → Red local.";
+"error.yeelight.search.failed" = "La búsqueda en la red falló. Comprueba que LumoBar tenga permiso para acceder a la red local en Ajustes del Sistema → Privacidad y seguridad → Red local.";
 
 /* Editable presets & reset */
 "settings.scenes.restore.title" = "Restaurar escenas predeterminadas";
@@ -499,7 +499,7 @@
 "status.scenes.restored" = "Escenas predeterminadas restauradas";
 "settings.reset.button" = "Restablecer todos los ajustes";
 "settings.reset.confirm.title" = "¿Restablecer todos los ajustes?";
-"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. LampControl se reiniciará con sus ajustes originales.";
+"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. LumoBar se reiniciará con sus ajustes originales.";
 "settings.reset.confirm.action" = "Restablecer y reiniciar";
 "settings.reset.confirm.cancel" = "Cancelar";
 "status.reset.failed" = "Restablecimiento incompleto, no se pudo eliminar: %@";

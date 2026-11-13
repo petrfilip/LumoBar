@@ -2,18 +2,18 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_DIR="$ROOT_DIR/dist/LampControl.app"
-DMG_PATH="$ROOT_DIR/dist/LampControl.dmg"
+APP_DIR="$ROOT_DIR/dist/LumoBar.app"
+DMG_PATH="$ROOT_DIR/dist/LumoBar.dmg"
 DMG_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/lampcontrol-dmg-stage.XXXXXX")"
 
 "$ROOT_DIR/scripts/build_app.sh"
 
 rm -f "$DMG_PATH"
-ditto --norsrc --noextattr --noacl "$APP_DIR" "$DMG_STAGE/LampControl.app"
+ditto --norsrc --noextattr --noacl "$APP_DIR" "$DMG_STAGE/LumoBar.app"
 ln -s /Applications "$DMG_STAGE/Applications"
 
 hdiutil create \
-  -volname "LampControl" \
+  -volname "LumoBar" \
   -srcfolder "$DMG_STAGE" \
   -ov \
   -format UDZO \

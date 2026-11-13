@@ -1,7 +1,7 @@
-/* LampControl — Čeština */
+/* LumoBar — Čeština */
 
 /* App */
-"app.quit" = "Ukončit LampControl";
+"app.quit" = "Ukončit LumoBar";
 "adaptive.paused.by.scene" = "Adaptivní osvětlení bylo vypnuto, aby scéna zůstala beze změny.";
 "setup.providers.connected" = "Připojeno: %@";
 "setup.providers.none" = "Připojte alespoň jednoho poskytovatele žárovek.";
@@ -13,7 +13,7 @@
 "action.save" = "Uložit";
 
 /* Lamps View */
-"lamps.welcome.title" = "Vítejte v aplikaci LampControl";
+"lamps.welcome.title" = "Vítejte v aplikaci LumoBar";
 "lamps.welcome.subtitle" = "Pro začátek přidejte své přihlašovací údaje Tuya";
 "lamps.open.settings" = "Otevřít nastavení Tuya";
 "lamps.empty.title" = "Nebyly nalezeny žádné žárovky";
@@ -62,14 +62,14 @@
 "tab.settings" = "Nastavení";
 
 /* Onboarding */
-"onboarding.title" = "Nastavení aplikace LampControl";
+"onboarding.title" = "Nastavení aplikace LumoBar";
 "onboarding.subtitle" = "Pro začátek stačí tři údaje z Tuya.";
 "onboarding.step1.title" = "Vytvořte nebo otevřete projekt Tuya";
 "onboarding.step1.detail" = "Smart Life musí být propojen s projektem v cloudu.";
 "onboarding.step2.title" = "Vložte Access ID, Secret a UID";
 "onboarding.step2.detail" = "Secret zůstane uložen v Klíčence.";
 "onboarding.step3.title" = "Otestujte synchronizaci";
-"onboarding.step3.detail" = "LampControl poté vyhledá kompatibilní žárovky.";
+"onboarding.step3.detail" = "LumoBar poté vyhledá kompatibilní žárovky.";
 "onboarding.next" = "Další";
 "onboarding.configure" = "Nastavit";
 "onboarding.guide" = "Otevřít průvodce";
@@ -158,7 +158,7 @@
 "hue.bridge.ip" = "IP adresa bridge";
 "hue.reconnect" = "Znovu připojit Hue";
 "hue.connect.button" = "Připojit Hue";
-"hue.hint" = "Před připojením stiskněte fyzické tlačítko na Hue Bridge. LampControl obdrží místní klíč, který se uloží do Klíčenky.";
+"hue.hint" = "Před připojením stiskněte fyzické tlačítko na Hue Bridge. LumoBar obdrží místní klíč, který se uloží do Klíčenky.";
 
 /* LIFX */
 "lifx.connected" = "LIFX je připojen";
@@ -273,7 +273,7 @@
 
 /* About */
 "about.title" = "O aplikaci";
-"about.subtitle" = "LampControl a diagnostika";
+"about.subtitle" = "LumoBar a diagnostika";
 "about.app" = "Aplikace";
 "about.version" = "Verze";
 "about.storage" = "Úložiště";
@@ -298,9 +298,9 @@
 "sync.never" = "Nikdy";
 
 /* App context menu */
-"menu.open" = "Otevřít LampControl";
+"menu.open" = "Otevřít LumoBar";
 "menu.check.updates" = "Zkontrolovat aktualizace\u{2026}";
-"menu.about" = "O aplikaci LampControl v%@";
+"menu.about" = "O aplikaci LumoBar v%@";
 "menu.quit" = "Ukončit";
 
 /* Rooms */
@@ -387,7 +387,7 @@
 "status.lifx.connected" = "LIFX je připojen. Synchronizované žárovky: %ld.";
 "status.govee.connected" = "Govee je připojen. Synchronizované žárovky: %ld.";
 "status.yeelight.ip.required" = "Vyžadována IP adresa Yeelight.";
-"status.reset.relaunch.failed" = "Nastavení bylo smazáno, ale LampControl se nepodařilo restartovat. Ukončete aplikaci a otevřete ji ručně znovu.";
+"status.reset.relaunch.failed" = "Nastavení bylo smazáno, ale LumoBar se nepodařilo restartovat. Ukončete aplikaci a otevřete ji ručně znovu.";
 "status.yeelight.already.added" = "Tato žárovka Yeelight už je přidána.";
 "status.yeelight.added" = "Žárovka Yeelight přidána. Synchronizované žárovky: %ld.";
 "status.yeelight.removed" = "Žárovka Yeelight odebrána.";
@@ -470,8 +470,8 @@
 "focus.automation.off" = "Soustředění vypnuto";
 "focus.automation.copy.help" = "Zkopírovat URL";
 "login.item.title" = "Spustit po přihlášení";
-"login.item.detail" = "Automaticky spustit LampControl po přihlášení";
-"login.item.approval.hint" = "Vyžaduje schválení: povolte LampControl v Nastavení systému › Obecné › Položky po přihlášení.";
+"login.item.detail" = "Automaticky spustit LumoBar po přihlášení";
+"login.item.approval.hint" = "Vyžaduje schválení: povolte LumoBar v Nastavení systému › Obecné › Položky po přihlášení.";
 "login.item.open.settings" = "Otevřít Položky po přihlášení";
 "login.item.error.register" = "Spouštění po přihlášení se nepodařilo zapnout: %@";
 "login.item.error.unregister" = "Spouštění po přihlášení se nepodařilo vypnout: %@";
@@ -483,7 +483,7 @@
 "yeelight.search.none" = "Nebyla nalezena žádná žárovka Yeelight. Zkontrolujte, že je zapnuté LAN Control a že je Mac ve stejné síti jako žárovka.";
 "yeelight.search.added" = "Přidáno";
 "yeelight.search.add.help" = "Přidat tuto žárovku";
-"error.yeelight.search.failed" = "Hledání v síti selhalo. Zkontrolujte, že má LampControl povolený přístup k místní síti v Nastavení systému → Soukromí a zabezpečení → Místní síť.";
+"error.yeelight.search.failed" = "Hledání v síti selhalo. Zkontrolujte, že má LumoBar povolený přístup k místní síti v Nastavení systému → Soukromí a zabezpečení → Místní síť.";
 
 /* Editable presets & reset */
 "settings.scenes.restore.title" = "Obnovit výchozí scény";
@@ -493,7 +493,7 @@
 "status.scenes.restored" = "Výchozí scény obnoveny";
 "settings.reset.button" = "Resetovat všechna nastavení";
 "settings.reset.confirm.title" = "Resetovat všechna nastavení?";
-"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. LampControl se restartuje s původním nastavením.";
+"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. LumoBar se restartuje s původním nastavením.";
 "settings.reset.confirm.action" = "Resetovat a restartovat";
 "settings.reset.confirm.cancel" = "Zrušit";
 "status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";
