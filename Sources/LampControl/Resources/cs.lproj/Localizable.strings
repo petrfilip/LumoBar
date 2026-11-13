@@ -52,14 +52,10 @@
 "lamp.status.offline" = "Offline";
 "lamp.status.on" = "Zapnuto";
 "lamp.status.off" = "Vypnuto";
-"lamp.temp.warm" = "Teplá";
-"lamp.temp.cold" = "Studená";
 
 /* Control Center */
-"cloud.active" = "Cloud aktivní";
 "config.required" = "Vyžaduje nastavení";
 "tab.lamps" = "Žárovky";
-"tab.settings" = "Nastavení";
 
 /* Onboarding */
 "onboarding.title" = "Nastavení aplikace LumoBar";
@@ -72,7 +68,6 @@
 "onboarding.step3.detail" = "LumoBar lampy vyhledá a ovládat je budete moci z řádku nabídek.";
 "onboarding.next" = "Další";
 "onboarding.configure" = "Nastavit";
-"onboarding.guide" = "Otevřít průvodce";
 "onboarding.dismiss" = "Zavřít";
 "onboarding.close" = "Zavřít";
 
@@ -120,7 +115,6 @@
 "route.about.subtitle" = "Verze a místní informace";
 
 /* Providers */
-"providers.title" = "Poskytovatelé";
 "providers.subtitle" = "Připojeno: %d, připravuje se: %d";
 "provider.connected" = "Připojeno a používáno pro synchronizaci";
 "provider.tuya" = "Účet Smart Life / Tuya Cloud";
@@ -132,7 +126,6 @@
 "provider.wiz" = "Žárovky WiZ v síti LAN (Signify)";
 
 /* Tuya */
-"tuya.title" = "Účet Tuya";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret je uložen";
@@ -203,7 +196,6 @@
 "wiz.ip.hint" = "IP adresu najdete v aplikaci WiZ (nastavení žárovky). Port UDP 38899.";
 
 /* Automations */
-"automations.title" = "Automatizace";
 "automations.empty" = "Naplánujte své žárovky";
 "automations.active.count" = "Aktivní: %d";
 "automations.header" = "Automatizace";
@@ -230,7 +222,6 @@
 "day.sun" = "Ne";
 
 /* Circadian */
-"circadian.title" = "Adaptivní osvětlení";
 "circadian.subtitle.active" = "Aktivní";
 "circadian.subtitle.inactive" = "Mění teplotu podle času";
 "circadian.header" = "Adaptivní osvětlení";
@@ -240,7 +231,6 @@
 "circadian.apply.now" = "Použít nyní";
 
 /* Devices */
-"devices.title" = "Zařízení";
 "devices.subtitle" = "Žárovky: %d, online: %d";
 "devices.detected" = "Nalezené žárovky";
 "devices.online" = "Online";
@@ -261,7 +251,6 @@
 "lamps.show.all.help" = "Znovu zobrazit offline žárovky";
 
 /* Updates */
-"updates.title" = "Aktualizace";
 "updates.subtitle" = "Verze %@ (sestavení %@)";
 "updates.auto.check" = "Kontrolovat automaticky";
 "updates.auto.check.detail" = "Jednou denně na pozadí";
@@ -272,7 +261,6 @@
 "updates.last.check" = "Poslední kontrola: %@";
 
 /* About */
-"about.title" = "O aplikaci";
 "about.subtitle" = "LumoBar a diagnostika";
 "about.app" = "Aplikace";
 "about.version" = "Verze";
@@ -307,23 +295,14 @@
 "devices.rooms.title" = "Správa místností";
 "room.all.on" = "Vše zapnout";
 "room.all.off" = "Vše vypnout";
-"room.add" = "Přidat místnost";
-"room.edit" = "Upravit";
-"room.delete" = "Smazat";
 "room.unassigned" = "Nepřiřazeno";
-"room.manage" = "Spravovat místnosti";
 "room.name.placeholder" = "Název místnosti";
 
 /* Focus Mode Mappings */
 "focus.title" = "Režimy Soustředění";
 "focus.subtitle" = "Použít scény při aktivaci Soustředění v macOS";
-"focus.mapping.add" = "Přidat přiřazení Soustředění";
-"focus.mapping.edit" = "Upravit";
-"focus.mapping.delete" = "Smazat";
 "focus.identifier.placeholder" = "Název Soustředění";
 "focus.scene.placeholder" = "Vybrat scénu";
-"focus.mapping.enable" = "Zapnuto";
-"focus.mapping.disabled" = "Přiřazení je vypnuto";
 "focus.empty.message" = "Nejsou nastavena žádná přiřazení Soustředění";
 
 /* Errors (services) */

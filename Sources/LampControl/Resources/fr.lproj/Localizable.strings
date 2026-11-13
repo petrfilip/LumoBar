@@ -52,14 +52,10 @@
 "lamp.status.offline" = "Hors ligne";
 "lamp.status.on" = "Allumée";
 "lamp.status.off" = "Éteinte";
-"lamp.temp.warm" = "Chaud";
-"lamp.temp.cold" = "Froid";
 
 /* Centre de contrôle */
-"cloud.active" = "Cloud actif";
 "config.required" = "Configuration requise";
 "tab.lamps" = "Lampes";
-"tab.settings" = "Réglages";
 
 /* Onboarding */
 "onboarding.title" = "Configurer LumoBar";
@@ -72,7 +68,6 @@
 "onboarding.step3.detail" = "LumoBar détecte ensuite vos lampes pour les piloter depuis la barre des menus.";
 "onboarding.next" = "Suivant";
 "onboarding.configure" = "Configurer";
-"onboarding.guide" = "Ouvrir le guide";
 "onboarding.dismiss" = "Masquer";
 "onboarding.close" = "Fermer";
 
@@ -120,7 +115,6 @@
 "route.about.subtitle" = "Version et informations locales";
 
 /* Fournisseurs */
-"providers.title" = "Fournisseurs";
 "providers.subtitle" = "%d connecté(s), %d à venir";
 "provider.connected" = "Connecté et utilisé pour la synchronisation";
 "provider.tuya" = "Compte Smart Life / Tuya Cloud";
@@ -132,7 +126,6 @@
 "provider.wiz" = "Ampoules WiZ en LAN (Signify)";
 
 /* Tuya */
-"tuya.title" = "Compte Tuya";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret enregistré";
@@ -202,10 +195,7 @@
 "wiz.ip.placeholder" = "Adresse IP (ex : 192.168.1.55)";
 "wiz.ip.hint" = "L'IP est visible dans l'app WiZ (paramètres de l'ampoule). Port UDP 38899.";
 
-/* Raccourcis */
-
 /* Automations */
-"automations.title" = "Automations";
 "automations.empty" = "Planifiez vos lampes";
 "automations.active.count" = "%d active(s)";
 "automations.header" = "Automations";
@@ -232,7 +222,6 @@
 "day.sun" = "Dim";
 
 /* Éclairage adaptatif */
-"circadian.title" = "Éclairage adaptatif";
 "circadian.subtitle.active" = "Actif";
 "circadian.subtitle.inactive" = "Ajuste temp. selon l'heure";
 "circadian.header" = "Éclairage adaptatif";
@@ -242,7 +231,6 @@
 "circadian.apply.now" = "Appliquer maintenant";
 
 /* Appareils */
-"devices.title" = "Appareils";
 "devices.subtitle" = "%d lampe(s), %d en ligne";
 "devices.detected" = "Lampes détectées";
 "devices.online" = "En ligne";
@@ -263,7 +251,6 @@
 "lamps.show.all.help" = "Réaffiche les lampes hors ligne";
 
 /* Mises à jour */
-"updates.title" = "Mises à jour";
 "updates.subtitle" = "Version %@ (build %@)";
 "updates.auto.check" = "Vérifier automatiquement";
 "updates.auto.check.detail" = "Une fois par jour en arrière-plan";
@@ -274,15 +261,12 @@
 "updates.last.check" = "Dernière vérification : %@";
 
 /* À propos */
-"about.title" = "À propos";
 "about.subtitle" = "LumoBar et diagnostics";
 "about.app" = "Application";
 "about.version" = "Version";
 "about.storage" = "Stockage";
 "about.storage.value" = "Keychain + fichiers locaux";
 "about.config.guide" = "Guide de configuration";
-
-/* Licence */
 
 /* Actions d'automation */
 "action.power.off.all" = "Éteindre tout";
@@ -291,8 +275,6 @@
 "action.apply.profile" = "Appliquer un profil";
 "action.enable.adaptive" = "Activer l'éclairage adaptatif";
 "action.disable.adaptive" = "Désactiver l'éclairage adaptatif";
-
-/* Actions de raccourcis */
 
 /* Scènes prédéfinies */
 "scene.focus" = "Focus";
@@ -313,23 +295,14 @@
 "devices.rooms.title" = "Gestion des pièces";
 "room.all.on" = "Tout allumer";
 "room.all.off" = "Tout éteindre";
-"room.add" = "Ajouter une pièce";
-"room.edit" = "Modifier";
-"room.delete" = "Supprimer";
 "room.unassigned" = "Non assignée";
-"room.manage" = "Gérer les pièces";
 "room.name.placeholder" = "Nom de la pièce";
 
 /* Modes Focus */
 "focus.title" = "Modes Focus";
 "focus.subtitle" = "Appliquer des scènes lorsque le Focus macOS s'active";
-"focus.mapping.add" = "Ajouter un mapping Focus";
-"focus.mapping.edit" = "Modifier";
-"focus.mapping.delete" = "Supprimer";
 "focus.identifier.placeholder" = "Nom du focus";
 "focus.scene.placeholder" = "Sélectionner une scène";
-"focus.mapping.enable" = "Activé";
-"focus.mapping.disabled" = "Mapping désactivé";
 "focus.empty.message" = "Aucun mapping Focus configuré";
 
 /* Errors (services) */

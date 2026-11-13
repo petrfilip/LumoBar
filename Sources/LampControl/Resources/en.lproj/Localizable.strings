@@ -52,14 +52,10 @@
 "lamp.status.offline" = "Offline";
 "lamp.status.on" = "On";
 "lamp.status.off" = "Off";
-"lamp.temp.warm" = "Warm";
-"lamp.temp.cold" = "Cold";
 
 /* Control Center */
-"cloud.active" = "Cloud active";
 "config.required" = "Setup required";
 "tab.lamps" = "Lamps";
-"tab.settings" = "Settings";
 
 /* Onboarding */
 "onboarding.title" = "Set up LumoBar";
@@ -72,7 +68,6 @@
 "onboarding.step3.detail" = "LumoBar then detects your lamps so you can control them from the menu bar.";
 "onboarding.next" = "Next";
 "onboarding.configure" = "Configure";
-"onboarding.guide" = "Open guide";
 "onboarding.dismiss" = "Dismiss";
 "onboarding.close" = "Close";
 
@@ -120,7 +115,6 @@
 "route.about.subtitle" = "Version and local information";
 
 /* Providers */
-"providers.title" = "Providers";
 "providers.subtitle" = "%d connected, %d upcoming";
 "provider.connected" = "Connected and used for sync";
 "provider.tuya" = "Smart Life / Tuya Cloud account";
@@ -132,7 +126,6 @@
 "provider.wiz" = "WiZ bulbs in LAN (Signify)";
 
 /* Tuya */
-"tuya.title" = "Tuya Account";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret saved";
@@ -203,7 +196,6 @@
 "wiz.ip.hint" = "The IP is visible in the WiZ app (bulb settings). UDP port 38899.";
 
 /* Automations */
-"automations.title" = "Automations";
 "automations.empty" = "Schedule your lamps";
 "automations.active.count" = "%d active";
 "automations.header" = "Automations";
@@ -230,7 +222,6 @@
 "day.sun" = "Sun";
 
 /* Circadian */
-"circadian.title" = "Adaptive Lighting";
 "circadian.subtitle.active" = "Active";
 "circadian.subtitle.inactive" = "Adjusts temp. by time";
 "circadian.header" = "Adaptive Lighting";
@@ -240,7 +231,6 @@
 "circadian.apply.now" = "Apply now";
 
 /* Devices */
-"devices.title" = "Devices";
 "devices.subtitle" = "%d lamp(s), %d online";
 "devices.detected" = "Detected lamps";
 "devices.online" = "Online";
@@ -261,7 +251,6 @@
 "lamps.show.all.help" = "Show offline lamps again";
 
 /* Updates */
-"updates.title" = "Updates";
 "updates.subtitle" = "Version %@ (build %@)";
 "updates.auto.check" = "Check automatically";
 "updates.auto.check.detail" = "Once a day in the background";
@@ -272,7 +261,6 @@
 "updates.last.check" = "Last check: %@";
 
 /* About */
-"about.title" = "About";
 "about.subtitle" = "LumoBar and diagnostics";
 "about.app" = "Application";
 "about.version" = "Version";
@@ -307,23 +295,14 @@
 "devices.rooms.title" = "Room Management";
 "room.all.on" = "All On";
 "room.all.off" = "All Off";
-"room.add" = "Add Room";
-"room.edit" = "Edit";
-"room.delete" = "Delete";
 "room.unassigned" = "Unassigned";
-"room.manage" = "Manage Rooms";
 "room.name.placeholder" = "Room name";
 
 /* Focus Mode Mappings */
 "focus.title" = "Focus Modes";
 "focus.subtitle" = "Apply scenes when macOS Focus activates";
-"focus.mapping.add" = "Add Focus Mapping";
-"focus.mapping.edit" = "Edit";
-"focus.mapping.delete" = "Delete";
 "focus.identifier.placeholder" = "Focus name";
 "focus.scene.placeholder" = "Select scene";
-"focus.mapping.enable" = "Enabled";
-"focus.mapping.disabled" = "Mapping disabled";
 "focus.empty.message" = "No Focus mappings configured";
 
 /* Errors (services) */

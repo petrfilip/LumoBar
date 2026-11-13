@@ -52,14 +52,10 @@
 "lamp.status.offline" = "Sin conexión";
 "lamp.status.on" = "Encendida";
 "lamp.status.off" = "Apagada";
-"lamp.temp.warm" = "Cálida";
-"lamp.temp.cold" = "Fría";
 
 /* Centro de control */
-"cloud.active" = "Nube activa";
 "config.required" = "Configuración requerida";
 "tab.lamps" = "Lámparas";
-"tab.settings" = "Ajustes";
 
 /* Configuración inicial */
 "onboarding.title" = "Configurar LumoBar";
@@ -72,7 +68,6 @@
 "onboarding.step3.detail" = "LumoBar detectará tus lámparas para que las controles desde la barra de menús.";
 "onboarding.next" = "Siguiente";
 "onboarding.configure" = "Configurar";
-"onboarding.guide" = "Abrir guía";
 "onboarding.dismiss" = "Ocultar";
 "onboarding.close" = "Cerrar";
 
@@ -120,7 +115,6 @@
 "route.about.subtitle" = "Versión e información local";
 
 /* Proveedores */
-"providers.title" = "Proveedores";
 "providers.subtitle" = "%d conectado(s), %d próximamente";
 "provider.connected" = "Conectado y usado para sincronización";
 "provider.tuya" = "Cuenta Smart Life / Tuya Cloud";
@@ -132,7 +126,6 @@
 "provider.wiz" = "Bombillas WiZ en LAN (Signify)";
 
 /* Tuya */
-"tuya.title" = "Cuenta Tuya";
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
 "tuya.secret.placeholder" = "Secret guardado";
@@ -202,10 +195,7 @@
 "wiz.ip.placeholder" = "Dirección IP (ej: 192.168.1.55)";
 "wiz.ip.hint" = "La IP es visible en la app WiZ (ajustes de la bombilla). Puerto UDP 38899.";
 
-/* Atajos */
-
 /* Automatizaciones */
-"automations.title" = "Automatizaciones";
 "automations.empty" = "Programa tus lámparas";
 "automations.active.count" = "%d activa(s)";
 "automations.header" = "Automatizaciones";
@@ -232,7 +222,6 @@
 "day.sun" = "Dom";
 
 /* Iluminación adaptativa */
-"circadian.title" = "Iluminación adaptativa";
 "circadian.subtitle.active" = "Activo";
 "circadian.subtitle.inactive" = "Ajusta temp. según la hora";
 "circadian.header" = "Iluminación adaptativa";
@@ -242,7 +231,6 @@
 "circadian.apply.now" = "Aplicar ahora";
 
 /* Dispositivos */
-"devices.title" = "Dispositivos";
 "devices.subtitle" = "%d lámpara(s), %d en línea";
 "devices.detected" = "Lámparas detectadas";
 "devices.online" = "En línea";
@@ -263,7 +251,6 @@
 "lamps.show.all.help" = "Muestra de nuevo las lámparas sin conexión";
 
 /* Actualizaciones */
-"updates.title" = "Actualizaciones";
 "updates.subtitle" = "Versión %@ (build %@)";
 "updates.auto.check" = "Verificar automáticamente";
 "updates.auto.check.detail" = "Una vez al día en segundo plano";
@@ -274,15 +261,12 @@
 "updates.last.check" = "Última verificación: %@";
 
 /* Acerca de */
-"about.title" = "Acerca de";
 "about.subtitle" = "LumoBar y diagnósticos";
 "about.app" = "Aplicación";
 "about.version" = "Versión";
 "about.storage" = "Almacenamiento";
 "about.storage.value" = "Keychain + archivos locales";
 "about.config.guide" = "Guía de configuración";
-
-/* Licencia */
 
 /* Acciones de automatización */
 "action.power.off.all" = "Apagar todo";
@@ -291,8 +275,6 @@
 "action.apply.profile" = "Aplicar un perfil";
 "action.enable.adaptive" = "Activar iluminación adaptativa";
 "action.disable.adaptive" = "Desactivar iluminación adaptativa";
-
-/* Acciones de atajos */
 
 /* Escenas predefinidas */
 "scene.focus" = "Focus";
@@ -313,23 +295,14 @@
 "devices.rooms.title" = "Gestión de habitaciones";
 "room.all.on" = "Encender todo";
 "room.all.off" = "Apagar todo";
-"room.add" = "Añadir habitación";
-"room.edit" = "Editar";
-"room.delete" = "Eliminar";
 "room.unassigned" = "Sin asignar";
-"room.manage" = "Gestionar habitaciones";
 "room.name.placeholder" = "Nombre de la habitación";
 
 /* Modos de enfoque */
 "focus.title" = "Modos de enfoque";
 "focus.subtitle" = "Aplicar escenas cuando se activa el Enfoque de macOS";
-"focus.mapping.add" = "Añadir mapeo de enfoque";
-"focus.mapping.edit" = "Editar";
-"focus.mapping.delete" = "Eliminar";
 "focus.identifier.placeholder" = "Nombre del enfoque";
 "focus.scene.placeholder" = "Seleccionar escena";
-"focus.mapping.enable" = "Habilitado";
-"focus.mapping.disabled" = "Mapeo deshabilitado";
 "focus.empty.message" = "No hay mapeos de enfoque configurados";
 
 /* Errors (services) */

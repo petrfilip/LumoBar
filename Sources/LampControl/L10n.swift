@@ -74,7 +74,6 @@ enum L10n {
     static func providersConnected(_ names: String) -> String {
         String(format: NSLocalizedString("setup.providers.connected", comment: ""), names)
     }
-    static var colorWhite: String   { NSLocalizedString("lamps.color.white", comment: "") }
 
     /// Tooltip names for `HSVColor.quickColors`, in the same order.
     static func quickColorName(_ color: HSVColor) -> String {
@@ -93,24 +92,14 @@ enum L10n {
 
     static var roomAllOn: String          { NSLocalizedString("room.all.on", comment: "") }
     static var roomAllOff: String         { NSLocalizedString("room.all.off", comment: "") }
-    static var roomAdd: String            { NSLocalizedString("room.add", comment: "") }
-    static var roomEdit: String           { NSLocalizedString("room.edit", comment: "") }
-    static var roomDelete: String         { NSLocalizedString("room.delete", comment: "") }
     static var roomUnassigned: String     { NSLocalizedString("room.unassigned", comment: "") }
-    static var roomManage: String         { NSLocalizedString("room.manage", comment: "") }
-    static var roomNamePlaceholder: String { NSLocalizedString("room.name.placeholder", comment: "") }
 
     // MARK: - Focus Mode strings
 
     static var focusTitle: String                { NSLocalizedString("focus.title", comment: "") }
     static var focusSubtitle: String             { NSLocalizedString("focus.subtitle", comment: "") }
-    static var focusMappingAdd: String           { NSLocalizedString("focus.mapping.add", comment: "") }
-    static var focusMappingEdit: String          { NSLocalizedString("focus.mapping.edit", comment: "") }
-    static var focusMappingDelete: String        { NSLocalizedString("focus.mapping.delete", comment: "") }
     static var focusIdentifierPlaceholder: String { NSLocalizedString("focus.identifier.placeholder", comment: "") }
     static var focusScenePlaceholder: String     { NSLocalizedString("focus.scene.placeholder", comment: "") }
-    static var focusMappingEnable: String        { NSLocalizedString("focus.mapping.enable", comment: "") }
-    static var focusMappingDisabled: String      { NSLocalizedString("focus.mapping.disabled", comment: "") }
     static var focusEmptyMessage: String         { NSLocalizedString("focus.empty.message", comment: "") }
 
     // MARK: - Lamp status (computed String properties)
@@ -118,8 +107,6 @@ enum L10n {
     static var statusOffline: String { NSLocalizedString("lamp.status.offline", comment: "") }
     static var statusOn: String      { NSLocalizedString("lamp.status.on", comment: "") }
     static var statusOff: String     { NSLocalizedString("lamp.status.off", comment: "") }
-    static var tempWarm: String      { NSLocalizedString("lamp.temp.warm", comment: "") }
-    static var tempCold: String      { NSLocalizedString("lamp.temp.cold", comment: "") }
 
     // MARK: - SettingsView dynamic subtitles
 
@@ -209,10 +196,6 @@ enum L10n {
     static func actionScene(_ name: String) -> String {
         String(format: NSLocalizedString("action.scene", comment: ""), name)
     }
-
-    // MARK: - Scene presets
-
-    static var sceneNight: String { NSLocalizedString("scene.night", comment: "") }
 
     // MARK: - Automation weekdays
 
