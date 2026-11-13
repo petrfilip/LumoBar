@@ -3,30 +3,30 @@
 import PackageDescription
 
 let package = Package(
-    name: "LampControl",
+    name: "LumoBar",
     defaultLocalization: "en",
     platforms: [
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "LampControl", targets: ["LampControl"])
+        .executable(name: "LumoBar", targets: ["LumoBar"])
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")
     ],
     targets: [
         .executableTarget(
-            name: "LampControl",
+            name: "LumoBar",
             dependencies: ["Sparkle"],
-            path: "Sources/LampControl",
+            path: "Sources/LumoBar",
             resources: [
                 .process("Resources")
             ]
         ),
         .testTarget(
-            name: "LampControlTests",
-            dependencies: ["LampControl"],
-            path: "Tests/LampControlTests"
+            name: "LumoBarTests",
+            dependencies: ["LumoBar"],
+            path: "Tests/LumoBarTests"
         )
     ]
 )

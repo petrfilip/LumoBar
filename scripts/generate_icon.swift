@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Generates AppIcon.icns for LampControl from the "lightbulb.fill" SF Symbol.
+// Generates AppIcon.icns for LumoBar from the "lightbulb.fill" SF Symbol.
 // Usage: swift scripts/generate_icon.swift [output_dir]
 // The output_dir defaults to Resources/. Run once; commit the resulting AppIcon.icns.
 import AppKit

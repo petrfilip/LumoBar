@@ -54,7 +54,7 @@ rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS"
 mkdir -p "$APP_DIR/Contents/Frameworks"
 
-cp "$BUILD_DIR/LampControl" "$APP_DIR/Contents/MacOS/LampControl"
+cp "$BUILD_DIR/LumoBar" "$APP_DIR/Contents/MacOS/LumoBar"
 cp "$INFO_PLIST_SRC" "$INFO_PLIST_DST"
 
 # Bundle app icon
@@ -67,7 +67,7 @@ else
 fi
 
 # Bundle localizations (.lproj directories)
-LPROJ_SRC="$ROOT_DIR/Sources/LampControl/Resources"
+LPROJ_SRC="$ROOT_DIR/Sources/LumoBar/Resources"
 if [[ -d "$LPROJ_SRC" ]]; then
   mkdir -p "$APP_DIR/Contents/Resources"
   for lproj in "$LPROJ_SRC"/*.lproj; do
@@ -82,12 +82,12 @@ fi
 # frameworks like Sparkle when copied into a .app bundle. Strip every
 # existing LC_RPATH and add the canonical macOS app-bundle one so
 # @rpath/Sparkle.framework/... resolves to Contents/Frameworks/Sparkle...
-EXISTING_RPATHS=$(otool -l "$APP_DIR/Contents/MacOS/LampControl" \
+EXISTING_RPATHS=$(otool -l "$APP_DIR/Contents/MacOS/LumoBar" \
   | awk '/LC_RPATH/{rpath=1; next} rpath && /path /{print $2; rpath=0}')
 for rp in $EXISTING_RPATHS; do
-  install_name_tool -delete_rpath "$rp" "$APP_DIR/Contents/MacOS/LampControl" || true
+  install_name_tool -delete_rpath "$rp" "$APP_DIR/Contents/MacOS/LumoBar" || true
 done
-install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_DIR/Contents/MacOS/LampControl"
+install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_DIR/Contents/MacOS/LumoBar"
 
 # Inject the resolved versions into the bundled Info.plist.
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$INFO_PLIST_DST"
@@ -117,8 +117,8 @@ fi
 # bundle at least passes Sparkle's own signature checks.
 SIGN_ID="${SIGNING_IDENTITY:--}"
 ENTITLEMENTS_ARG=()
-if [[ -f "$ROOT_DIR/scripts/LampControl.entitlements" ]]; then
-  ENTITLEMENTS_ARG=(--entitlements "$ROOT_DIR/scripts/LampControl.entitlements")
+if [[ -f "$ROOT_DIR/scripts/LumoBar.entitlements" ]]; then
+  ENTITLEMENTS_ARG=(--entitlements "$ROOT_DIR/scripts/LumoBar.entitlements")
 fi
 
 # macOS routinely tags files copied from .build/, the Sparkle archive,

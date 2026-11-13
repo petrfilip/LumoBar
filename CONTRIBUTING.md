@@ -23,7 +23,7 @@ You need:
 ## Project layout
 
 ```
-Sources/LampControl/
+Sources/LumoBar/
   AppMain.swift          App entry point
   App/                   AppDelegate, AppState, popover and SwiftUI views
   Models/                Domain models and Tuya DTOs
@@ -36,7 +36,7 @@ scripts/                 Build / DMG / signing scripts
 ## Adding a new lamp vendor
 
 The Phase 2 roadmap (see `docs/RELEASE.md` and the project README) introduces
-a `LampVendor` protocol under `Sources/LampControl/Vendors/`. To add a new
+a `LampVendor` protocol under `Sources/LumoBar/Vendors/`. To add a new
 vendor:
 
 1. Create a folder `Vendors/<VendorName>/`.
