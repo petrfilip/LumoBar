@@ -74,6 +74,17 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
         }
         .foregroundStyle(ink)
+        .onAppear(perform: openRequestedPage)
+        .onChange(of: appState.requestedSettingsPage) { _ in openRequestedPage() }
+    }
+
+    /// Another part of the app (onboarding) asked for a specific page.
+    private func openRequestedPage() {
+        guard let page = appState.requestedSettingsPage else { return }
+        appState.requestedSettingsPage = nil
+        switch page {
+        case .providers: route = .providers
+        }
     }
 
     private var settingsNavigationBar: some View {

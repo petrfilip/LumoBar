@@ -63,13 +63,13 @@
 
 /* Onboarding */
 "onboarding.title" = "Configurer LumoBar";
-"onboarding.subtitle" = "Trois infos Tuya suffisent pour démarrer.";
-"onboarding.step1.title" = "Créer ou ouvrir le projet Tuya";
-"onboarding.step1.detail" = "Smart Life doit être lié au projet Cloud.";
-"onboarding.step2.title" = "Coller Access ID, Secret et UID";
-"onboarding.step2.detail" = "Le Secret reste stocké dans le Keychain.";
-"onboarding.step3.title" = "Tester la synchronisation";
-"onboarding.step3.detail" = "LumoBar détecte ensuite les lampes compatibles.";
+"onboarding.subtitle" = "Connectez un fournisseur de lumières pour démarrer.";
+"onboarding.step1.title" = "Choisissez vos lumières";
+"onboarding.step1.detail" = "Yeelight, WiZ, Philips Hue, Nanoleaf, LIFX, Govee ou Tuya / Smart Life.";
+"onboarding.step2.title" = "Connectez le fournisseur";
+"onboarding.step2.detail" = "Saisissez son adresse ou sa clé. Les secrets restent dans le Keychain.";
+"onboarding.step3.title" = "Synchronisez vos lampes";
+"onboarding.step3.detail" = "LumoBar détecte ensuite vos lampes pour les piloter depuis la barre des menus.";
 "onboarding.next" = "Suivant";
 "onboarding.configure" = "Configurer";
 "onboarding.guide" = "Ouvrir le guide";

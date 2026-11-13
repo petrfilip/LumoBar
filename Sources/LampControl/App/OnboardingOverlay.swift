@@ -4,26 +4,8 @@ struct OnboardingOverlay: View {
     @EnvironmentObject private var appState: AppState
     @State private var stepIndex: Int = 0
 
-    private let steps: [OnboardingStep] = [
-        OnboardingStep(
-            icon: "lightbulb.led",
-            tint: .yellow,
-            titleKey: "onboarding.step1.title",
-            detailKey: "onboarding.step1.detail"
-        ),
-        OnboardingStep(
-            icon: "wand.and.stars",
-            tint: .pink,
-            titleKey: "onboarding.step2.title",
-            detailKey: "onboarding.step2.detail"
-        ),
-        OnboardingStep(
-            icon: "keyboard",
-            tint: .blue,
-            titleKey: "onboarding.step3.title",
-            detailKey: "onboarding.step3.detail"
-        )
-    ]
+    private let steps = OnboardingPolicy.steps
+    private let tints: [Color] = [.yellow, .pink, .blue]
 
     var body: some View {
         ZStack {
@@ -31,14 +13,14 @@ struct OnboardingOverlay: View {
                 .ignoresSafeArea()
                 .onTapGesture {
                     withAnimation(LCAnimation.standard) {
-                        appState.dismissOnboarding()
+                        appState.closeOnboardingTemporarily()
                     }
                 }
 
             VStack(spacing: LCSpacing.md) {
                 header
 
-                stepView(steps[stepIndex])
+                stepView(steps[stepIndex], tint: tints[stepIndex % tints.count])
                     .id(stepIndex)
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -82,19 +64,19 @@ struct OnboardingOverlay: View {
 
     // MARK: - Step body
 
-    private func stepView(_ step: OnboardingStep) -> some View {
+    private func stepView(_ step: OnboardingPolicy.Step, tint: Color) -> some View {
         VStack(spacing: LCSpacing.sm) {
             Image(systemName: step.icon)
                 .font(.system(size: 36, weight: .semibold))
-                .foregroundStyle(step.tint)
+                .foregroundStyle(tint)
                 .frame(width: 72, height: 72)
-                .lcCard(radius: 36, tint: step.tint.opacity(0.18))
+                .lcCard(radius: 36, tint: tint.opacity(0.18))
 
-            Text(step.titleKey)
+            Text(LocalizedStringKey(step.titleKey))
                 .font(LCTypo.subtitle())
                 .multilineTextAlignment(.center)
 
-            Text(step.detailKey)
+            Text(LocalizedStringKey(step.detailKey))
                 .font(LCTypo.caption())
                 .foregroundStyle(LCPalette.muted)
                 .multilineTextAlignment(.center)
@@ -155,7 +137,7 @@ struct OnboardingOverlay: View {
                 .buttonStyle(LCGlassButtonStyle(prominent: true, radius: 19))
             } else {
                 Button {
-                    appState.openOnboardingSettings()
+                    appState.openOnboardingProviders()
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "gearshape.fill").font(.system(size: 11, weight: .bold))
@@ -180,11 +162,4 @@ struct OnboardingOverlay: View {
             .help("onboarding.dismiss")
         }
     }
-}
-
-private struct OnboardingStep {
-    let icon: String
-    let tint: Color
-    let titleKey: LocalizedStringKey
-    let detailKey: LocalizedStringKey
 }

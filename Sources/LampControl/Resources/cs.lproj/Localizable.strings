@@ -63,13 +63,13 @@
 
 /* Onboarding */
 "onboarding.title" = "Nastavení aplikace LumoBar";
-"onboarding.subtitle" = "Pro začátek stačí tři údaje z Tuya.";
-"onboarding.step1.title" = "Vytvořte nebo otevřete projekt Tuya";
-"onboarding.step1.detail" = "Smart Life musí být propojen s projektem v cloudu.";
-"onboarding.step2.title" = "Vložte Access ID, Secret a UID";
-"onboarding.step2.detail" = "Secret zůstane uložen v Klíčence.";
-"onboarding.step3.title" = "Otestujte synchronizaci";
-"onboarding.step3.detail" = "LumoBar poté vyhledá kompatibilní žárovky.";
+"onboarding.subtitle" = "Pro začátek připojte poskytovatele osvětlení.";
+"onboarding.step1.title" = "Vyberte svá světla";
+"onboarding.step1.detail" = "Yeelight, WiZ, Philips Hue, Nanoleaf, LIFX, Govee nebo Tuya / Smart Life.";
+"onboarding.step2.title" = "Připojte poskytovatele";
+"onboarding.step2.detail" = "Zadejte jeho adresu nebo klíč. Tajné údaje zůstanou v Klíčence.";
+"onboarding.step3.title" = "Synchronizujte lampy";
+"onboarding.step3.detail" = "LumoBar lampy vyhledá a ovládat je budete moci z řádku nabídek.";
 "onboarding.next" = "Další";
 "onboarding.configure" = "Nastavit";
 "onboarding.guide" = "Otevřít průvodce";

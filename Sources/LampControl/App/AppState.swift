@@ -41,6 +41,8 @@ final class AppState: ObservableObject {
     @Published var isGroupPanelExpanded = false
     @Published var expandedLampIds = Set<String>()
     @Published var isOnboardingPresented = false
+    /// A Settings page to open; consumed (set back to nil) by `SettingsView`.
+    @Published var requestedSettingsPage: SettingsPage?
     @Published var userScenes: [UserLightScene] = []
     @Published var hideOfflineLamps = false
     @Published var lampOrderIds: [String] = []
@@ -117,6 +119,8 @@ final class AppState: ObservableObject {
             loadWizSettings()
             loadAutomations()
             loadCircadianSettings()
+            // Only now do all providers' settings exist, so "nothing configured" is meaningful.
+            presentOnboardingIfNeeded()
             await syncLamps(silent: true)
             // Load rooms after initial sync and ensure default migration
             await loadRoomsAndMigrateIfNeeded()
@@ -452,7 +456,6 @@ final class AppState: ObservableObject {
             let loaded = try settingsStore.load()
             settings = loaded.settings
             hasSecret = loaded.hasSecret
-            presentOnboardingIfNeeded()
         } catch {
             showError(error)
         }
@@ -1210,13 +1213,21 @@ final class AppState: ObservableObject {
         NSApplication.shared.terminate(nil)
     }
 
-    func openOnboardingSettings() {
-        isOnboardingPresented = false
+    /// "Configure": opens the providers list. Counts as dismissing, the user has acted on it.
+    func openOnboardingProviders() {
+        dismissOnboarding()
+        requestedSettingsPage = .providers
         selectedTab = .settings
     }
 
+    /// Explicit dismissal (X, Escape, "Configure"): not shown again.
     func dismissOnboarding() {
         UserDefaults.standard.set(true, forKey: onboardingDismissedKey)
+        isOnboardingPresented = false
+    }
+
+    /// Tap outside the card: just closes it; it comes back on the next launch.
+    func closeOnboardingTemporarily() {
         isOnboardingPresented = false
     }
 
@@ -1639,12 +1650,9 @@ final class AppState: ObservableObject {
     }
 
     private func presentOnboardingIfNeeded() {
-        guard !canSync else {
-            isOnboardingPresented = false
-            return
-        }
-
-        isOnboardingPresented = !UserDefaults.standard.bool(forKey: onboardingDismissedKey)
+        isOnboardingPresented = OnboardingPolicy.shouldPresent(
+            hasConfiguredProvider: canSync,
+            dismissed: UserDefaults.standard.bool(forKey: onboardingDismissedKey))
     }
 
     private func loadScenes() {
