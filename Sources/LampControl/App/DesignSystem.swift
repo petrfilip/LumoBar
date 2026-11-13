@@ -11,28 +11,15 @@ enum LCSpacing {
     static let sm:  CGFloat = 12
     static let md:  CGFloat = 16
     static let lg:  CGFloat = 20
-    static let xl:  CGFloat = 24
-    static let xxl: CGFloat = 32
 }
 
 // MARK: - Radius
 
 enum LCRadius {
-    static let chip:   CGFloat = 8
     static let button: CGFloat = 12
     static let card:   CGFloat = 16
     static let panel:  CGFloat = 20
     static let modal:  CGFloat = 24
-    static let pill:   CGFloat = 999
-}
-
-// MARK: - Elevation
-
-enum LCElevation: Int {
-    case base = 0       // popover root
-    case card = 1       // cards over the popover
-    case control = 2    // buttons / chips
-    case overlay = 3    // modal / onboarding
 }
 
 // MARK: - Typography
@@ -41,9 +28,6 @@ enum LCElevation: Int {
 /// Use these instead of inline `.font(.system(size: ...))` calls to keep
 /// vertical rhythm consistent.
 enum LCTypo {
-    static func display() -> Font {
-        .system(size: 22, weight: .bold, design: .default)
-    }
     static func title() -> Font {
         .system(size: 17, weight: .semibold, design: .default)
     }
@@ -53,9 +37,6 @@ enum LCTypo {
     static func body() -> Font {
         .system(size: 13, weight: .regular, design: .default)
     }
-    static func bodyMedium() -> Font {
-        .system(size: 13, weight: .medium, design: .default)
-    }
     static func bodySemibold() -> Font {
         .system(size: 13, weight: .semibold, design: .default)
     }
@@ -64,9 +45,6 @@ enum LCTypo {
     }
     static func micro() -> Font {
         .system(size: 11, weight: .medium, design: .default)
-    }
-    static func microSemibold() -> Font {
-        .system(size: 11, weight: .semibold, design: .default)
     }
     static func sectionHeader() -> Font {
         .system(size: 11, weight: .bold, design: .default)
@@ -95,16 +73,10 @@ enum LCPalette {
     static var accent:     Color { Color(nsColor: .controlAccentColor) }
     static var separator:  Color { Color(nsColor: .separatorColor).opacity(0.40) }
     static var success:    Color { Color.green.opacity(0.80) }
-    static var warning:    Color { Color.orange.opacity(0.85) }
     static var danger:     Color { Color.red.opacity(0.80) }
 
     // Glass strokes
-    static var strokeHi:   Color { Color.white.opacity(0.30) }
     static var strokeMid:  Color { Color.white.opacity(0.12) }
-    static var strokeLo:   Color { Color.white.opacity(0.05) }
-
-    // Highlights
-    static var highlight:  Color { Color.white.opacity(0.12) }
 }
 
 // MARK: - Background
@@ -287,7 +259,7 @@ extension View {
         }
     }
 
-    /// Soft shadow used by overlays (Level 3 elevation).
+    /// Soft shadow used by overlays (for overlays and modals).
     func lcOverlayShadow() -> some View {
         shadow(color: Color.black.opacity(0.18), radius: 24, x: 0, y: 8)
     }
@@ -313,26 +285,9 @@ struct LCBounceSymbol<V: Equatable>: ViewModifier {
     }
 }
 
-/// Apply a pulsing symbol effect when supported (macOS 14+).
-struct LCPulseSymbol: ViewModifier {
-    let isActive: Bool
-    func body(content: Content) -> some View {
-        if #available(macOS 14.0, *) {
-            content.symbolEffect(.pulse, isActive: isActive)
-        } else {
-            content.opacity(isActive ? 0.65 : 1.0)
-                .animation(isActive ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true) : .default,
-                           value: isActive)
-        }
-    }
-}
-
 extension View {
     func lcBounceSymbol<V: Equatable>(value: V) -> some View {
         modifier(LCBounceSymbol(value: value))
-    }
-    func lcPulseSymbol(active: Bool) -> some View {
-        modifier(LCPulseSymbol(isActive: active))
     }
 }
 
@@ -447,78 +402,5 @@ struct LCEmptyState: View {
         .padding(LCSpacing.lg)
         .frame(maxWidth: .infinity)
         .lcCard(radius: LCRadius.panel)
-    }
-}
-
-// MARK: - Custom brightness slider
-
-/// Quiet-glass slider with a glowing fill proportional to the value.
-struct LCBrightnessSlider: View {
-    @Binding var value: Double
-    var range: ClosedRange<Double>
-    var step: Double = 1
-    var icon: String = "sun.max.fill"
-    var tint: Color = Color(red: 0.96, green: 0.77, blue: 0.26)
-    var onCommit: ((Double) -> Void)? = nil
-
-    @State private var isDragging = false
-
-    var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let progress = CGFloat((value - range.lowerBound) / max(0.0001, (range.upperBound - range.lowerBound)))
-            let fillWidth = max(20, min(width, width * progress))
-
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(.ultraThinMaterial)
-                Capsule()
-                    .strokeBorder(LCPalette.strokeMid, lineWidth: 0.5)
-
-                // Filled tint with halo proportional to value
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [tint.opacity(0.55), tint.opacity(0.90)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: fillWidth)
-                    .shadow(color: tint.opacity(0.35 + 0.35 * progress), radius: 8 * progress + 2, y: 0)
-
-                HStack {
-                    Image(systemName: icon)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.92))
-                        .padding(.leading, 10)
-                    Spacer()
-                    Text("\(Int(round(progress * 100)))%")
-                        .font(.system(size: 10, weight: .semibold).monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.92))
-                        .padding(.trailing, 10)
-                }
-            }
-            .frame(height: 28)
-            .contentShape(Capsule())
-            .scaleEffect(isDragging ? 1.02 : 1.0)
-            .animation(LCAnimation.micro, value: isDragging)
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { drag in
-                        isDragging = true
-                        let raw = Double(drag.location.x / max(1, width))
-                        let clamped = min(max(0, raw), 1)
-                        let newValue = range.lowerBound + clamped * (range.upperBound - range.lowerBound)
-                        let stepped = (newValue / step).rounded() * step
-                        value = min(max(range.lowerBound, stepped), range.upperBound)
-                    }
-                    .onEnded { _ in
-                        isDragging = false
-                        onCommit?(value)
-                    }
-            )
-        }
-        .frame(height: 28)
     }
 }
