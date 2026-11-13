@@ -3,7 +3,7 @@ import Foundation
 final class NanoleafLightProvider: LightProvider {
     private let client: NanoleafClient
     private let settings: NanoleafSettings
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
 
     let kind: LightProviderKind = .nanoleaf
     let displayName = LightProviderKind.nanoleaf.title
@@ -19,7 +19,7 @@ final class NanoleafLightProvider: LightProvider {
         }
 
         var mapped: [LampDevice] = []
-        for device in settings.devices {
+        for device in settings.devices.uniqued(by: { nativeID(for: $0) }) {
             let lamp: LampDevice
             if let state = try? await client.fetchState(device: device) {
                 lamp = makeLamp(from: device, state: state, online: true)
@@ -30,7 +30,7 @@ final class NanoleafLightProvider: LightProvider {
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        lamps.replace(with: mapped)
         return mapped
     }
 
@@ -88,11 +88,9 @@ final class NanoleafLightProvider: LightProvider {
     }
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        guard var lamp = lamps[deviceId] else {
+        guard let lamp = lamps.update(deviceId, mutate) else {
             throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.unknown", comment: ""))
         }
-        mutate(&lamp)
-        lamps[deviceId] = lamp
         return lamp
     }
 

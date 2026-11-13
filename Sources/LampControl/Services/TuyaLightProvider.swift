@@ -3,7 +3,7 @@ import Foundation
 final class TuyaLightProvider: LightProvider {
     private let client: TuyaClient
     private let uid: String
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
 
     let kind: LightProviderKind = .tuya
     let displayName = LightProviderKind.tuya.title
@@ -19,8 +19,8 @@ final class TuyaLightProvider: LightProvider {
         }
 
         let devices: [TuyaDeviceDTO] = try await client.get("/v1.0/users/\(urlPath(uid))/devices")
-        let mapped = try await devices.asyncCompactMap { try await lamp(from: $0) }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        let mapped = try await devices.uniqued(by: \.id).asyncCompactMap { try await lamp(from: $0) }
+        lamps.replace(with: mapped)
         return mapped
     }
 
@@ -133,7 +133,7 @@ final class TuyaLightProvider: LightProvider {
             return nil
         }
 
-        let status = Dictionary(uniqueKeysWithValues: (device.status ?? []).map { ($0.code, $0.value) })
+        let status = Dictionary(firstWins: (device.status ?? []).map { ($0.code, $0.value) })
         let switchCode = capabilities.switchCode
         let brightnessCode = capabilities.brightness?.code
         let temperatureCode = capabilities.temperature?.code
@@ -208,14 +208,14 @@ final class TuyaLightProvider: LightProvider {
     }
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        var lamp = try requireLamp(deviceId)
-        mutate(&lamp)
-        lamps[deviceId] = lamp
+        guard let lamp = lamps.update(deviceId, mutate) else {
+            throw LampControlError.tuya(NSLocalizedString("error.tuya.unknown", comment: ""))
+        }
         return lamp
     }
 
     private func parseCapabilities(_ functions: [TuyaFunctionSpec]) -> LightCapabilities {
-        let byCode = Dictionary(uniqueKeysWithValues: functions.map { ($0.code, $0) })
+        let byCode = Dictionary(firstWins: functions.map { ($0.code, $0) })
 
         return LightCapabilities(
             switchCode: firstSupportedCode(in: byCode, candidates: ["switch_led", "switch", "switch_1", "switch_light", "switch_lamp"]),

@@ -36,10 +36,11 @@ final class YeelightLightProvider: LightProvider {
 
         let pollStart = Date()
         var mapped: [LampDevice] = []
-        let byId = Dictionary(uniqueKeysWithValues: settings.bulbs.map { ($0.id, $0) })
+        let bulbs = settings.bulbs.uniqued(by: \.id)
+        let byId = Dictionary(firstWins: bulbs.map { ($0.id, $0) })
         cacheLock.withLock { bulbsById = byId }
 
-        for bulb in settings.bulbs {
+        for bulb in bulbs {
             let lamp: LampDevice
             do {
                 let props = try await client.sendCommand(host: bulb.host, port: bulb.port, method: "get_prop", params: Self.propertyKeys)
@@ -51,7 +52,7 @@ final class YeelightLightProvider: LightProvider {
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        let byNative = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        let byNative = Dictionary(firstWins: mapped.map { ($0.nativeID, $0) })
         cacheLock.withLock {
             var next = byNative
             for (id, at) in commandedAt where at > pollStart {
@@ -160,7 +161,7 @@ final class YeelightLightProvider: LightProvider {
 
     /// Converts a `get_prop` result array (ordered like `propertyKeys`) into a keyed dictionary.
     static func propertyDictionary(fromGetProp values: [String]) -> [String: String] {
-        Dictionary(uniqueKeysWithValues: zip(propertyKeys, values))
+        Dictionary(firstWins: zip(propertyKeys, values).map { ($0, $1) })
     }
 
     /// Yeelight `color_mode`: 1 = RGB, 2 = color temperature, 3 = HSV. Both RGB and HSV render a

@@ -3,7 +3,7 @@ import Foundation
 final class LifxLightProvider: LightProvider {
     private let client: LifxClient
     private let settings: LifxSettings
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
 
     let kind: LightProviderKind = .lifx
     let displayName = LightProviderKind.lifx.title
@@ -20,8 +20,9 @@ final class LifxLightProvider: LightProvider {
 
         let lights = try await client.listLights(token: settings.token)
         let mapped = lights.map(lamp(from:))
+            .uniqued(by: \.nativeID)
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        lamps.replace(with: mapped)
         return mapped
     }
 
@@ -98,18 +99,10 @@ final class LifxLightProvider: LightProvider {
         "id:\(deviceId)"
     }
 
-    private func requireLamp(_ deviceId: String) throws -> LampDevice {
-        guard let lamp = lamps[deviceId] else {
+    private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
+        guard let lamp = lamps.update(deviceId, mutate) else {
             throw LampControlError.device(NSLocalizedString("error.lifx.unknown", comment: ""))
         }
-
-        return lamp
-    }
-
-    private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        var lamp = try requireLamp(deviceId)
-        mutate(&lamp)
-        lamps[deviceId] = lamp
         return lamp
     }
 }

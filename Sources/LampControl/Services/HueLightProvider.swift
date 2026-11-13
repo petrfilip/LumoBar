@@ -3,7 +3,7 @@ import Foundation
 final class HueLightProvider: LightProvider {
     private let client: HueClient
     private let settings: HueSettings
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
 
     let kind: LightProviderKind = .philipsHue
     let displayName = LightProviderKind.philipsHue.title
@@ -24,7 +24,7 @@ final class HueLightProvider: LightProvider {
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        lamps.replace(with: mapped)
         return mapped
     }
 
@@ -97,18 +97,10 @@ final class HueLightProvider: LightProvider {
         )
     }
 
-    private func requireLamp(_ deviceId: String) throws -> LampDevice {
-        guard let lamp = lamps[deviceId] else {
+    private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
+        guard let lamp = lamps.update(deviceId, mutate) else {
             throw LampControlError.device(NSLocalizedString("error.hue.unknown", comment: ""))
         }
-
-        return lamp
-    }
-
-    private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        var lamp = try requireLamp(deviceId)
-        mutate(&lamp)
-        lamps[deviceId] = lamp
         return lamp
     }
 }

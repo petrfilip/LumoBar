@@ -3,7 +3,7 @@ import Foundation
 final class WizLightProvider: LightProvider {
     private let client: WizClient
     private let settings: WizSettings
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
 
     let kind: LightProviderKind = .wiz
     let displayName = LightProviderKind.wiz.title
@@ -19,7 +19,7 @@ final class WizLightProvider: LightProvider {
         }
 
         var mapped: [LampDevice] = []
-        for device in settings.devices {
+        for device in settings.devices.uniqued(by: { nativeID(for: $0) }) {
             if let result = try? await client.getState(device: device) {
                 mapped.append(makeLamp(from: device, state: result, online: true))
             } else {
@@ -28,7 +28,7 @@ final class WizLightProvider: LightProvider {
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
+        lamps.replace(with: mapped)
         return mapped
     }
 
@@ -84,11 +84,9 @@ final class WizLightProvider: LightProvider {
     }
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        guard var lamp = lamps[deviceId] else {
+        guard let lamp = lamps.update(deviceId, mutate) else {
             throw LampControlError.configuration(NSLocalizedString("error.wiz.unknown", comment: ""))
         }
-        mutate(&lamp)
-        lamps[deviceId] = lamp
         return lamp
     }
 

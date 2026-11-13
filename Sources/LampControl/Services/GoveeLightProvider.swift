@@ -3,7 +3,8 @@ import Foundation
 final class GoveeLightProvider: LightProvider {
     private let client: GoveeClient
     private let settings: GoveeSettings
-    private var lamps: [String: LampDevice] = [:]
+    private let lamps = LampCache()
+    private let modelsLock = NSLock()
     private var models: [String: String] = [:]
 
     let kind: LightProviderKind = .govee
@@ -21,14 +22,15 @@ final class GoveeLightProvider: LightProvider {
 
         let devices = try await client.listDevices(apiKey: settings.apiKey)
         var mapped: [LampDevice] = []
-        for device in devices where device.controllable {
+        for device in devices.uniqued(by: \.device) where device.controllable {
             let state = (try? await client.deviceState(apiKey: settings.apiKey, device: device.device, model: device.model)) ?? []
             mapped.append(lamp(from: device, state: state))
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        lamps = Dictionary(uniqueKeysWithValues: mapped.map { ($0.nativeID, $0) })
-        models = Dictionary(uniqueKeysWithValues: devices.map { ($0.device, $0.model) })
+        lamps.replace(with: mapped)
+        let modelTable = Dictionary(firstWins: devices.map { ($0.device, $0.model) })
+        modelsLock.withLock { models = modelTable }
         return mapped
     }
 
@@ -72,7 +74,7 @@ final class GoveeLightProvider: LightProvider {
     }
 
     private func sendCommand(deviceId: String, name: String, value: GoveeCommandValue) async throws {
-        guard let model = models[deviceId] else {
+        guard let model = modelsLock.withLock({ models[deviceId] }) else {
             throw LampControlError.device(NSLocalizedString("error.govee.model.unknown", comment: ""))
         }
 
@@ -177,9 +179,9 @@ final class GoveeLightProvider: LightProvider {
     }
 
     private func update(deviceId: String, mutate: (inout LampDevice) -> Void) throws -> LampDevice {
-        var lamp = try requireLamp(deviceId)
-        mutate(&lamp)
-        lamps[deviceId] = lamp
+        guard let lamp = lamps.update(deviceId, mutate) else {
+            throw LampControlError.device(NSLocalizedString("error.govee.unknown", comment: ""))
+        }
         return lamp
     }
 }
