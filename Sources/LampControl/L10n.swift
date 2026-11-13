@@ -348,6 +348,12 @@ enum L10n {
     }
     static var automationDeleted: String { s("status.automation.deleted") }
     static var adaptiveSaved: String { s("status.adaptive.saved") }
+    static func automationsSaveFailed(_ detail: String) -> String {
+        String(format: s("status.automations.save.failed"), detail)
+    }
+    static func adaptiveSaveFailed(_ detail: String) -> String {
+        String(format: s("status.adaptive.save.failed"), detail)
+    }
 
     // Views
     static func circadianNow(brightness: Int, temperature: Int) -> String {

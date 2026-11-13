@@ -330,7 +330,7 @@ final class AppState: ObservableObject {
             }
         } catch {
             let key = enabled ? "login.item.error.register" : "login.item.error.unregister"
-            message = String(format: NSLocalizedString(key, comment: ""), error.localizedDescription)
+            showError(String(format: NSLocalizedString(key, comment: ""), error.localizedDescription))
         }
         refreshLoginItemStatus()
     }
@@ -1494,25 +1494,37 @@ final class AppState: ObservableObject {
         } else {
             automations.append(automation)
         }
-        try? automationStore.save(automations)
+        let stored = persistAutomations()
         automationScheduler.update(automations: automations)
-        message = L10n.automationSaved(automation.name)
+        if stored { message = L10n.automationSaved(automation.name) }
     }
 
     func deleteAutomation(_ automation: Automation) {
         guard !isResettingApp else { return }
         automations.removeAll { $0.id == automation.id }
-        try? automationStore.save(automations)
+        let stored = persistAutomations()
         automationScheduler.update(automations: automations)
-        message = L10n.automationDeleted
+        if stored { message = L10n.automationDeleted }
     }
 
     func toggleAutomation(_ automation: Automation) {
         guard !isResettingApp else { return }
         guard let idx = automations.firstIndex(where: { $0.id == automation.id }) else { return }
         automations[idx].isEnabled.toggle()
-        try? automationStore.save(automations)
+        persistAutomations()
         automationScheduler.update(automations: automations)
+    }
+
+    /// Writes the automations file; on failure the error is shown instead of a "saved" message.
+    @discardableResult
+    private func persistAutomations() -> Bool {
+        do {
+            try automationStore.save(automations)
+            return true
+        } catch {
+            showError(L10n.automationsSaveFailed(error.localizedDescription))
+            return false
+        }
     }
 
     func executeAutomationAction(_ action: AutomationAction) async {
@@ -1564,7 +1576,11 @@ final class AppState: ObservableObject {
     func setAdaptiveLighting(enabled: Bool) async {
         guard !isResettingApp else { return }
         circadianSettings.isEnabled = enabled
-        _ = try? circadianSettingsStore.save(circadianSettings)
+        do {
+            _ = try circadianSettingsStore.save(circadianSettings)
+        } catch {
+            showError(L10n.adaptiveSaveFailed(error.localizedDescription))
+        }
         if enabled {
             circadianService.start(with: circadianSettings)
         } else {

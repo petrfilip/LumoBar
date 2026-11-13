@@ -522,3 +522,5 @@
 "provider.disconnect" = "Desconectar";
 "help.provider.disconnect" = "Eliminar las credenciales guardadas y olvidar las lámparas de este proveedor";
 "status.provider.disconnected" = "%@ desconectado";
+"status.automations.save.failed" = "No se pudieron guardar las automatizaciones: %@";
+"status.adaptive.save.failed" = "No se pudo guardar el ajuste de iluminación adaptativa: %@";

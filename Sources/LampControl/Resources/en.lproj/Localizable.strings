@@ -516,3 +516,5 @@
 "provider.disconnect" = "Disconnect";
 "help.provider.disconnect" = "Remove the saved credentials and forget this provider's lamps";
 "status.provider.disconnected" = "%@ disconnected";
+"status.automations.save.failed" = "Couldn't save automations: %@";
+"status.adaptive.save.failed" = "Couldn't save the adaptive lighting setting: %@";

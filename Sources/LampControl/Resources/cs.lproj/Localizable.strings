@@ -516,3 +516,5 @@
 "provider.disconnect" = "Odpojit";
 "help.provider.disconnect" = "Odstranit uložené přihlašovací údaje a zapomenout lampy tohoto poskytovatele";
 "status.provider.disconnected" = "%@ odpojeno";
+"status.automations.save.failed" = "Automatizace se nepodařilo uložit: %@";
+"status.adaptive.save.failed" = "Nastavení adaptivního osvětlení se nepodařilo uložit: %@";
