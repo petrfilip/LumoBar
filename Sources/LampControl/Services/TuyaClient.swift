@@ -1,13 +1,48 @@
 import CryptoKit
 import Foundation
 
-final class TuyaClient {
+/// An `success:false` reply from the Tuya cloud. Keeps the numeric `code` so callers can tell
+/// "this device does not support that command" apart from auth or transport problems.
+struct TuyaAPIError: LocalizedError {
+    let message: String
+    let code: Int?
+    /// Set when the failing request was a device command (codes of the commands sent).
+    var commandCodes: String?
+
+    var errorDescription: String? {
+        let details = code.map { " (code \($0))" } ?? ""
+        let text = message + details
+        guard let commandCodes else { return text }
+        return String(format: NSLocalizedString("error.tuya.command.failed", comment: ""), text, commandCodes)
+    }
+
+    /// Tuya codes meaning the device rejected the command or its value (2008: "command or
+    /// value not support", 1109: "param is illegal").
+    static let unsupportedCommandCodes: Set<Int> = [2008, 1109]
+
+    var isUnsupportedCommand: Bool {
+        if let code { return Self.unsupportedCommandCodes.contains(code) }
+        return message.lowercased().contains("not support")
+    }
+}
+
+extension Error {
+    /// True for a Tuya reply saying the device rejected the command or its value.
+    var isTuyaUnsupportedCommand: Bool { (self as? TuyaAPIError)?.isUnsupportedCommand ?? false }
+}
+
+/// Talks to the Tuya cloud. An actor: the access token is shared mutable state and several
+/// polls/commands can ask for it at once.
+actor TuyaClient {
     private let accessId: String
     private let accessSecret: String
     private let endpoint: URL
     private let session: URLSession
     private var accessToken = ""
     private var tokenExpiresAt = Date.distantPast
+    /// The token request currently in flight; concurrent callers wait for it instead of each
+    /// fetching (and overwriting) a token of their own.
+    private var tokenTask: Task<Void, Error>?
 
     init(accessId: String, accessSecret: String, endpoint: String, session: URLSession = ServiceSession.cloud) throws {
         self.accessId = accessId
@@ -68,8 +103,10 @@ final class TuyaClient {
 
         let envelope = try JSONDecoder().decode(TuyaEnvelope<Result>.self, from: data)
         guard envelope.success else {
-            let details = envelope.code.map { " (code \($0.description))" } ?? ""
-            throw LampControlError.tuya((envelope.msg ?? NSLocalizedString("error.tuya.invalid.response", comment: "")) + details)
+            throw TuyaAPIError(
+                message: envelope.msg ?? NSLocalizedString("error.tuya.invalid.response", comment: ""),
+                code: envelope.code.flatMap { Int($0.description) }
+            )
         }
 
         guard let result = envelope.result else {
@@ -83,7 +120,17 @@ final class TuyaClient {
         if !accessToken.isEmpty && Date() < tokenExpiresAt {
             return
         }
+        if let inFlight = tokenTask {
+            return try await inFlight.value
+        }
 
+        let task = Task { try await self.fetchToken() }
+        tokenTask = task
+        defer { tokenTask = nil }
+        try await task.value
+    }
+
+    private func fetchToken() async throws {
         let token: TuyaTokenResult = try await request("GET", path: "/v1.0/token", query: ["grant_type": "1"], body: Optional<Data>.none)
         accessToken = token.accessToken
         tokenExpiresAt = Date().addingTimeInterval(TimeInterval(max(30, token.expireTime - 60)))

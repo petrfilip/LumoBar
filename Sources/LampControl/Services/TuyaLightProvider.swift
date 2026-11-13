@@ -4,6 +4,11 @@ final class TuyaLightProvider: LightProvider {
     private let client: TuyaClient
     private let uid: String
     private let lamps = LampCache()
+    /// Device specifications (the supported functions) hardly ever change, but fetching one costs
+    /// an API call per device. They are cached for the provider's lifetime; `AppState` keeps the
+    /// provider across polls and drops it when the credentials change.
+    private let capabilityLock = NSLock()
+    private var capabilityCache: [String: LightCapabilities] = [:]
 
     let kind: LightProviderKind = .tuya
     let displayName = LightProviderKind.tuya.title
@@ -19,7 +24,19 @@ final class TuyaLightProvider: LightProvider {
         }
 
         let devices: [TuyaDeviceDTO] = try await client.get("/v1.0/users/\(urlPath(uid))/devices")
-        let mapped = try await devices.uniqued(by: \.id).asyncCompactMap { try await lamp(from: $0) }
+        var mapped: [LampDevice] = []
+        var firstError: Error?
+        for device in devices.uniqued(by: \.id) {
+            do {
+                if let lamp = try await lamp(from: device) { mapped.append(lamp) }
+            } catch {
+                // One device whose specification cannot be fetched must not abort the whole sync.
+                firstError = firstError ?? error
+            }
+        }
+        // Nothing usable and something failed: that is an outage (credentials, network), not an
+        // account without lamps, so let the caller see the error.
+        if mapped.isEmpty, let firstError { throw firstError }
         lamps.replace(with: mapped)
         return mapped
     }
@@ -126,8 +143,7 @@ final class TuyaLightProvider: LightProvider {
     }
 
     private func lamp(from device: TuyaDeviceDTO) async throws -> LampDevice? {
-        let spec: TuyaSpecResponse = try await client.get("/v1.0/devices/\(urlPath(device.id))/specifications")
-        let capabilities = parseCapabilities(spec.functions ?? [])
+        let capabilities = try await capabilities(for: device.id)
 
         guard capabilities.switchCode != nil || capabilities.brightness != nil || capabilities.temperature != nil || capabilities.colorCode != nil else {
             return nil
@@ -154,6 +170,14 @@ final class TuyaLightProvider: LightProvider {
         )
     }
 
+    private func capabilities(for deviceId: String) async throws -> LightCapabilities {
+        if let cached = capabilityLock.withLock({ capabilityCache[deviceId] }) { return cached }
+        let spec: TuyaSpecResponse = try await client.get("/v1.0/devices/\(urlPath(deviceId))/specifications")
+        let parsed = parseCapabilities(spec.functions ?? [])
+        capabilityLock.withLock { capabilityCache[deviceId] = parsed }
+        return parsed
+    }
+
     private func sendCommand(deviceId: String, code: String, value: TuyaCommandValue) async throws {
         let lamp = try requireLamp(deviceId)
         guard lamp.online else {
@@ -176,7 +200,9 @@ final class TuyaLightProvider: LightProvider {
         do {
             try await sendCommands(deviceId: deviceId, commands: commands)
         } catch {
-            guard let workModeCode else {
+            // Only "the device does not support this command/value" justifies retrying without
+            // work_mode; offline, HTTP, auth and quota errors must reach the user unchanged.
+            guard let workModeCode, error.isTuyaUnsupportedCommand else {
                 throw error
             }
 
@@ -193,9 +219,10 @@ final class TuyaLightProvider: LightProvider {
         do {
             let body = TuyaCommandBody(commands: commands)
             let _: EmptyTuyaResult = try await client.post("/v1.0/devices/\(urlPath(deviceId))/commands", body: body)
-        } catch {
-            let codes = commands.map(\.code).joined(separator: ", ")
-            throw LampControlError.tuya(String(format: NSLocalizedString("error.tuya.command.failed", comment: ""), error.localizedDescription, codes))
+        } catch var apiError as TuyaAPIError {
+            // Keep the typed error (and its code); only add which commands failed.
+            apiError.commandCodes = commands.map(\.code).joined(separator: ", ")
+            throw apiError
         }
     }
 
@@ -270,17 +297,5 @@ final class TuyaLightProvider: LightProvider {
 
     private func urlPath(_ value: String) -> String {
         value.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? value
-    }
-}
-
-extension Array {
-    func asyncCompactMap<T>(_ transform: (Element) async throws -> T?) async throws -> [T] {
-        var values: [T] = []
-        for element in self {
-            if let value = try await transform(element) {
-                values.append(value)
-            }
-        }
-        return values
     }
 }
