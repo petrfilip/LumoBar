@@ -518,3 +518,23 @@
 "scenes.restore.confirm" = "Obnovit výchozí scény? Vaše úpravy v nich se ztratí.";
 "scenes.restore.confirm.button" = "Obnovit";
 "status.scene.deleted.disabled" = "Scéna smazána. Automatizace a nastavení Soustředění, která ji používala, byla vypnuta.";
+
+/* Cleanup (B5a) */
+"a11y.group.expand" = "Zobrazit ovládání skupiny";
+"a11y.group.collapse" = "Skrýt ovládání skupiny";
+"a11y.focus.add" = "Přidat mapování Soustředění";
+"a11y.room.add" = "Přidat místnost";
+"a11y.automation.enabled" = "Automatizace zapnuta";
+"a11y.focus.mapping.enabled" = "Mapování zapnuto";
+"a11y.adaptive.enabled" = "Adaptivní osvětlení";
+"a11y.scene.icon" = "Ikona scény";
+"a11y.automation.action" = "Akce";
+"tuya.region.eu" = "Evropa";
+"tuya.region.us" = "USA (západ)";
+"tuya.region.usEast" = "USA (východ)";
+"tuya.region.cn" = "Čína";
+"tuya.region.in" = "Indie";
+"tuya.region.custom" = "Vlastní";
+"about.version.value" = "%@ (sestavení %@)";
+"automation.hour.short" = "Hod %02d";
+"automation.minute.short" = "Min %02d";

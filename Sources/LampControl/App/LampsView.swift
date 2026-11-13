@@ -483,10 +483,11 @@ private struct ScenePresetBar: View {
                     .frame(height: 32)
                     .liquidGlassSurface(radius: 12, tint: Color.white.opacity(0.06), interactive: true)
 
-                Picker("", selection: $draftIcon) {
+                Picker("a11y.scene.icon", selection: $draftIcon) {
                     ForEach(iconChoices, id: \.self) { Image(systemName: $0).tag($0) }
                 }
                 .labelsHidden().pickerStyle(.menu)
+                .help("a11y.scene.icon")
                 .frame(width: 48, height: 32)
                 .liquidGlassSurface(radius: 12, tint: Color.white.opacity(0.06))
             }
@@ -718,6 +719,7 @@ private struct GroupCompactBar: View {
                     .liquidGlassCircle(interactive: true)
             }
             .buttonStyle(.plain)
+            .lcIconLabel("a11y.group.expand")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
@@ -772,6 +774,7 @@ private struct GroupControlPanel: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(muted)
+                .lcIconLabel("a11y.group.collapse")
             }
 
             if appState.selectedLampIds.count < 2 {

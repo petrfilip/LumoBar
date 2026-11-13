@@ -369,4 +369,29 @@ enum L10n {
     static func circadianKeyframeBrightness(_ percent: Int) -> String {
         String(format: s("circadian.keyframe.brightness"), percent)
     }
+
+    // Provider configuration errors (AppState.makeLightProvider)
+    static var errorHueNotConfigured: String { s("error.hue.not.configured") }
+    static var errorLifxTokenMissing: String { s("error.lifx.token.missing") }
+    static var errorGoveeKeyMissing: String { s("error.govee.apikey.missing") }
+    static var errorYeelightNone: String { s("error.yeelight.none") }
+    static var errorNanoleafNone: String { s("error.nanoleaf.none") }
+    static var errorWizNone: String { s("error.wiz.none") }
+
+    // Focus modes, default room, login item, adaptive notice
+    static var focusModeDoNotDisturb: String { s("focus.mode.donotdisturb") }
+    static var focusModeFocus: String { s("focus.mode.focus") }
+    static var focusModeSleep: String { s("focus.mode.sleep") }
+    static var defaultRoomName: String { s("rooms.default.name") }
+    static func loginItemFailed(enabled: Bool, detail: String) -> String {
+        String(format: s(enabled ? "login.item.error.register" : "login.item.error.unregister"), detail)
+    }
+    static var adaptivePausedByScene: String { s("adaptive.paused.by.scene") }
+
+    // Cleanup (B5a)
+    static func aboutVersionValue(version: String, build: String) -> String {
+        String(format: s("about.version.value"), version, build)
+    }
+    static func hourShort(_ hour: Int) -> String { String(format: s("automation.hour.short"), hour) }
+    static func minuteShort(_ minute: Int) -> String { String(format: s("automation.minute.short"), minute) }
 }

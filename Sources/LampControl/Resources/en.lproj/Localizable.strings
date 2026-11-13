@@ -518,3 +518,23 @@
 "scenes.restore.confirm" = "Restore the default scenes? Your changes to them are lost.";
 "scenes.restore.confirm.button" = "Restore";
 "status.scene.deleted.disabled" = "Scene deleted. Automations and Focus settings that used it were switched off.";
+
+/* Cleanup (B5a) */
+"a11y.group.expand" = "Show group controls";
+"a11y.group.collapse" = "Hide group controls";
+"a11y.focus.add" = "Add Focus mapping";
+"a11y.room.add" = "Add room";
+"a11y.automation.enabled" = "Automation enabled";
+"a11y.focus.mapping.enabled" = "Mapping enabled";
+"a11y.adaptive.enabled" = "Adaptive lighting";
+"a11y.scene.icon" = "Scene icon";
+"a11y.automation.action" = "Action";
+"tuya.region.eu" = "Europe";
+"tuya.region.us" = "US West";
+"tuya.region.usEast" = "US East";
+"tuya.region.cn" = "China";
+"tuya.region.in" = "India";
+"tuya.region.custom" = "Custom";
+"about.version.value" = "%@ (build %@)";
+"automation.hour.short" = "H %02d";
+"automation.minute.short" = "Min %02d";

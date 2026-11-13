@@ -518,3 +518,23 @@
 "scenes.restore.confirm" = "¿Restaurar las escenas predeterminadas? Se perderán tus cambios en ellas.";
 "scenes.restore.confirm.button" = "Restaurar";
 "status.scene.deleted.disabled" = "Escena eliminada. Las automatizaciones y los ajustes de Focus que la usaban se han desactivado.";
+
+/* Cleanup (B5a) */
+"a11y.group.expand" = "Mostrar los controles del grupo";
+"a11y.group.collapse" = "Ocultar los controles del grupo";
+"a11y.focus.add" = "Añadir mapeo de Focus";
+"a11y.room.add" = "Añadir habitación";
+"a11y.automation.enabled" = "Automatización activada";
+"a11y.focus.mapping.enabled" = "Mapeo activado";
+"a11y.adaptive.enabled" = "Iluminación adaptativa";
+"a11y.scene.icon" = "Icono de la escena";
+"a11y.automation.action" = "Acción";
+"tuya.region.eu" = "Europa";
+"tuya.region.us" = "EE. UU. (Oeste)";
+"tuya.region.usEast" = "EE. UU. (Este)";
+"tuya.region.cn" = "China";
+"tuya.region.in" = "India";
+"tuya.region.custom" = "Personalizada";
+"about.version.value" = "%@ (compilación %@)";
+"automation.hour.short" = "H %02d";
+"automation.minute.short" = "Min %02d";

@@ -518,3 +518,23 @@
 "scenes.restore.confirm" = "Restaurer les scènes par défaut ? Vos modifications seront perdues.";
 "scenes.restore.confirm.button" = "Restaurer";
 "status.scene.deleted.disabled" = "Scène supprimée. Les automatisations et réglages Focus qui l’utilisaient ont été désactivés.";
+
+/* Cleanup (B5a) */
+"a11y.group.expand" = "Afficher les commandes du groupe";
+"a11y.group.collapse" = "Masquer les commandes du groupe";
+"a11y.focus.add" = "Ajouter un mapping Focus";
+"a11y.room.add" = "Ajouter une pièce";
+"a11y.automation.enabled" = "Automatisation activée";
+"a11y.focus.mapping.enabled" = "Mapping activé";
+"a11y.adaptive.enabled" = "Éclairage adaptatif";
+"a11y.scene.icon" = "Icône de la scène";
+"a11y.automation.action" = "Action";
+"tuya.region.eu" = "Europe";
+"tuya.region.us" = "États-Unis (Ouest)";
+"tuya.region.usEast" = "États-Unis (Est)";
+"tuya.region.cn" = "Chine";
+"tuya.region.in" = "Inde";
+"tuya.region.custom" = "Personnalisée";
+"about.version.value" = "%@ (build %@)";
+"automation.hour.short" = "H %02d";
+"automation.minute.short" = "Min %02d";

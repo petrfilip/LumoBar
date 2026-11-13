@@ -259,6 +259,13 @@ extension View {
         }
     }
 
+    /// Names an icon-only control for VoiceOver and gives it a tooltip.
+    func lcIconLabel(_ key: LocalizedStringKey) -> some View {
+        self
+            .accessibilityLabel(Text(key))
+            .help(key)
+    }
+
     /// Soft shadow used by overlays (for overlays and modals).
     func lcOverlayShadow() -> some View {
         shadow(color: Color.black.opacity(0.18), radius: 24, x: 0, y: 8)

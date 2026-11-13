@@ -892,13 +892,14 @@ struct SettingsView: View {
 
                             Spacer()
 
-                            Toggle("", isOn: Binding(
+                            Toggle("a11y.automation.enabled", isOn: Binding(
                                 get: { automation.isEnabled },
                                 set: { _ in appState.toggleAutomation(automation) }
                             ))
                             .labelsHidden()
                             .toggleStyle(.switch)
                             .scaleEffect(0.8)
+                            .help("a11y.automation.enabled")
 
                             Button {
                                 appState.deleteAutomation(automation)
@@ -994,6 +995,7 @@ struct SettingsView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .lcIconLabel("a11y.focus.add")
                     }
 
                     if appState.focusMappings.isEmpty {
@@ -1027,7 +1029,7 @@ struct SettingsView: View {
                                 
                                 Spacer()
                                 
-                                Toggle("", isOn: Binding(
+                                Toggle("a11y.focus.mapping.enabled", isOn: Binding(
                                     get: { mapping.isEnabled },
                                     set: { enabled in
                                         var updated = mapping
@@ -1038,6 +1040,7 @@ struct SettingsView: View {
                                 .labelsHidden()
                                 .toggleStyle(.switch)
                                 .tint(accent)
+                                .help("a11y.focus.mapping.enabled")
                                 
                                 Button {
                                     focusEditor = .edit(mapping.id)
@@ -1189,12 +1192,13 @@ struct SettingsView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
-                    Toggle("", isOn: Binding(
+                    Toggle("a11y.adaptive.enabled", isOn: Binding(
                         get: { appState.circadianSettings.isEnabled },
                         set: { v in Task { await appState.setAdaptiveLighting(enabled: v) } }
                     ))
                     .labelsHidden()
                     .toggleStyle(.switch)
+                    .help("a11y.adaptive.enabled")
                 }
                 .padding(12)
                 .liquidGlassSurface(radius: 16)
@@ -1378,7 +1382,7 @@ struct SettingsView: View {
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(muted)
                         Spacer()
-                        DatePicker("", selection: keyframeTimeBinding(binding), displayedComponents: .hourAndMinute)
+                        DatePicker("circadian.keyframe.time", selection: keyframeTimeBinding(binding), displayedComponents: .hourAndMinute)
                             .labelsHidden()
                             .datePickerStyle(.field)
                             .fixedSize()
@@ -1809,12 +1813,12 @@ struct SettingsView: View {
             fieldLabel("tuya.region", icon: "globe.europe.africa")
 
             Picker("tuya.region", selection: tuya.region) {
-                Text("Europe").tag(TuyaRegion.eu)
-                Text("US West").tag(TuyaRegion.us)
-                Text("US East").tag(TuyaRegion.usEast)
-                Text("China").tag(TuyaRegion.cn)
-                Text("India").tag(TuyaRegion.in)
-                Text("Custom").tag(TuyaRegion.custom)
+                Text("tuya.region.eu").tag(TuyaRegion.eu)
+                Text("tuya.region.us").tag(TuyaRegion.us)
+                Text("tuya.region.usEast").tag(TuyaRegion.usEast)
+                Text("tuya.region.cn").tag(TuyaRegion.cn)
+                Text("tuya.region.in").tag(TuyaRegion.in)
+                Text("tuya.region.custom").tag(TuyaRegion.custom)
             }
             .pickerStyle(.menu)
             .labelsHidden()
@@ -1884,6 +1888,7 @@ struct SettingsView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .lcIconLabel("a11y.room.add")
                     }
 
                     // List rooms with edit/delete
@@ -2044,7 +2049,7 @@ struct SettingsView: View {
         VStack(spacing: 12) {
             settingsGroup {
                 infoRow("about.app",     value: "LumoBar", icon: "lightbulb.led")
-                infoRow("about.version", value: "\(appState.updateService.currentVersion) build \(appState.updateService.currentBuild)", icon: "shippingbox")
+                infoRow("about.version", value: L10n.aboutVersionValue(version: appState.updateService.currentVersion, build: appState.updateService.currentBuild), icon: "shippingbox")
                 infoRow("about.storage", value: NSLocalizedString("about.storage.value", comment: ""), icon: "lock.square")
             }
 
@@ -2255,24 +2260,25 @@ private struct AutomationEditor: View {
 
             HStack(spacing: 8) {
                 Stepper(value: $hour, in: 0...23) {
-                    Text(String(format: "H %02d", hour))
+                    Text(L10n.hourShort(hour))
                         .font(.system(size: 12, weight: .semibold).monospaced())
                         .frame(width: 52)
                 }
                 Stepper(value: $minute, in: 0...59, step: 5) {
-                    Text(String(format: "M %02d", minute))
+                    Text(L10n.minuteShort(minute))
                         .font(.system(size: 12, weight: .semibold).monospaced())
                         .frame(width: 52)
                 }
             }
 
-            Picker("", selection: $action) {
+            Picker("a11y.automation.action", selection: $action) {
                 ForEach(actions, id: \.title) { a in
                     Label(a.title, systemImage: a.icon).tag(a)
                 }
             }
             .labelsHidden()
             .pickerStyle(.menu)
+            .help("a11y.automation.action")
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 34)
             .liquidGlassSurface(radius: 12, tint: Color.white.opacity(0.06))

@@ -111,7 +111,7 @@ final class LocalizationTests: XCTestCase {
     func testEveryViewKeyLiteralExistsInAllLanguages() throws {
         let tables = try Dictionary(uniqueKeysWithValues: Self.languages.map { ($0, try strings($0)) })
         let regex = try NSRegularExpression(
-            pattern: #"(?:\bhint|\bText|\bButton|\bLabel|\.help)\(\s*"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)""#)
+            pattern: #"(?:\bhint|\bText|\bButton|\bLabel|\bToggle|\bPicker|\.help|\.lcIconLabel)\(\s*"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)""#)
 
         var found = 0
         var missing: [String] = []

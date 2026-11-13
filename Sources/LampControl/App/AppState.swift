@@ -53,9 +53,9 @@ final class AppState: ObservableObject {
     @Published var focusMappings: [FocusMapping] = []
     @Published var currentFocusIdentifier: String?
     @Published var availableFocusModes: [FocusMode] = [
-        FocusMode(identifier: "do-not-disturb", displayName: NSLocalizedString("focus.mode.donotdisturb", comment: "")),
-        FocusMode(identifier: "focus", displayName: NSLocalizedString("focus.mode.focus", comment: "")),
-        FocusMode(identifier: "sleep", displayName: NSLocalizedString("focus.mode.sleep", comment: ""))
+        FocusMode(identifier: "do-not-disturb", displayName: L10n.focusModeDoNotDisturb),
+        FocusMode(identifier: "focus", displayName: L10n.focusModeFocus),
+        FocusMode(identifier: "sleep", displayName: L10n.focusModeSleep)
     ]
 
     /// Not `@Published`: it is an `ObservableObject` itself, and a nested one does not forward its
@@ -166,7 +166,7 @@ final class AppState: ObservableObject {
             hasRoomsFile: roomStore.hasRoomsFile,
             alreadyMigrated: defaults.bool(forKey: roomsMigratedKey),
             lampIds: lamps.map(\.id),
-            defaultRoomName: NSLocalizedString("rooms.default.name", comment: ""))
+            defaultRoomName: L10n.defaultRoomName)
         rooms = plan.rooms
         if plan.persist {
             do {
@@ -390,8 +390,7 @@ final class AppState: ObservableObject {
                 try service.unregister()
             }
         } catch {
-            let key = enabled ? "login.item.error.register" : "login.item.error.unregister"
-            showError(String(format: NSLocalizedString(key, comment: ""), error.localizedDescription))
+            showError(L10n.loginItemFailed(enabled: enabled, detail: error.localizedDescription))
         }
         refreshLoginItemStatus()
     }
@@ -1428,22 +1427,22 @@ final class AppState: ObservableObject {
             provider = try makeTuyaProvider()
         case .philipsHue:
             guard hueSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.hue.not.configured", comment: ""))
+                throw LampControlError.configuration(L10n.errorHueNotConfigured)
             }
             provider = HueLightProvider(settings: hueSettings)
         case .lifx:
             guard lifxSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.lifx.token.missing", comment: ""))
+                throw LampControlError.configuration(L10n.errorLifxTokenMissing)
             }
             provider = LifxLightProvider(settings: lifxSettings)
         case .govee:
             guard goveeSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.govee.apikey.missing", comment: ""))
+                throw LampControlError.configuration(L10n.errorGoveeKeyMissing)
             }
             provider = GoveeLightProvider(settings: goveeSettings)
         case .yeelight:
             guard yeelightSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.yeelight.none", comment: ""))
+                throw LampControlError.configuration(L10n.errorYeelightNone)
             }
             // Bulbs with a connected push listener are not polled (`get_prop`) on top of that.
             provider = YeelightLightProvider(
@@ -1452,12 +1451,12 @@ final class AppState: ObservableObject {
                 liveState: { [weak self] bulbID in self?.yeelightLiveSync.liveProperties(for: bulbID) })
         case .nanoleaf:
             guard nanoleafSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.nanoleaf.none", comment: ""))
+                throw LampControlError.configuration(L10n.errorNanoleafNone)
             }
             provider = NanoleafLightProvider(settings: nanoleafSettings)
         case .wiz:
             guard wizSettings.isConfigured else {
-                throw LampControlError.configuration(NSLocalizedString("error.wiz.none", comment: ""))
+                throw LampControlError.configuration(L10n.errorWizNone)
             }
             provider = WizLightProvider(settings: wizSettings)
         }
@@ -2113,7 +2112,7 @@ final class AppState: ObservableObject {
 
         do {
             try await operation()
-            let notice = NSLocalizedString("adaptive.paused.by.scene", comment: "")
+            let notice = L10n.adaptivePausedByScene
             if adaptiveNotice, !messageIsError, !message.contains(notice) {
                 message = message.isEmpty ? notice : "\(message) \(notice)"
             }
