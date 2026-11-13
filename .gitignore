@@ -18,16 +18,6 @@ dist/
 # Local Claude Code overrides (per-user, not shared)
 .claude/settings.local.json
 
-# Legacy Electron leftovers (Phase 0; will be deleted from disk later — kept gitignored so they never end up in the public repo)
-node_modules/
-src/
-package.json
-package-lock.json
-tsconfig.json
-tsconfig.main.json
-vite.config.ts
-.vscode/
-
 # Sparkle key material — never commit private keys
 *.pem
 sparkle_private_key
