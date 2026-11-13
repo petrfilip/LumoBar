@@ -4,7 +4,7 @@ final class LifxClient {
     private let baseURL = URL(string: "https://api.lifx.com/v1")!
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = ServiceSession.cloud) {
         self.session = session
     }
 
@@ -18,7 +18,9 @@ final class LifxClient {
     }
 
     func setState(token: String, selector: String, command: LifxStateCommand) async throws {
-        let _: LifxSetStateResponse = try await request(
+        // With `fast: true` LIFX answers 202 Accepted with an empty body, and a normal reply
+        // carries a results list we do not need: success is the status code, nothing is decoded.
+        _ = try await send(
             token: token,
             method: "PUT",
             path: "/lights/\(escapePath(selector))/state",
@@ -32,6 +34,17 @@ final class LifxClient {
         path: String,
         body: Body?
     ) async throws -> Response {
+        let data = try await send(token: token, method: method, path: path, body: body)
+        return try JSONDecoder().decode(Response.self, from: data)
+    }
+
+    /// Performs the request and returns the raw body of a 2xx reply (possibly empty).
+    private func send<Body: Encodable>(
+        token: String,
+        method: String,
+        path: String,
+        body: Body?
+    ) async throws -> Data {
         let url = baseURL.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/")))
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -53,7 +66,7 @@ final class LifxClient {
             throw LampControlError.device("LIFX HTTP \(httpResponse.statusCode): \(decoded?.error ?? NSLocalizedString("error.http.refused", comment: ""))")
         }
 
-        return try JSONDecoder().decode(Response.self, from: data)
+        return data
     }
 
     private func escapePath(_ value: String) -> String {
@@ -61,7 +74,6 @@ final class LifxClient {
     }
 }
 
-private struct LifxSetStateResponse: Decodable {}
 private struct EmptyLifxBody: Encodable {}
 
 private struct LifxErrorResponse: Decodable {
