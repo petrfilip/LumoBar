@@ -22,8 +22,10 @@ struct LampsView: View {
     private var content: some View {
         ScrollView(.vertical, showsIndicators: false) {
             scrollableContent
+                .lcMeasureHeight(LCLampsContentHeightKey.self)
         }
         .scrollIndicators(.never)
+        .onPreferenceChange(LCLampsContentHeightKey.self) { appState.noteLampsContentHeight($0) }
         .onDisappear {
             dragWatch?.cancel()
             draggedLampID = nil

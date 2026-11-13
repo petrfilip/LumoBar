@@ -34,6 +34,8 @@ struct ControlCenterView: View {
                     .padding(.top, LCSpacing.md)
                     .padding(.bottom, LCSpacing.sm)
             }
+            .lcMeasureHeight(LCHeaderHeightKey.self)
+            .onPreferenceChange(LCHeaderHeightKey.self) { appState.noteHeaderHeight($0) }
             .background(
                 ZStack {
                     Color(nsColor: .windowBackgroundColor)

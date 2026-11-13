@@ -15,10 +15,30 @@ extension AppState {
         // LampsView wraps its body in a ScrollView; the popover is sized to
         // a content-aware target capped at 860pt. Anything beyond scrolls
         // (rooms, expanded rows, scene editor).
-        case .lamps:    height = lampsPopoverHeight
+        case .lamps:    height = measuredLampsPopoverHeight ?? max(lampsPopoverHeight, 360)
         }
         let screenMax = (popoverScreenVisibleHeight ?? NSScreen.main?.visibleFrame.height ?? 900) - 80
-        return min(max(height, 360), screenMax)
+        return min(height, screenMax)
+    }
+
+    /// Header + list as SwiftUI laid them out, plus the content paddings of
+    /// `ControlCenterView`. Nil until both were measured, and while the onboarding
+    /// card (which floats over the list) needs the estimated room.
+    private var measuredLampsPopoverHeight: CGFloat? {
+        guard canSync, !isOnboardingPresented,
+              let header = measuredHeaderHeight, let list = measuredLampsContentHeight,
+              header > 0, list > 0 else { return nil }
+        return min(max(header + LCSpacing.sm + LCSpacing.md + list, 240), 860)
+    }
+
+    func noteHeaderHeight(_ height: CGFloat) {
+        guard abs((measuredHeaderHeight ?? 0) - height) > 0.5 else { return }
+        measuredHeaderHeight = height
+    }
+
+    func noteLampsContentHeight(_ height: CGFloat) {
+        guard abs((measuredLampsContentHeight ?? 0) - height) > 0.5 else { return }
+        measuredLampsContentHeight = height
     }
 
     private var lampsPopoverHeight: CGFloat {

@@ -42,6 +42,10 @@ final class AppState: ObservableObject {
     @Published var isAutoSyncing = false
     @Published var isGroupPanelExpanded = false
     @Published var expandedLampIds = Set<String>()
+    /// Heights SwiftUI measured for the popover header and the lamps list; the popover is
+    /// sized from them once known (see `AppState+Popover`).
+    @Published var measuredHeaderHeight: CGFloat?
+    @Published var measuredLampsContentHeight: CGFloat?
     @Published var isOnboardingPresented = false
     /// A Settings page to open; consumed (set back to nil) by `SettingsView`.
     @Published var requestedSettingsPage: SettingsPage?

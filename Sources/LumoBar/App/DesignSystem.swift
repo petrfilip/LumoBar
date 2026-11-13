@@ -411,3 +411,26 @@ struct LCEmptyState: View {
         .lcCard(radius: LCRadius.panel)
     }
 }
+
+// MARK: - Measured heights
+
+/// Height of the popover header block (measured, see `ControlCenterView`).
+struct LCHeaderHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
+/// Height of the lamps list inside its ScrollView (measured, see `LampsView`).
+struct LCLampsContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
+extension View {
+    /// Publishes this view's height under `key`.
+    func lcMeasureHeight<K: PreferenceKey>(_ key: K.Type) -> some View where K.Value == CGFloat {
+        background(GeometryReader { proxy in
+            Color.clear.preference(key: key, value: proxy.size.height)
+        })
+    }
+}
