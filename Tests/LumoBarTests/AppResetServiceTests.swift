@@ -9,9 +9,9 @@ final class AppResetServiceTests: XCTestCase {
     private var defaults: UserDefaults!
 
     override func setUpWithError() throws {
-        dir = FileManager.default.temporaryDirectory.appendingPathComponent("LampControlResetTests-\(UUID().uuidString)")
+        dir = FileManager.default.temporaryDirectory.appendingPathComponent("LumoBarResetTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        suiteName = "LampControlResetTests-\(UUID().uuidString)"
+        suiteName = "LumoBarResetTests-\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
     }
 
@@ -37,11 +37,32 @@ final class AppResetServiceTests: XCTestCase {
     }
 
     func testWipesDefaultsDomain() {
-        defaults.set(true, forKey: "LampControl.onboarding.dismissed")
+        defaults.set(true, forKey: AppDefaultsKeys.onboardingDismissed)
         defaults.set(true, forKey: PresetScenes.seededDefaultsKey)
         XCTAssertEqual(service().wipeDefaults(), [])
-        XCTAssertFalse(defaults.bool(forKey: "LampControl.onboarding.dismissed"))
+        XCTAssertFalse(defaults.bool(forKey: AppDefaultsKeys.onboardingDismissed))
         XCTAssertFalse(defaults.bool(forKey: PresetScenes.seededDefaultsKey))
+    }
+
+    func testResetKeepsTheLegacyImportMarkerSoTheNextLaunchDoesNotReimport() {
+        defaults.set(true, forKey: AppDefaultsKeys.legacyImportDone)
+        defaults.set(true, forKey: AppDefaultsKeys.onboardingDismissed)
+        XCTAssertEqual(service().wipeDefaults(), [])
+        XCTAssertTrue(defaults.bool(forKey: AppDefaultsKeys.legacyImportDone))
+        XCTAssertFalse(defaults.bool(forKey: AppDefaultsKeys.onboardingDismissed))
+    }
+
+    func testWithoutADomainEveryKnownKeyIsRemoved() {
+        for key in AppDefaultsKeys.resettable { defaults.set(true, forKey: key) }
+        let svc = AppResetService(supportDirectory: dir, defaults: defaults, defaultsDomain: nil, keychainItems: [])
+        XCTAssertEqual(svc.wipeDefaults(), [])
+        for key in AppDefaultsKeys.resettable { XCTAssertNil(defaults.object(forKey: key), key) }
+        XCTAssertTrue(defaults.bool(forKey: AppDefaultsKeys.legacyImportDone))
+    }
+
+    func testDefaultSupportDirectoryIsLumoBarNotLampControl() {
+        XCTAssertEqual(AppResetService().supportDirectory.lastPathComponent, "LumoBar")
+        XCTAssertEqual(AppDirectories.legacySupport.lastPathComponent, "LampControl")
     }
 
     func testMissingDirectoryIsNotAnError() {

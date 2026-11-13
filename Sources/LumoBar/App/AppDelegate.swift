@@ -19,10 +19,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // its data has loaded (`runStartupSequence`).
     }
 
-    /// Handles `lampcontrol://focus?mode=<identifier|off>` (Shortcuts automations).
+    /// Handles `lumobar://focus?mode=<identifier|off>` (Shortcuts automations); the legacy
+    /// `lampcontrol://` scheme is accepted too.
     /// Deliberately does not touch the popover or activate the app.
     func application(_ application: NSApplication, open urls: [URL]) {
-        for url in urls where url.scheme?.lowercased() == FocusAutomationURL.scheme {
+        for url in urls where FocusAutomationURL.hasAcceptedScheme(url) {
             appState.handleFocusURL(url)
         }
     }
@@ -212,7 +213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
-    private static let popoverLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "Popover")
+    private static let popoverLog = Logger(subsystem: "cz.tix.lumobar", category: "Popover")
 
     /// Logs where the popover ended up relative to its anchor, to diagnose
     /// placement reports: `log show --predicate 'category == "Popover"' --last 10m`

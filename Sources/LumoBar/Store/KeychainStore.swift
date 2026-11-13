@@ -23,22 +23,22 @@ extension SecretStoring {
 }
 
 final class KeychainStore: SecretStoring {
-    /// Every Keychain item LampControl creates (single source of truth, also
+    /// Every Keychain item LumoBar creates (single source of truth, also
     /// used by "Reset all settings").
     struct Item: Equatable {
         let service: String
         let account: String
 
-        static let tuya  = Item(service: "LampControl.Tuya",  account: "tuya-access-secret")
-        static let hue   = Item(service: "LampControl.Hue",   account: "hue-username")
-        static let lifx  = Item(service: "LampControl.LIFX",  account: "lifx-token")
-        static let govee = Item(service: "LampControl.Govee", account: "govee-api-key")
+        static let tuya  = Item(service: "LumoBar.Tuya",  account: "tuya-access-secret")
+        static let hue   = Item(service: "LumoBar.Hue",   account: "hue-username")
+        static let lifx  = Item(service: "LumoBar.LIFX",  account: "lifx-token")
+        static let govee = Item(service: "LumoBar.Govee", account: "govee-api-key")
 
         static let all: [Item] = [.tuya, .hue, .lifx, .govee]
 
         /// Nanoleaf auth tokens: one item per device, so not part of `all` (the account is
         /// `nanoleafAccount(for:)`); "Reset all settings" removes the whole service.
-        static let nanoleafService = "LampControl.Nanoleaf"
+        static let nanoleafService = "LumoBar.Nanoleaf"
 
         static func nanoleafAccount(for deviceId: UUID) -> String {
             "nanoleaf-token-\(deviceId.uuidString)"

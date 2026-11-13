@@ -43,7 +43,7 @@ extension FocusMapping {
 
     /// True when `identifier` names this mapping's Focus. Identifiers are matched
     /// case-insensitively (and ignoring surrounding whitespace) because the
-    /// `lampcontrol://focus?mode=` URL is resolved that way.
+    /// `lumobar://focus?mode=` URL is resolved that way.
     func matches(focusIdentifier identifier: String) -> Bool {
         Self.normalized(focusIdentifier) == Self.normalized(identifier)
     }

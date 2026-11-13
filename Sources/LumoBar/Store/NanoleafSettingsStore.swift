@@ -38,7 +38,7 @@ final class NanoleafSettingsStore {
                     try keychain.saveSecret(device.authToken, service: service, account: account)
                 } catch {
                     allMigrated = false
-                    NSLog("LampControl: could not move a Nanoleaf token to the Keychain: \(error)")
+                    NSLog("LumoBar: could not move a Nanoleaf token to the Keychain: \(error)")
                 }
             } else {
                 // A Keychain read failure leaves the token empty (the lamp then reports an error)
@@ -50,7 +50,7 @@ final class NanoleafSettingsStore {
 
         if hasLegacyTokens && allMigrated {
             do { try file.save(settings) } catch {
-                NSLog("LampControl: could not rewrite nanoleaf-settings.json without tokens: \(error)")
+                NSLog("LumoBar: could not rewrite nanoleaf-settings.json without tokens: \(error)")
             }
         }
         knownDeviceIds = Set(settings.devices.map(\.id))

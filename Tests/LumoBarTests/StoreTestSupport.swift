@@ -27,7 +27,7 @@ class StoreTestCase: XCTestCase {
     var recovery: RecoveryLog!
 
     override func setUpWithError() throws {
-        dir = FileManager.default.temporaryDirectory.appendingPathComponent("LampControlStoreTests-\(UUID().uuidString)")
+        dir = FileManager.default.temporaryDirectory.appendingPathComponent("LumoBarStoreTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         recovery = RecoveryLog()
     }

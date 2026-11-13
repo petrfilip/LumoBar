@@ -151,7 +151,7 @@ extension SettingsView {
         }
     }
 
-    /// Setup hint + the exact `lampcontrol://focus?mode=…` URLs to paste in a Shortcuts automation.
+    /// Setup hint + the exact `lumobar://focus?mode=…` URLs to paste in a Shortcuts automation.
     var focusAutomationGroup: some View {
         // Only modes that actually have a mapping get a URL — a URL for an
         // unmapped mode would silently do nothing.

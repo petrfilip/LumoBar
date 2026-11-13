@@ -53,7 +53,7 @@ extension AppState {
         await applyScene(scene)
     }
 
-    /// Identifiers a `lampcontrol://focus?mode=` URL may activate: the built-in
+    /// Identifiers a `lumobar://focus?mode=` URL may activate: the built-in
     /// modes plus whatever the user typed in a mapping.
     var knownFocusIdentifiers: [String] {
         var seen = Set<String>()
@@ -61,7 +61,7 @@ extension AppState {
             .filter { seen.insert($0.lowercased()).inserted }
     }
 
-    /// Entry point for `lampcontrol://focus?...` URLs (see AppDelegate).
+    /// Entry point for `lumobar://focus?...` URLs (see AppDelegate).
     func handleFocusURL(_ url: URL) {
         // A cold launch via URL can arrive before mappings are loaded.
         guard isFocusAutomationReady else {

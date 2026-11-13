@@ -1,9 +1,9 @@
 import Foundation
 
-/// Removes everything LampControl persists.
+/// Removes everything LumoBar persists (LampControl's own data is never touched).
 ///
 /// Persisted data (read from the stores):
-/// - Files in `~/Library/Application Support/LampControl/`: settings.json (Tuya),
+/// - Files in `~/Library/Application Support/LumoBar/`: settings.json (Tuya),
 ///   lampOrder.json, hue-settings.json, yeelight-settings.json, nanoleaf-settings.json,
 ///   wiz-settings.json, scenes.json, rooms.json, focusMappings.json, automations.json,
 ///   circadian-settings.json, shortcut-settings.json (legacy), widgetSnapshot.json,
@@ -16,14 +16,10 @@ import Foundation
 /// - Backups the stores keep of unreadable files (`<name>.corrupt-<timestamp>.json`) live in the
 ///   same folder and are removed with it.
 /// - UserDefaults of the app's bundle id: onboarding flag, the presets-seeded flag,
-///   Sparkle's update preferences, system-managed UI keys.
+///   Sparkle's update preferences, system-managed UI keys. Afterwards the "LampControl import
+///   done" marker is set again, so the next launch does not re-import.
 struct AppResetService {
-    static var defaultSupportDirectory: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
-    }
-
-    var supportDirectory: URL = AppResetService.defaultSupportDirectory
+    var supportDirectory: URL = AppDirectories.support
     var defaults: UserDefaults = .standard
     /// nil when running outside an app bundle (e.g. `swift run`): the known keys are removed instead.
     var defaultsDomain: String? = Bundle.main.bundleIdentifier
@@ -71,9 +67,11 @@ struct AppResetService {
         if let domain = defaultsDomain {
             defaults.removePersistentDomain(forName: domain)
         } else {
-            defaults.removeObject(forKey: "LampControl.onboarding.dismissed")
-            defaults.removeObject(forKey: PresetScenes.seededDefaultsKey)
+            AppDefaultsKeys.resettable.forEach { defaults.removeObject(forKey: $0) }
         }
+        // The relaunch after a reset is a first launch for the defaults: without the marker it
+        // would import LampControl's data again and undo the reset.
+        defaults.set(true, forKey: AppDefaultsKeys.legacyImportDone)
         defaults.synchronize()
         return []
     }

@@ -55,7 +55,7 @@ final class YeelightNotificationListener {
         self.host = host
         self.port = port
         self.onEvent = onEvent
-        self.queue = DispatchQueue(label: "fr.hugoinformatique.lampcontrol.yeelight-listener.\(bulbID)")
+        self.queue = DispatchQueue(label: "cz.tix.lumobar.yeelight-listener.\(bulbID)")
     }
 
     func start() {

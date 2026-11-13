@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>fr.hugoinformatique.lampcontrol</string>
+	<string>cz.tix.lumobar</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLocalizations</key>
@@ -31,9 +31,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>fr.hugoinformatique.lampcontrol.focus</string>
+			<string>cz.tix.lumobar.focus</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>lumobar</string>
 				<string>lampcontrol</string>
 			</array>
 		</dict>

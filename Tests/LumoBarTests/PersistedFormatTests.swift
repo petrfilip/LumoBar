@@ -184,7 +184,7 @@ final class PersistedFormatTests: StoreTestCase {
         XCTAssertTrue(saved.hasSecret)
         XCTAssertFalse(try read("settings.json").contains("topsecret"))
         XCTAssertEqual(try store.accessSecret(), "topsecret")
-        XCTAssertEqual(secrets.items["LampControl.Tuya/tuya-access-secret"], "topsecret")
+        XCTAssertEqual(secrets.items["LumoBar.Tuya/tuya-access-secret"], "topsecret")
     }
 
     func testLampOrderDecodesAndSurvivesCorruption() throws {

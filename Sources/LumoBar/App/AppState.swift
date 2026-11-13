@@ -115,9 +115,9 @@ final class AppState: ObservableObject {
     var circadianApplyPending = false
     /// Minimum delay between automatic (background) network searches.
     let yeelightDiscoveryInterval: TimeInterval = 5 * 60
-    let onboardingDismissedKey = "LampControl.onboarding.dismissed"
-    static let collapsedRoomsKey = "LampControl.rooms.collapsed"
-    let roomsMigratedKey = "LampControl.rooms.migrated"
+    let onboardingDismissedKey = AppDefaultsKeys.onboardingDismissed
+    static let collapsedRoomsKey = AppDefaultsKeys.roomsCollapsed
+    let roomsMigratedKey = AppDefaultsKeys.roomsMigrated
     /// True while "Reset all settings" runs: blocks background persistence so
     /// nothing re-creates the files that were just removed.
     var isResettingApp = false
@@ -137,8 +137,8 @@ final class AppState: ObservableObject {
 
     // MARK: Focus automation (URL scheme)
 
-    static let resetLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "Reset")
-    static let focusLog = Logger(subsystem: "fr.hugoinformatique.lampcontrol", category: "FocusAutomation")
+    static let resetLog = Logger(subsystem: "cz.tix.lumobar", category: "Reset")
+    static let focusLog = Logger(subsystem: "cz.tix.lumobar", category: "FocusAutomation")
     var isFocusAutomationReady = false
     var pendingFocusURLs: [URL] = []
 

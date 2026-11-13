@@ -1,11 +1,19 @@
 import Foundation
 
-/// Where LampControl keeps its files. The folder name is part of the on-disk format: existing
-/// users' data lives there, so it must never change.
+/// Where LumoBar keeps its files. The folder name is part of the on-disk format: users' data
+/// lives there, so it must never change.
 enum AppDirectories {
     static var support: URL {
+        applicationSupport.appendingPathComponent("LumoBar", isDirectory: true)
+    }
+
+    /// LampControl's folder, the source of the one-time import (`LegacyImport`). Never written to.
+    static var legacySupport: URL {
+        applicationSupport.appendingPathComponent("LampControl", isDirectory: true)
+    }
+
+    private static var applicationSupport: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LampControl", isDirectory: true)
     }
 }
 
@@ -51,7 +59,7 @@ final class SkippedCounter {
 }
 
 extension CodingUserInfoKey {
-    static let skippedElements = CodingUserInfoKey(rawValue: "LampControl.skippedElements")!
+    static let skippedElements = CodingUserInfoKey(rawValue: "LumoBar.skippedElements")!
 }
 
 /// One array element that may fail to decode (an unknown enum value, a missing field) without
@@ -65,7 +73,7 @@ private struct LossyElement<Element: Decodable>: Decodable {
         } catch {
             value = nil
             (decoder.userInfo[.skippedElements] as? SkippedCounter)?.count += 1
-            NSLog("LampControl: skipped an unreadable \(Element.self) entry: \(error)")
+            NSLog("LumoBar: skipped an unreadable \(Element.self) entry: \(error)")
         }
     }
 }
@@ -147,7 +155,7 @@ final class JSONFileStore<Value: Codable> {
         do {
             value = try decoder.decode(Value.self, from: data)
         } catch {
-            NSLog("LampControl: \(url.lastPathComponent) is unreadable: \(error)")
+            NSLog("LumoBar: \(url.lastPathComponent) is unreadable: \(error)")
             try moveAside(kind: .unreadable)
             return defaultValue
         }
@@ -208,7 +216,7 @@ final class JSONFileStore<Value: Codable> {
             recovery.record(DataRecovery(fileName: url.lastPathComponent, backupName: target.lastPathComponent,
                                          kind: .partial(skipped: skipped)))
         } catch {
-            NSLog("LampControl: could not back up \(url.lastPathComponent): \(error)")
+            NSLog("LumoBar: could not back up \(url.lastPathComponent): \(error)")
         }
     }
 }

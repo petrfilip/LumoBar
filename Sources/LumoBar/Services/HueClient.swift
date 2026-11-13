@@ -23,7 +23,7 @@ final class HueClient {
             method: "POST",
             path: "/api",
             username: nil,
-            body: ["devicetype": "LampControl#macOS"]
+            body: ["devicetype": "LumoBar#macOS"]
         )
 
         for item in items {
