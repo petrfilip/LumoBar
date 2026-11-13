@@ -5,8 +5,6 @@
 > Wi-Fi** and **Sylvania Smart Wi-Fi** through the Tuya integration (they
 > share the Smart Life backend). Native, lightweight, liquid-glass styled,
 > Keychain-secure. Free and open source, every feature unlocked.
->
-> 🇫🇷 [Lire ce README en français](README.fr.md)
 
 [![Latest release](https://img.shields.io/github/v/release/petrfilip/LumoBar?label=release)](https://github.com/petrfilip/LumoBar/releases/latest)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)](https://www.apple.com/macos/)
