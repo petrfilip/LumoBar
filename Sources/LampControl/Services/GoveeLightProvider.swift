@@ -6,6 +6,11 @@ final class GoveeLightProvider: LightProvider {
     private let lamps = LampCache()
     private let modelsLock = NSLock()
     private var models: [String: String] = [:]
+    /// The device list rarely changes; refreshing it every poll would cost one API call per poll
+    /// on top of one per lamp (Govee's quota is tight).
+    private var cachedDevices: [GoveeDeviceDTO]?
+    private var devicesFetchedAt = Date.distantPast
+    static let deviceListTTL: TimeInterval = 600
 
     let kind: LightProviderKind = .govee
     let displayName = LightProviderKind.govee.title
@@ -20,11 +25,17 @@ final class GoveeLightProvider: LightProvider {
             throw LampControlError.configuration(NSLocalizedString("error.govee.apikey.missing", comment: ""))
         }
 
-        let devices = try await client.listDevices(apiKey: settings.apiKey)
+        let devices = try await currentDevices()
         var mapped: [LampDevice] = []
         for device in devices.uniqued(by: \.device) where device.controllable {
-            let state = (try? await client.deviceState(apiKey: settings.apiKey, device: device.device, model: device.model)) ?? []
-            mapped.append(lamp(from: device, state: state))
+            do {
+                let state = try await client.deviceState(apiKey: settings.apiKey, device: device.device, model: device.model)
+                mapped.append(lamp(from: device, state: state))
+            } catch {
+                // A failed state call (rate limit, network) says nothing about the lamp: keep
+                // what we last knew instead of showing it as "online and off".
+                mapped.append(lamps[device.device] ?? lamp(from: device, state: nil))
+            }
         }
 
         mapped.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -32,6 +43,27 @@ final class GoveeLightProvider: LightProvider {
         let modelTable = Dictionary(firstWins: devices.map { ($0.device, $0.model) })
         modelsLock.withLock { models = modelTable }
         return mapped
+    }
+
+    /// Cached device list, refreshed after `deviceListTTL`. A failed refresh falls back to the
+    /// stale list so one rate-limited call does not blank the lamps.
+    private func currentDevices() async throws -> [GoveeDeviceDTO] {
+        let cached: [GoveeDeviceDTO]? = modelsLock.withLock {
+            Date().timeIntervalSince(devicesFetchedAt) < Self.deviceListTTL ? cachedDevices : nil
+        }
+        if let cached { return cached }
+
+        do {
+            let fresh = try await client.listDevices(apiKey: settings.apiKey)
+            modelsLock.withLock {
+                cachedDevices = fresh
+                devicesFetchedAt = Date()
+            }
+            return fresh
+        } catch {
+            if let stale = modelsLock.withLock({ cachedDevices }) { return stale }
+            throw error
+        }
     }
 
     func setPower(deviceId: String, value: Bool) async throws -> LampDevice {
@@ -82,9 +114,11 @@ final class GoveeLightProvider: LightProvider {
         try await client.control(apiKey: settings.apiKey, body: body)
     }
 
-    private func lamp(from device: GoveeDeviceDTO, state: [GoveeStatePropertyDTO]) -> LampDevice {
+    /// `state == nil` means the state could not be read: the lamp is listed as offline.
+    private func lamp(from device: GoveeDeviceDTO, state stateOrNil: [GoveeStatePropertyDTO]?) -> LampDevice {
+        let state = stateOrNil ?? []
         let supports = Set(device.supportCmds.map { $0.lowercased() })
-        let online = state.first(where: { $0.online != nil })?.online ?? true
+        let online = stateOrNil == nil ? false : (state.first(where: { $0.online != nil })?.online ?? true)
         let powerState = state.first(where: { $0.powerState != nil })?.powerState
         let brightness = state.first(where: { $0.brightness != nil })?.brightness
         let colorTem = state.first(where: { $0.colorTem != nil })?.colorTem
