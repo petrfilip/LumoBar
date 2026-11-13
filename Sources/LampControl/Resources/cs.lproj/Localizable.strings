@@ -518,3 +518,7 @@
 "status.provider.disconnected" = "%@ odpojeno";
 "status.automations.save.failed" = "Automatizace se nepodařilo uložit: %@";
 "status.adaptive.save.failed" = "Nastavení adaptivního osvětlení se nepodařilo uložit: %@";
+
+/* Service errors (B1) */
+"error.wiz.device" = "WiZ: %@";
+"error.wiz.not.applied" = "žárovka příkaz neprovedla";

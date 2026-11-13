@@ -49,9 +49,18 @@ struct WizStateResult: Decodable {
     let b: Int?
     let mac: String?
     let rssi: Int?
+    /// Present in the reply to `setPilot` (`{"result":{"success":true}}`).
+    let success: Bool?
 }
 
 struct WizResponse: Decodable {
     let method: String?
     let result: WizStateResult?
+    let error: WizErrorReply?
+}
+
+/// `{"method":"setPilot","error":{"code":-32602,"message":"Invalid params"}}`
+struct WizErrorReply: Decodable {
+    let code: Int?
+    let message: String?
 }

@@ -524,3 +524,7 @@
 "status.provider.disconnected" = "%@ desconectado";
 "status.automations.save.failed" = "No se pudieron guardar las automatizaciones: %@";
 "status.adaptive.save.failed" = "No se pudo guardar el ajuste de iluminación adaptativa: %@";
+
+/* Service errors (B1) */
+"error.wiz.device" = "WiZ: %@";
+"error.wiz.not.applied" = "la bombilla no aplicó el comando";

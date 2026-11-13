@@ -63,3 +63,32 @@ extension Sequence {
         return filter { seen.insert(key($0)).inserted }
     }
 }
+
+/// Completes a checked continuation exactly once, whichever of several concurrent callbacks
+/// (reply, error, timeout) gets there first, and runs `cleanup` (cancel the connection) once.
+/// Resuming a continuation twice is a crash; a plain `var resumed` flag is not enough because
+/// Network.framework callbacks and the timeout run on different threads.
+final class OneShot<T>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+    private let continuation: CheckedContinuation<T, Error>
+    private let cleanup: () -> Void
+
+    init(_ continuation: CheckedContinuation<T, Error>, cleanup: @escaping () -> Void) {
+        self.continuation = continuation
+        self.cleanup = cleanup
+    }
+
+    /// Returns true if this call won the race.
+    @discardableResult
+    func finish(_ result: Result<T, Error>) -> Bool {
+        lock.lock()
+        let first = !done
+        done = true
+        lock.unlock()
+        guard first else { return false }
+        cleanup()
+        continuation.resume(with: result)
+        return true
+    }
+}
