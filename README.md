@@ -7,6 +7,7 @@
 > Keychain-secure. Free and open source, every feature unlocked.
 
 [![Latest release](https://img.shields.io/github/v/release/petrfilip/LumoBar?label=release)](https://github.com/petrfilip/LumoBar/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/petrfilip/LumoBar/total?label=downloads)](https://github.com/petrfilip/LumoBar/releases)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
