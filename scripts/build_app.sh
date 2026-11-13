@@ -2,7 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BUILD_DIR="$ROOT_DIR/.build/release"
+# SwiftPM scratch directory. Override with SCRATCH_PATH to build elsewhere
+# (defaults to the usual .build).
+SCRATCH_PATH="${SCRATCH_PATH:-$ROOT_DIR/.build}"
+BUILD_DIR="$SCRATCH_PATH/release"
 APP_DIR="$ROOT_DIR/dist/LumoBar.app"
 INFO_PLIST_SRC="$ROOT_DIR/Info.plist"
 INFO_PLIST_DST="$APP_DIR/Contents/Info.plist"
@@ -18,17 +21,34 @@ else
   MARKETING_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INFO_PLIST_SRC")"
 fi
 
-# Build number = number of commits if not explicitly provided.
+if [[ ! "$MARKETING_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "error: version '$MARKETING_VERSION' is not MAJOR.MINOR.PATCH (e.g. 1.2.3)." >&2
+  exit 1
+fi
+
+# Build number = number of commits on HEAD (CFBundleVersion, and the appcast's
+# sparkle:version in CI). The count is identical locally and in CI as long as
+# the clone is complete, so shallow clones are rejected: their count would be
+# wrong and could make Sparkle think a newer build is older. BUILD_NUMBER can
+# still be passed explicitly.
 if [[ -n "${BUILD_NUMBER:-}" ]]; then
   BUILD_NUMBER_VALUE="$BUILD_NUMBER"
 elif git -C "$ROOT_DIR" rev-parse HEAD >/dev/null 2>&1; then
+  if [[ "$(git -C "$ROOT_DIR" rev-parse --is-shallow-repository)" == "true" ]]; then
+    echo "error: shallow clone: the commit count is unreliable. Use 'fetch-depth: 0' (CI) or 'git fetch --unshallow', or set BUILD_NUMBER." >&2
+    exit 1
+  fi
   BUILD_NUMBER_VALUE="$(git -C "$ROOT_DIR" rev-list --count HEAD)"
 else
   BUILD_NUMBER_VALUE="1"
 fi
+if [[ ! "$BUILD_NUMBER_VALUE" =~ ^[0-9]+$ ]]; then
+  echo "error: build number '$BUILD_NUMBER_VALUE' is not an integer." >&2
+  exit 1
+fi
 
 cd "$ROOT_DIR"
-swift build -c release
+swift build -c release --scratch-path "$SCRATCH_PATH"
 
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS"
@@ -43,7 +63,7 @@ if [[ -f "$ICON_SRC" ]]; then
   mkdir -p "$APP_DIR/Contents/Resources"
   cp "$ICON_SRC" "$APP_DIR/Contents/Resources/AppIcon.icns"
 else
-  echo "Avertissement: Resources/AppIcon.icns introuvable — l'icône sera absente du bundle."
+  echo "warning: Resources/AppIcon.icns not found; the icon will be missing from the bundle."
 fi
 
 # Bundle localizations (.lproj directories)
@@ -73,6 +93,16 @@ install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_DIR/Contents
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$INFO_PLIST_DST"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER_VALUE" "$INFO_PLIST_DST"
 
+# Embed the Sparkle EdDSA public key (release builds). Written to the bundled
+# copy only, so the source Info.plist stays untouched. Without the variable the
+# placeholder from Info.plist is kept, which is fine for local dev builds but
+# means the app cannot verify updates (CI refuses to release in that state).
+if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
+  CLEAN_PUBLIC_KEY="$(printf '%s' "$SPARKLE_PUBLIC_KEY" | tr -d '\r\n\t ')"
+  /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $CLEAN_PUBLIC_KEY" "$INFO_PLIST_DST"
+  echo "Embedded SUPublicEDKey (${#CLEAN_PUBLIC_KEY} chars)"
+fi
+
 # Bundle Sparkle.framework if it was built as part of SwiftPM.
 SPARKLE_FRAMEWORK_SRC="$BUILD_DIR/Sparkle.framework"
 if [[ -d "$SPARKLE_FRAMEWORK_SRC" ]]; then
@@ -80,7 +110,7 @@ if [[ -d "$SPARKLE_FRAMEWORK_SRC" ]]; then
 elif [[ -d "$BUILD_DIR/PackageFrameworks/Sparkle.framework" ]]; then
   cp -R "$BUILD_DIR/PackageFrameworks/Sparkle.framework" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
 else
-  echo "Avertissement: Sparkle.framework introuvable dans $BUILD_DIR — vérifie que swift build l'a généré."
+  echo "warning: Sparkle.framework not found in $BUILD_DIR; check that swift build produced it."
 fi
 
 # Codesign: if SIGNING_IDENTITY is provided (e.g. Developer ID Application: Hugo Informatique),
@@ -151,4 +181,4 @@ codesign --force \
   ${ENTITLEMENTS_ARG[@]+"${ENTITLEMENTS_ARG[@]}"} \
   --sign "$SIGN_ID" "$APP_DIR"
 
-echo "App générée: $APP_DIR (version $MARKETING_VERSION build $BUILD_NUMBER_VALUE, signée: $SIGN_ID)"
+echo "App built: $APP_DIR (version $MARKETING_VERSION build $BUILD_NUMBER_VALUE, signed with: $SIGN_ID)"
