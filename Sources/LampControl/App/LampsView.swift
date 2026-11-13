@@ -4,6 +4,7 @@ import AppKit
 struct LampsView: View {
     @EnvironmentObject private var appState: AppState
     @State private var draggedLampID: String?
+    @State private var dragWatch: Task<Void, Never>?
     private let ink = LCTheme.ink
     private let muted = LCTheme.muted
     private let accent = LCTheme.accent
@@ -23,6 +24,10 @@ struct LampsView: View {
             scrollableContent
         }
         .scrollIndicators(.never)
+        .onDisappear {
+            dragWatch?.cancel()
+            draggedLampID = nil
+        }
     }
 
     private var scrollableContent: some View {
@@ -173,18 +178,7 @@ struct LampsView: View {
 
                             if appState.isRoomExpanded(room.id) {
                                 ForEach(roomLamps) { lamp in
-                                    LampRow(lamp: lamp)
-                                        .opacity(draggedLampID == lamp.id ? 0.72 : 1)
-                                        .onDrag {
-                                            draggedLampID = lamp.id
-                                            return NSItemProvider(object: lamp.id as NSString)
-                                        }
-                                        .onDrop(of: [.text], delegate: LampReorderDropDelegate(
-                                            targetLamp: lamp,
-                                            draggedLampID: $draggedLampID,
-                                            appState: appState,
-                                            canReorder: canReorderLamps
-                                        ))
+                                    reorderableRow(lamp)
                                 }
                             }
                         }
@@ -207,18 +201,7 @@ struct LampsView: View {
                         .padding(.top, LCSpacing.xxs)
 
                         ForEach(unassigned) { lamp in
-                            LampRow(lamp: lamp)
-                                .opacity(draggedLampID == lamp.id ? 0.72 : 1)
-                                .onDrag {
-                                    draggedLampID = lamp.id
-                                    return NSItemProvider(object: lamp.id as NSString)
-                                }
-                                .onDrop(of: [.text], delegate: LampReorderDropDelegate(
-                                    targetLamp: lamp,
-                                    draggedLampID: $draggedLampID,
-                                    appState: appState,
-                                    canReorder: canReorderLamps
-                                ))
+                            reorderableRow(lamp)
                         }
                     }
                 }
@@ -229,6 +212,37 @@ struct LampsView: View {
 
     private var canReorderLamps: Bool {
         appState.searchText.isEmpty && !appState.hideOfflineLamps
+    }
+
+    private func reorderableRow(_ lamp: LampDevice) -> some View {
+        LampRow(lamp: lamp)
+            .opacity(draggedLampID == lamp.id ? 0.72 : 1)
+            .onDrag {
+                beginDragging(lamp.id)
+                return NSItemProvider(object: lamp.id as NSString)
+            }
+            .onDrop(of: [.text], delegate: LampReorderDropDelegate(
+                targetLamp: lamp,
+                draggedLampID: $draggedLampID,
+                appState: appState,
+                canReorder: canReorderLamps
+            ))
+    }
+
+    /// SwiftUI never says when a drag was cancelled (Escape, released outside every row), which
+    /// left the row dimmed and later let any dragged text reorder the list. Watch the mouse
+    /// button instead: once it is up the drag session is over; a normal drop has handled
+    /// itself by then, so the short wait only clears what a drop did not.
+    private func beginDragging(_ lampID: String) {
+        draggedLampID = lampID
+        dragWatch?.cancel()
+        dragWatch = Task { @MainActor in
+            while !Task.isCancelled, !LampDragRules.isDragFinished(pressedMouseButtons: NSEvent.pressedMouseButtons) {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            if !Task.isCancelled { draggedLampID = nil }
+        }
     }
 
     private var onboardingCard: some View {
@@ -1192,10 +1206,13 @@ private struct LampReorderDropDelegate: DropDelegate {
     let appState: AppState
     let canReorder: Bool
 
+    func validateDrop(info: DropInfo) -> Bool {
+        LampDragRules.isLampDrag(dragged: draggedLampID, canReorder: canReorder)
+    }
+
     func dropEntered(info: DropInfo) {
-        guard canReorder,
-              let draggedLampID,
-              draggedLampID != targetLamp.id
+        guard LampDragRules.acceptsDrop(dragged: draggedLampID, onto: targetLamp.id, canReorder: canReorder),
+              let draggedLampID
         else { return }
 
         // Lamps added after the order was saved are not in it yet: normalise first so they
@@ -1207,14 +1224,9 @@ private struct LampReorderDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
+        let handled = draggedLampID != nil
         draggedLampID = nil
-        return true
-    }
-
-    func dropExited(info: DropInfo) {
-        if draggedLampID == targetLamp.id {
-            draggedLampID = nil
-        }
+        return handled
     }
 }
 

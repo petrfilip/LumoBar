@@ -185,14 +185,26 @@ final class FocusMappingListTests: XCTestCase {
     }
 }
 
-final class LampDragPayloadTests: XCTestCase {
-    func testRoundTrip() {
-        XCTAssertEqual(LampDragPayload.decode(LampDragPayload.encode("yeelight:abc")), "yeelight:abc")
+final class LampDragRulesTests: XCTestCase {
+    func testOnlyAnActiveLampDragReorders() {
+        XCTAssertTrue(LampDragRules.acceptsDrop(dragged: "a", onto: "b", canReorder: true))
+        XCTAssertFalse(LampDragRules.acceptsDrop(dragged: nil, onto: "b", canReorder: true),
+                       "foreign text over the list is not a lamp drag")
+        XCTAssertFalse(LampDragRules.acceptsDrop(dragged: "a", onto: "a", canReorder: true))
+        XCTAssertFalse(LampDragRules.acceptsDrop(dragged: "a", onto: "b", canReorder: false),
+                       "no reordering while the list is filtered")
     }
 
-    func testForeignTextIsNotALamp() {
-        XCTAssertNil(LampDragPayload.decode("some text dragged from a browser"))
-        XCTAssertNil(LampDragPayload.decode(""))
-        XCTAssertNil(LampDragPayload.decode(LampDragPayload.encode("")))
+    func testDropOntoTheDraggedRowIsStillAValidLampDrag() {
+        XCTAssertTrue(LampDragRules.isLampDrag(dragged: "a", canReorder: true))
+        XCTAssertFalse(LampDragRules.isLampDrag(dragged: nil, canReorder: true))
+        XCTAssertFalse(LampDragRules.isLampDrag(dragged: "a", canReorder: false))
+    }
+
+    func testDragIsFinishedOnceTheLeftButtonIsUp() {
+        XCTAssertFalse(LampDragRules.isDragFinished(pressedMouseButtons: 1))
+        XCTAssertFalse(LampDragRules.isDragFinished(pressedMouseButtons: 3))
+        XCTAssertTrue(LampDragRules.isDragFinished(pressedMouseButtons: 0))
+        XCTAssertTrue(LampDragRules.isDragFinished(pressedMouseButtons: 2), "only the right button is down")
     }
 }

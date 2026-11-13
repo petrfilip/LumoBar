@@ -166,16 +166,22 @@ extension FocusMapping {
     }
 }
 
-/// The payload of a lamp row being dragged to reorder the list. Prefixed so a drop of foreign
-/// text (a selection dragged from another app) is not mistaken for a lamp.
-enum LampDragPayload {
-    private static let prefix = "lumobar.lamp:"
+/// Rules for reordering lamps by drag and drop.
+enum LampDragRules {
+    /// A drop reorders only while one of our own lamp rows is being dragged: text dragged in from
+    /// another app (or left over from a drag that was cancelled) must never move a lamp.
+    static func acceptsDrop(dragged: String?, onto target: String, canReorder: Bool) -> Bool {
+        isLampDrag(dragged: dragged, canReorder: canReorder) && dragged != target
+    }
 
-    static func encode(_ lampID: String) -> String { prefix + lampID }
+    /// Whether the drag in progress is one of our lamp rows and the list may be reordered.
+    static func isLampDrag(dragged: String?, canReorder: Bool) -> Bool {
+        canReorder && dragged != nil
+    }
 
-    static func decode(_ text: String) -> String? {
-        guard text.hasPrefix(prefix) else { return nil }
-        let id = String(text.dropFirst(prefix.count))
-        return id.isEmpty ? nil : id
+    /// SwiftUI reports neither a cancelled drag nor a drop outside every row. The left mouse
+    /// button being up is the reliable sign that the drag session is over.
+    static func isDragFinished(pressedMouseButtons: Int) -> Bool {
+        pressedMouseButtons & 1 == 0
     }
 }
