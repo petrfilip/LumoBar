@@ -4,6 +4,18 @@ import Foundation
 /// Static SwiftUI `Text("key")` / `.help("key")` calls look up keys automatically.
 enum L10n {
 
+    /// The value of `key` in every localization the bundle ships (keys without a value are skipped).
+    static func allTranslations(of key: String, bundle: Bundle = .main) -> Set<String> {
+        var result = Set<String>()
+        for language in bundle.localizations {
+            guard let path = bundle.path(forResource: language, ofType: "lproj"),
+                  let lproj = Bundle(path: path) else { continue }
+            let value = lproj.localizedString(forKey: key, value: nil, table: nil)
+            if value != key { result.insert(value) }
+        }
+        return result
+    }
+
     // MARK: - LampsView dynamic strings
 
     static func syncTime(_ time: String) -> String {

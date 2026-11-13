@@ -92,4 +92,13 @@ final class RoomGroupingTests: XCTestCase {
         XCTAssertTrue(result.sections.isEmpty)
         XCTAssertEqual(result.unassigned.map(\.id), ["a", "b"])
     }
+
+    func testDefaultRoomNamesFollowCurrentLanguageAndCustomNamesStay() {
+        let rooms = [Room(name: "Unassigned", lampIds: ["a"]),
+                     Room(name: "Moje žárovky", lampIds: ["b"]),
+                     Room(name: "Office", lampIds: ["c"])]
+        let out = RoomLayout.relabeled(rooms, defaultNames: ["My lamps", "Moje žárovky"], currentName: "My lamps")
+        XCTAssertEqual(out.map(\.name), ["My lamps", "My lamps", "Office"])
+        XCTAssertEqual(out.map(\.id), rooms.map(\.id))
+    }
 }

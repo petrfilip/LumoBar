@@ -21,7 +21,10 @@ extension AppState {
             alreadyMigrated: defaults.bool(forKey: roomsMigratedKey),
             lampIds: lamps.map(\.id),
             defaultRoomName: L10n.defaultRoomName)
-        rooms = plan.rooms
+        rooms = RoomLayout.relabeled(
+            plan.rooms,
+            defaultNames: L10n.allTranslations(of: "rooms.default.name"),
+            currentName: L10n.defaultRoomName)
         if plan.persist {
             do {
                 try roomStore.saveRooms(rooms)

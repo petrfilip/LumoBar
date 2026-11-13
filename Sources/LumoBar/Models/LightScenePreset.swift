@@ -18,6 +18,11 @@ struct LightScenePreset: Identifiable, Hashable {
         presets.first { $0.id == id }
     }
 
+    /// Every translation of each built-in title ("focus" -> {"Focus", "Soustředění", ...}).
+    static func titlesInAllLanguages(bundle: Bundle = .main) -> [String: Set<String>] {
+        Dictionary(uniqueKeysWithValues: presets.map { ($0.id, L10n.allTranslations(of: "scene.\($0.id)", bundle: bundle)) })
+    }
+
     /// A regular, editable scene carrying this preset's definition. The
     /// `presetId` is what lets automations keep resolving it.
     func makeScene(sceneId: UUID = UUID()) -> UserLightScene {
@@ -62,6 +67,24 @@ enum PresetScenes {
             return !known.contains(pid)
         }
         return head + rest
+    }
+
+    /// A built-in scene stores its title in the language it was created in. When that title
+    /// is still one of the preset's default translations, show it in the current language;
+    /// a title the user typed is left alone.
+    static func relabeled(
+        _ scenes: [UserLightScene],
+        defaultTitles: [String: Set<String>],
+        presets: [LightScenePreset] = LightScenePreset.presets
+    ) -> [UserLightScene] {
+        scenes.map { scene in
+            guard let pid = scene.presetId,
+                  defaultTitles[pid]?.contains(scene.title) == true,
+                  let preset = presets.first(where: { $0.id == pid }) else { return scene }
+            var relabeled = scene
+            relabeled.title = preset.title
+            return relabeled
+        }
     }
 
     /// The scene a built-in id ("focus"...) resolves to: the user's (possibly

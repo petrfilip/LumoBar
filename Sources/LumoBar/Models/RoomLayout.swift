@@ -35,6 +35,21 @@ enum RoomLayout {
         return MigrationPlan(rooms: [Room(name: defaultRoomName, lampIds: lampIds)], persist: true, markMigrated: true)
     }
 
+    /// The default room keeps the name it got in the language of the day it was created
+    /// (LampControl's old migration even hard-coded "Unassigned"). While it still has one of
+    /// those default names, show it in the current language; a name the user chose is kept.
+    static let legacyDefaultRoomName = "Unassigned"
+
+    static func relabeled(_ rooms: [Room], defaultNames: Set<String>, currentName: String) -> [Room] {
+        let names = defaultNames.union([legacyDefaultRoomName])
+        return rooms.map { room in
+            guard names.contains(room.name), room.name != currentName else { return room }
+            var relabeled = room
+            relabeled.name = currentName
+            return relabeled
+        }
+    }
+
     /// Ids of lamps whose row is not shown because their room is collapsed.
     static func lampIdsHiddenByCollapse(rooms: [Room], collapsedRoomIds: Set<String>) -> Set<String> {
         var hidden = Set<String>()

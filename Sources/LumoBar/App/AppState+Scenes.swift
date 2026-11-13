@@ -142,7 +142,9 @@ extension AppState {
 
     func loadScenes() {
         do {
-            userScenes = try sceneStore.load()
+            userScenes = PresetScenes.relabeled(
+                try sceneStore.load(),
+                defaultTitles: LightScenePreset.titlesInAllLanguages())
             seedPresetScenesIfNeeded()
         } catch {
             showError(L10n.scenesUnreadable, sticky: true)

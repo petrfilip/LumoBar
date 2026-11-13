@@ -83,4 +83,18 @@ final class PresetScenesTests: XCTestCase {
         let back = try JSONDecoder().decode([UserLightScene].self, from: data)
         XCTAssertEqual(back.first?.presetId, "night")
     }
+
+    func testRelabelShowsDefaultTitlesInCurrentLanguageAndKeepsCustomOnes() {
+        let current = [LightScenePreset(id: "focus", title: "Focus", icon: "sun.max.fill", color: .white),
+                       LightScenePreset(id: "night", title: "Night", icon: "bed.double.fill", color: .white)]
+        let defaults: [String: Set<String>] = ["focus": ["Focus", "Soustředění"], "night": ["Night", "Noc"]]
+        var czechFocus = current[0].makeScene(); czechFocus.title = "Soustředění"
+        var renamedNight = current[1].makeScene(); renamedNight.title = "Ložnice"
+        let mine = userScene("Noc")
+
+        let out = PresetScenes.relabeled([czechFocus, renamedNight, mine], defaultTitles: defaults, presets: current)
+
+        XCTAssertEqual(out.map(\.title), ["Focus", "Ložnice", "Noc"])
+        XCTAssertEqual(out[0].id, czechFocus.id)
+    }
 }
