@@ -8,7 +8,11 @@
 >
 > 🇫🇷 [Lire ce README en français](README.fr.md)
 
-[![Latest release](https://img.shields.io/github/v/release/hugoinformatique/LampControl?label=release)](https://github.com/hugoinformatique/LampControl/releases/latest)
+> **Fork** of [hugoinformatique/LampControl](https://github.com/hugoinformatique/LampControl):
+> every feature unlocked (no Premium tier), no global keyboard shortcuts, plus
+> fixes. Updates come from this fork's releases.
+
+[![Latest release](https://img.shields.io/github/v/release/petrfilip/LampControl?label=release)](https://github.com/petrfilip/LampControl/releases/latest)
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -53,7 +57,7 @@ provider show up in a single sorted list.
 ### Option A — Download the DMG
 
 1. Grab the latest DMG from the
-  [Releases page](https://github.com/hugoinformatique/LampControl/releases/latest).
+  [Releases page](https://github.com/petrfilip/LampControl/releases/latest).
 2. Open `LampControl.dmg`, drag `LampControl.app` to `/Applications`.
 3. **First launch — bypass Gatekeeper** (the app is ad-hoc signed until we
    enrol an Apple Developer ID; see [known limitations](#known-limitations)).
@@ -74,7 +78,7 @@ provider show up in a single sorted list.
 ### Option B — Build from source
 
 ```bash
-git clone https://github.com/hugoinformatique/LampControl.git
+git clone https://github.com/petrfilip/LampControl.git
 cd LampControl
 ./scripts/build_app.sh
 open dist/LampControl.app

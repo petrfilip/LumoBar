@@ -49,7 +49,7 @@
   <key>CFBundleIconFile</key>
   <string>AppIcon</string>
   <key>SUFeedURL</key>
-  <string>https://hugoinformatique.github.io/LampControl/appcast.xml</string>
+  <string>https://petrfilip.github.io/LampControl/appcast.xml</string>
   <key>SUPublicEDKey</key>
   <string>YOUR_PUBLIC_KEY_HERE</string>
   <key>SUEnableAutomaticChecks</key>
