@@ -65,7 +65,13 @@ enum YeelightDiscovery {
         if let location = headers["location"], location.lowercased().hasPrefix("yeelight://") {
             let authority = location.dropFirst("yeelight://".count)
             let parts = authority.split(separator: ":", maxSplits: 1)
-            if let h = parts.first, !h.isEmpty { host = String(h) }
+            if let h = parts.first, !h.isEmpty {
+                // Anyone on the LAN can multicast a NOTIFY. A bulb only ever advertises its own
+                // address, so an announcement whose Location differs from the datagram's sender
+                // is a spoof (or a relay) and must not re-point a saved bulb.
+                if let senderHost, senderHost != String(h) { return nil }
+                host = String(h)
+            }
             if parts.count == 2 {
                 // A reply with an unparsable or out-of-range port is not a usable bulb: drop it.
                 guard let p = Int(parts[1]), YeelightAddress.isValidPort(p) else { return nil }

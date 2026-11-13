@@ -41,9 +41,20 @@ final class YeelightDiscoveryTests: XCTestCase {
         XCTAssertEqual(YeelightDiscovery.parse(lf)?.id, "0x00000000abcd1234")
     }
 
-    func testLocationWinsOverSenderHostAndCustomPortIsRead() throws {
+    func testSpoofedLocationDifferentFromSenderIsDropped() {
+        let spoof = "NOTIFY * HTTP/1.1\r\nNTS: ssdp:alive\r\nLocation: yeelight://192.168.1.50:55443\r\nid: 0xABCDEF\r\n\r\n"
+        XCTAssertNil(YeelightDiscovery.parse(spoof, senderHost: "192.168.1.200"))
+        XCTAssertNotNil(YeelightDiscovery.parse(spoof, senderHost: "192.168.1.50"))
+    }
+
+    func testLocationIsTrustedWhenTheSenderIsUnknown() {
+        let message = "HTTP/1.1 200 OK\r\nLocation: yeelight://10.0.0.7:55443\r\nid: 0xABCDEF\r\n\r\n"
+        XCTAssertEqual(YeelightDiscovery.parse(message)?.host, "10.0.0.7")
+    }
+
+    func testLocationMustMatchSenderHostAndCustomPortIsRead() throws {
         let message = "HTTP/1.1 200 OK\r\nLocation: yeelight://10.0.0.7:12345\r\nid: 0xABCDEF\r\n\r\n"
-        let bulb = try XCTUnwrap(YeelightDiscovery.parse(message, senderHost: "192.168.1.1"))
+        let bulb = try XCTUnwrap(YeelightDiscovery.parse(message, senderHost: "10.0.0.7"))
         XCTAssertEqual(bulb.host, "10.0.0.7")
         XCTAssertEqual(bulb.port, 12345)
         XCTAssertEqual(bulb.id, "0xabcdef", "device id is lowercased")
@@ -52,7 +63,7 @@ final class YeelightDiscoveryTests: XCTestCase {
     func testOutOfRangeLocationPortDropsTheReply() {
         for port in ["70000", "0", "99999999999", "-1", "abc"] {
             let message = "HTTP/1.1 200 OK\r\nLocation: yeelight://10.0.0.7:\(port)\r\nid: 0xABCDEF\r\n\r\n"
-            XCTAssertNil(YeelightDiscovery.parse(message, senderHost: "192.168.1.1"), "port \(port)")
+            XCTAssertNil(YeelightDiscovery.parse(message, senderHost: "10.0.0.7"), "port \(port)")
         }
     }
 
