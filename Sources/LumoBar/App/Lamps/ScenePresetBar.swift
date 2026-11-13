@@ -318,7 +318,8 @@ struct SceneChip: View {
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(LCPalette.ink)
                 .lineLimit(1)
-                .minimumScaleFactor(0.85)
+                .minimumScaleFactor(0.75)
+                .padding(.horizontal, 5)
         }
         .frame(width: 62)
         .frame(height: 52)
