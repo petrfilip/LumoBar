@@ -518,3 +518,4 @@
 /* App fixes (B2) */
 "status.nanoleaf.already.added" = "Este dispositivo Nanoleaf ya está añadido.";
 "status.wiz.already.added" = "Esta bombilla WiZ ya está añadida.";
+"status.provider.sync.failed" = "No se pudo actualizar %1$@: %2$@";

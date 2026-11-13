@@ -518,3 +518,4 @@
 /* App fixes (B2) */
 "status.nanoleaf.already.added" = "Cet appareil Nanoleaf est déjà ajouté.";
 "status.wiz.already.added" = "Cette ampoule WiZ est déjà ajoutée.";
+"status.provider.sync.failed" = "%1$@ n’a pas pu être actualisé : %2$@";

@@ -512,3 +512,4 @@
 /* App fixes (B2) */
 "status.nanoleaf.already.added" = "Toto zařízení Nanoleaf je již přidáno.";
 "status.wiz.already.added" = "Tato žárovka WiZ je již přidána.";
+"status.provider.sync.failed" = "%1$@ se nepodařilo aktualizovat: %2$@";

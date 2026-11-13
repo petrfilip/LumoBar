@@ -271,6 +271,10 @@ enum L10n {
         String(format: s("status.lamps.synced"), count)
     }
     static var lampsNoneFound: String { s("status.lamps.none.found") }
+    /// `provider` is a brand name and is not translated.
+    static func providerSyncFailed(_ provider: String, detail: String) -> String {
+        String(format: s("status.provider.sync.failed"), provider, detail)
+    }
     static var settingsSaved: String { s("status.settings.saved") }
     static var settingsSavedNoneFound: String { s("status.settings.saved.none.found") }
     /// `provider` is a brand name (Hue, LIFX, …) and is not translated.

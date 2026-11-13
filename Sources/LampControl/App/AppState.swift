@@ -77,6 +77,7 @@ final class AppState: ObservableObject {
     private let sceneStore = LightSceneStore()
     private var lightProviders: [LightProviderKind: any LightProvider] = [:]
     private var autoSyncTask: Task<Void, Never>?
+    private var syncFailureTracker = SyncFailureTracker()
     private let yeelightLiveSync = YeelightLiveSync()
     /// Coalesces and paces what sliders / the color picker stream while the user drags.
     private lazy var commandQueue: LampCommandQueue = makeCommandQueue()
@@ -467,13 +468,9 @@ final class AppState: ObservableObject {
         await runBusy {
             lifxSettings = try lifxSettingsStore.save(lifxSettings)
             lightProviders[.lifx] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.lifxConnected(synced.count)
-            selectedTab = .lamps
+            let merged = await syncConfiguredProviders(dropPrevious: [.lifx])
+            let synced = applySync(merged)
+            finishManualSync(merged, message: L10n.lifxConnected(synced.count), ownedBy: .lifx)
         }
     }
 
@@ -481,13 +478,9 @@ final class AppState: ObservableObject {
         await runBusy {
             goveeSettings = try goveeSettingsStore.save(goveeSettings)
             lightProviders[.govee] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.goveeConnected(synced.count)
-            selectedTab = .lamps
+            let merged = await syncConfiguredProviders(dropPrevious: [.govee])
+            let synced = applySync(merged)
+            finishManualSync(merged, message: L10n.goveeConnected(synced.count), ownedBy: .govee)
         }
     }
 
@@ -529,12 +522,9 @@ final class AppState: ObservableObject {
             // Right after the save: a failing unrelated provider in the sync below must not
             // leave the new bulb without its push listener.
             reconcileYeelightLiveSync()
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.yeelightAdded(synced.count)
+            let merged = await syncConfiguredProviders()
+            let synced = applySync(merged)
+            finishManualSync(merged, message: L10n.yeelightAdded(synced.count))
         }
         return saved
     }
@@ -547,12 +537,9 @@ final class AppState: ObservableObject {
             yeelightSettings = try yeelightSettingsStore.save(next)
             lightProviders[.yeelight] = nil
             reconcileYeelightLiveSync()
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.yeelightRemoved
+            let merged = await syncConfiguredProviders(dropPrevious: [.yeelight])
+            applySync(merged)
+            finishManualSync(merged, message: L10n.yeelightRemoved)
         }
     }
 
@@ -574,13 +561,9 @@ final class AppState: ObservableObject {
             hasSecret = saved.hasSecret
             lightProviders[.tuya] = nil
 
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = synced.isEmpty ? L10n.settingsSavedNoneFound : L10n.lampsSynced(synced.count)
-            selectedTab = .lamps
+            let merged = await syncConfiguredProviders(dropPrevious: [.tuya])
+            let synced = applySync(merged)
+            finishManualSync(merged, message: synced.isEmpty ? L10n.settingsSavedNoneFound : L10n.lampsSynced(synced.count), ownedBy: .tuya)
         }
     }
 
@@ -594,28 +577,21 @@ final class AppState: ObservableObject {
             isAutoSyncing = true
             defer { isAutoSyncing = false }
 
-            do {
-                let synced = try await syncConfiguredProviders()
-                setSyncedLamps(synced)
-                selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-                expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-                lastSyncDate = Date()
+            let merged = await syncConfiguredProviders()
+            applySync(merged)
+            reportSyncFailures(merged, silent: true)
+            if merged.didSync {
                 persistWidgetSnapshot()
                 scheduleYeelightRecovery()
-            } catch {
-                // Silent refresh should not interrupt normal use.
             }
 
             return
         }
 
         await runBusy {
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = synced.isEmpty ? L10n.lampsNoneFound : L10n.lampsSynced(synced.count)
+            let merged = await syncConfiguredProviders()
+            let synced = applySync(merged)
+            finishManualSync(merged, message: synced.isEmpty ? L10n.lampsNoneFound : L10n.lampsSynced(synced.count))
             persistWidgetSnapshot()
             scheduleYeelightRecovery()
         }
@@ -1199,13 +1175,68 @@ final class AppState: ObservableObject {
         NSWorkspace.shared.open(url)
     }
 
-    private func syncConfiguredProviders() async throws -> [LampDevice] {
-        let providers = try configuredProviderKinds.map { try makeLightProvider(for: $0) }
-        var synced: [LampDevice] = []
-        for provider in providers {
-            synced.append(contentsOf: try await provider.syncLights())
+    /// Syncs every configured provider independently and concurrently. A provider that fails
+    /// keeps its previous lamps (marked offline) and is reported in `failures`; it never drops
+    /// the other providers' lamps. Never throws.
+    private func syncConfiguredProviders(dropPrevious: Set<LightProviderKind> = []) async -> ProviderSyncMerge {
+        var results: [ProviderSyncResult] = []
+        var runnable: [(kind: LightProviderKind, provider: any LightProvider)] = []
+        for kind in configuredProviderKinds {
+            do {
+                runnable.append((kind, try makeLightProvider(for: kind)))
+            } catch {
+                results.append(ProviderSyncResult(kind: kind, outcome: .failure(error)))
+            }
         }
-        return synced.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        await withTaskGroup(of: ProviderSyncResult.self) { group in
+            for (kind, provider) in runnable {
+                group.addTask {
+                    do {
+                        return ProviderSyncResult(kind: kind, outcome: .success(try await provider.syncLights()))
+                    } catch {
+                        return ProviderSyncResult(kind: kind, outcome: .failure(error))
+                    }
+                }
+            }
+            for await result in group { results.append(result) }
+        }
+        return ProviderSyncMerge.merge(previous: lamps, results: results, dropPrevious: dropPrevious)
+    }
+
+    /// Publishes a finished sync: the lamp list, the selections that still apply and the sync time.
+    @discardableResult
+    private func applySync(_ merged: ProviderSyncMerge) -> [LampDevice] {
+        setSyncedLamps(merged.lamps)
+        let ids = Set(merged.lamps.map(\.id))
+        selectedLampIds = selectedLampIds.intersection(ids)
+        expandedLampIds = expandedLampIds.intersection(ids)
+        if merged.didSync { lastSyncDate = Date() }
+        return merged.lamps
+    }
+
+    /// Ends a manual sync: shows `text`, then any provider failures (which replace it, so the
+    /// working providers still appear in the list but the problem is not hidden). `kind` is the
+    /// provider the user just set up; the view only moves on to the lamp list when it answered.
+    private func finishManualSync(_ merged: ProviderSyncMerge, message text: String, ownedBy kind: LightProviderKind? = nil) {
+        message = text
+        reportSyncFailures(merged, silent: false)
+        if let kind, !merged.failedKinds.contains(kind) { selectedTab = .lamps }
+    }
+
+    /// Shows what went wrong during a sync without hiding the providers that worked. A silent
+    /// background poll announces each failing provider once until it recovers.
+    private func reportSyncFailures(_ merged: ProviderSyncMerge, silent: Bool) {
+        var failures = merged.failures
+        if silent {
+            let fresh = syncFailureTracker.newlyFailed(merged.failedKinds)
+            failures = failures.filter { fresh.contains($0.kind) }
+        } else {
+            _ = syncFailureTracker.newlyFailed(merged.failedKinds)
+        }
+        guard !failures.isEmpty else { return }
+        showError(failures
+            .map { L10n.providerSyncFailed($0.kind.title, detail: $0.error.localizedDescription) }
+            .joined(separator: "\n"))
     }
 
     private func makeLightProvider(for lamp: LampDevice) throws -> any LightProvider {
@@ -1324,12 +1355,9 @@ final class AppState: ObservableObject {
             nanoleafSettings = try nanoleafSettingsStore.save(next)
             saved = true
             lightProviders[.nanoleaf] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.nanoleafAdded(synced.count)
+            let merged = await syncConfiguredProviders()
+            let synced = applySync(merged)
+            finishManualSync(merged, message: L10n.nanoleafAdded(synced.count))
         }
         return saved
     }
@@ -1340,12 +1368,9 @@ final class AppState: ObservableObject {
         await runBusy {
             nanoleafSettings = try nanoleafSettingsStore.save(next)
             lightProviders[.nanoleaf] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.nanoleafRemoved
+            let merged = await syncConfiguredProviders(dropPrevious: [.nanoleaf])
+            applySync(merged)
+            finishManualSync(merged, message: L10n.nanoleafRemoved)
         }
     }
 
@@ -1376,12 +1401,9 @@ final class AppState: ObservableObject {
             wizSettings = try wizSettingsStore.save(next)
             saved = true
             lightProviders[.wiz] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.wizAdded(synced.count)
+            let merged = await syncConfiguredProviders()
+            let synced = applySync(merged)
+            finishManualSync(merged, message: L10n.wizAdded(synced.count))
         }
         return saved
     }
@@ -1392,12 +1414,9 @@ final class AppState: ObservableObject {
         await runBusy {
             wizSettings = try wizSettingsStore.save(next)
             lightProviders[.wiz] = nil
-            let synced = try await syncConfiguredProviders()
-            setSyncedLamps(synced)
-            selectedLampIds = selectedLampIds.intersection(Set(synced.map(\.id)))
-            expandedLampIds = expandedLampIds.intersection(Set(synced.map(\.id)))
-            lastSyncDate = Date()
-            message = L10n.wizRemoved
+            let merged = await syncConfiguredProviders(dropPrevious: [.wiz])
+            applySync(merged)
+            finishManualSync(merged, message: L10n.wizRemoved)
         }
     }
 

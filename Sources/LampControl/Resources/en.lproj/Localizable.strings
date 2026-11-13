@@ -512,3 +512,4 @@
 /* App fixes (B2) */
 "status.nanoleaf.already.added" = "This Nanoleaf device is already added.";
 "status.wiz.already.added" = "This WiZ bulb is already added.";
+"status.provider.sync.failed" = "%1$@ could not be refreshed: %2$@";
