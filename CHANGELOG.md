@@ -6,7 +6,7 @@ All notable changes to LumoBar are documented here. The format follows
 
 ## [Unreleased]
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-11-13
 
 First release of **LumoBar**, a fork of
 [LampControl](https://github.com/hugoinformatique/LampControl) 1.3.3 by
