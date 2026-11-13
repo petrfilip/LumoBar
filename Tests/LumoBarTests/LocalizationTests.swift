@@ -44,6 +44,18 @@ final class LocalizationTests: XCTestCase {
         }
     }
 
+    /// `.strings` files do not understand Swift's `\u{2026}` escape: the backslash is dropped and
+    /// the menu showed "Check for Updatesu{2026}". Write the character itself.
+    func testNoSwiftUnicodeEscapes() throws {
+        let leftover = try NSRegularExpression(pattern: #"u\{[0-9A-Fa-f]+\}"#)
+        for lang in Self.languages {
+            for (key, value) in try strings(lang) {
+                let range = NSRange(value.startIndex..., in: value)
+                XCTAssertNil(leftover.firstMatch(in: value, range: range), "\(lang): \(key) contains a Swift \\u{…} escape")
+            }
+        }
+    }
+
     func testNoEmptyTranslations() throws {
         for lang in Self.languages {
             for (key, value) in try strings(lang) {

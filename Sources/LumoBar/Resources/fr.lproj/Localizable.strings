@@ -287,7 +287,7 @@
 
 /* Menu contextuel */
 "menu.open" = "Ouvrir LumoBar";
-"menu.check.updates" = "Vérifier les mises à jour\u{2026}";
+"menu.check.updates" = "Vérifier les mises à jour…";
 "menu.about" = "À propos de LumoBar v%@";
 "menu.quit" = "Quitter";
 
