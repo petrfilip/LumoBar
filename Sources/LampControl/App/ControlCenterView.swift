@@ -111,6 +111,7 @@ struct ControlCenterView: View {
             ) {
                 Task { await appState.setAdaptiveLighting(enabled: !appState.circadianSettings.isEnabled) }
             }
+            .disabled(appState.isBusy)
 
             circleIconButton(
                 icon: appState.selectedTab == .settings ? "lightbulb.2" : "gearshape",

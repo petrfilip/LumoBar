@@ -165,6 +165,7 @@ struct LampsView: View {
                                 .help("help.room.menu")
                                 .menuIndicator(.hidden)
                                 .fixedSize()
+                                .disabled(appState.isBusy)
                             }
                             .padding(.horizontal, LCSpacing.xs)
                             .padding(.top, LCSpacing.sm)

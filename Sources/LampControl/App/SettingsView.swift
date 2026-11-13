@@ -2045,8 +2045,14 @@ struct SettingsView: View {
     }
 
     private var updatesSettings: some View {
+        UpdateServiceObserver(service: appState.updateService) { service, bindable in
+            updatesContent(service, bindable)
+        }
+    }
+
+    private func updatesContent(_ service: UpdateService, _ bindable: ObservedObject<UpdateService>.Wrapper) -> some View {
         VStack(spacing: 12) {
-            if !appState.updateService.isAvailable {
+            if !service.isAvailable {
                 hintText(NSLocalizedString("updates.unavailable", comment: ""))
             }
 
@@ -2054,24 +2060,24 @@ struct SettingsView: View {
                 toggleRow(
                     title: "updates.auto.check",
                     subtitle: "updates.auto.check.detail",
-                    isOn: $appState.updateService.automaticChecksEnabled
+                    isOn: bindable.automaticChecksEnabled
                 )
-                .disabled(!appState.updateService.isAvailable)
-                .opacity(appState.updateService.isAvailable ? 1 : 0.5)
+                .disabled(!service.isAvailable)
+                .opacity(service.isAvailable ? 1 : 0.5)
 
                 toggleRow(
                     title: "updates.auto.install",
                     subtitle: "updates.auto.install.detail",
-                    isOn: $appState.updateService.automaticDownloadsEnabled
+                    isOn: bindable.automaticDownloadsEnabled
                 )
-                .disabled(!appState.updateService.automaticChecksEnabled)
-                .opacity(appState.updateService.automaticChecksEnabled ? 1 : 0.5)
+                .disabled(!service.automaticChecksEnabled)
+                .opacity(service.automaticChecksEnabled ? 1 : 0.5)
 
-                infoRow("updates.current.version", value: "\(appState.updateService.currentVersion) (\(appState.updateService.currentBuild))", icon: "number")
+                infoRow("updates.current.version", value: "\(service.currentVersion) (\(service.currentBuild))", icon: "number")
             }
 
             Button {
-                appState.updateService.checkForUpdates()
+                service.checkForUpdates()
             } label: {
                 Label("updates.check.now", systemImage: "arrow.triangle.2.circlepath")
                     .font(.system(size: 13, weight: .semibold))
@@ -2081,10 +2087,10 @@ struct SettingsView: View {
             }
             .liquidGlassButtonStyle(prominent: true)
             .tint(accent)
-            .disabled(!appState.updateService.canCheckForUpdates)
-            .opacity(appState.updateService.canCheckForUpdates ? 1 : 0.55)
+            .disabled(!service.canCheckForUpdates)
+            .opacity(service.canCheckForUpdates ? 1 : 0.55)
 
-            if let date = appState.updateService.lastCheckedAt {
+            if let date = service.lastCheckedAt {
                 hintText(L10n.updatesLastCheck(date.formatted(date: .omitted, time: .shortened)))
             }
         }
@@ -2267,6 +2273,17 @@ struct SettingsView: View {
     private func openConfigurationGuide() {
         guard let url = URL(string: "https://github.com/petrfilip/LumoBar/blob/main/docs/CONFIGURATION.md") else { return }
         NSWorkspace.shared.open(url)
+    }
+}
+
+/// Observes the update service directly: `AppState` only holds it, and a nested
+/// `ObservableObject` does not forward its changes, so the page would not refresh on its own.
+private struct UpdateServiceObserver<Content: View>: View {
+    @ObservedObject var service: UpdateService
+    @ViewBuilder let content: (UpdateService, ObservedObject<UpdateService>.Wrapper) -> Content
+
+    var body: some View {
+        content(service, $service)
     }
 }
 

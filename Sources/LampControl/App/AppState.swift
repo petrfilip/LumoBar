@@ -57,7 +57,9 @@ final class AppState: ObservableObject {
         FocusMode(identifier: "sleep", displayName: NSLocalizedString("focus.mode.sleep", comment: ""))
     ]
 
-    @Published var updateService = UpdateService()
+    /// Not `@Published`: it is an `ObservableObject` itself, and a nested one does not forward its
+    /// changes. Views that show its state observe it directly (see `UpdateServiceObserver`).
+    let updateService = UpdateService()
 
     private let settingsStore = SettingsStore()
     private let roomStore = RoomStore()
