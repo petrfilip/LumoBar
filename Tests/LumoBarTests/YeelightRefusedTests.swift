@@ -16,7 +16,8 @@ final class YeelightRefusedTests: XCTestCase {
         guard case LampControlError.yeelight(let message) = YeelightClient.connectionError(.posix(.ETIMEDOUT)) else {
             return XCTFail("other failures should stay yeelight errors")
         }
-        XCTAssertTrue(message.hasPrefix("Yeelight: "))
+        XCTAssertFalse(message.isEmpty)
+        XCTAssertFalse(message.hasPrefix("Yeelight: "), "the provider name is added by the sync banner")
     }
 
     /// Loopback port 1 has no listener: the bulb-side equivalent of LAN Control being off.

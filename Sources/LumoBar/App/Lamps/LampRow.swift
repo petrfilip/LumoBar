@@ -151,12 +151,12 @@ struct LampRow: View, Equatable {
             }
 
             if let brightness = brightnessCapability {
-                Text("\(brightnessPercentage(for: brightness))%")
+                Text(L10n.percent(brightnessPercentage(for: brightness)))
                     .font(.system(size: 13, weight: .semibold).monospacedDigit())
                     .foregroundStyle(lamp.power ? ink : muted)
                     .frame(width: 40, alignment: .trailing)
             } else if let temperature = temperatureCapability {
-                Text("\(temperaturePercentage(for: temperature))%")
+                Text(L10n.percent(temperaturePercentage(for: temperature)))
                     .font(.system(size: 13, weight: .semibold).monospacedDigit())
                     .foregroundStyle(lamp.power ? ink : muted)
                     .frame(width: 40, alignment: .trailing)
@@ -214,7 +214,7 @@ struct LampRow: View, Equatable {
                     .tint(Color(red: 0.96, green: 0.77, blue: 0.26))
                     .disabled(!lamp.online)
 
-                    Text("\(brightnessPercentage(for: brightness))%")
+                    Text(L10n.percent(brightnessPercentage(for: brightness)))
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(muted)
                         .frame(width: 32, alignment: .trailing)

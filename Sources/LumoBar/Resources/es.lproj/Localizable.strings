@@ -4,9 +4,9 @@
 "app.quit" = "Salir de LumoBar";
 "adaptive.paused.by.scene" = "Iluminación adaptativa desactivada para mantener la escena.";
 "setup.providers.connected" = "Conectado: %@";
-"setup.providers.none" = "Conecte al menos un proveedor de lámparas.";
+"setup.providers.none" = "Conecta al menos un proveedor de lámparas.";
 "app.close" = "Cerrar";
-"updates.unavailable" = "Las actualizaciones automáticas no están disponibles en esta compilación (sin clave de firma — normalmente una compilación desde el código fuente). Actualice recompilando desde el repositorio.";
+"updates.unavailable" = "Las actualizaciones automáticas no están disponibles en esta compilación (sin clave de firma — normalmente una compilación desde el código fuente). Actualiza recompilando desde el repositorio.";
 "scene.white" = "Blanco";
 "lamps.color.white" = "Blanco";
 "error.invalid.response" = "Respuesta no válida del dispositivo.";
@@ -14,12 +14,12 @@
 
 /* Vista de lámparas */
 "lamps.welcome.title" = "Bienvenido a LumoBar";
-"lamps.welcome.subtitle" = "Añade tus credenciales Tuya para comenzar";
-"lamps.open.settings" = "Abrir ajustes Tuya";
+"lamps.welcome.subtitle" = "Conecta un proveedor de luces para empezar";
+"lamps.open.settings" = "Abrir ajustes";
 "lamps.empty.title" = "No se encontraron lámparas";
-"lamps.empty.subtitle" = "Asegúrate de que tus lámparas estén encendidas y vinculadas a Smart Life";
-"lamps.sync.updating" = "Actualizando...";
-"lamps.sync.auto" = "Auto-sync";
+"lamps.empty.subtitle" = "Asegúrate de que tus lámparas estén encendidas y accesibles desde este Mac";
+"lamps.sync.updating" = "Actualizando…";
+"lamps.sync.auto" = "Sincronización automática";
 "lamps.sync.time" = "Sincronizado %@";
 "lamps.online.count" = "%d en línea";
 "lamps.adaptive.disable" = "Iluminación adaptativa activa — desactivar";
@@ -28,16 +28,16 @@
 "lamps.scene.button" = "Escena";
 "lamps.scene.edit" = "Editar";
 "lamps.scene.delete" = "Eliminar";
-"lamps.scene.apply.preset" = "Aplicar \"%@\"";
-"lamps.scene.apply.capture" = "Aplicar estado \"%@\"";
-"lamps.scene.apply.ambiance" = "Aplicar ambiente \"%@\"";
+"lamps.scene.apply.preset" = "Aplicar «%@»";
+"lamps.scene.apply.capture" = "Aplicar estado «%@»";
+"lamps.scene.apply.ambiance" = "Aplicar escena «%@»";
 "lamps.color.mode" = "Color";
 "lamps.capture.mode" = "Capturar";
-"lamps.capture.state" = "Estado de %d lámpara(s) guardado";
+"lamps.capture.state" = "Estados de lámparas guardados: %d";
 "lamps.capture.state.detail" = "Encendido, brillo, temperatura y color de cada lámpara.";
 "lamps.group.title" = "Grupo";
 "lamps.group.select.hint" = "Selecciona 2 lámparas";
-"lamps.group.selected" = "%d seleccionada(s)";
+"lamps.group.selected" = "Seleccionadas: %d";
 "lamps.group.scene.title" = "Escena grupal";
 "lamps.group.scene.hint" = "Selecciona al menos dos lámparas para aplicar una escena grupal.";
 "lamps.apply.color" = "Aplicar color";
@@ -63,7 +63,7 @@
 "onboarding.step1.title" = "Elige tus luces";
 "onboarding.step1.detail" = "Yeelight, WiZ, Philips Hue, Nanoleaf, LIFX, Govee o Tuya / Smart Life.";
 "onboarding.step2.title" = "Conecta el proveedor";
-"onboarding.step2.detail" = "Introduce su dirección o clave. Los secretos se guardan en el Keychain.";
+"onboarding.step2.detail" = "Introduce su dirección o clave. Los secretos se guardan en el Llavero.";
 "onboarding.step3.title" = "Sincroniza tus lámparas";
 "onboarding.step3.detail" = "LumoBar detectará tus lámparas para que las controles desde la barra de menús.";
 "onboarding.next" = "Siguiente";
@@ -101,21 +101,21 @@
 "route.govee.sub.connected" = "Clave API guardada";
 "route.govee.sub.disconnected" = "Clave API Govee requerida";
 "route.yeelight.sub.none" = "Ninguna lámpara registrada";
-"route.yeelight.sub.connected" = "%d lámpara(s) en LAN";
+"route.yeelight.sub.connected" = "Lámparas en LAN: %d";
 "route.nanoleaf.sub.none" = "Ningún panel registrado";
-"route.nanoleaf.sub.connected" = "%d panel(es) en LAN";
+"route.nanoleaf.sub.connected" = "Paneles en LAN: %d";
 "route.wiz.sub.none" = "Ninguna bombilla registrada";
-"route.wiz.sub.connected" = "%d bombilla(s) en LAN";
+"route.wiz.sub.connected" = "Bombillas en LAN: %d";
 "route.automations.sub.none" = "Sin automatizaciones";
 "route.automations.sub.active" = "%d/%d activas";
 "route.circadian.sub.disabled" = "Desactivado";
 "route.circadian.sub.active" = "Activo — %d puntos de control";
-"route.devices.subtitle" = "%d lámpara(s) sincronizada(s)";
-"route.updates.subtitle" = "Actualizaciones de App Store";
+"route.devices.subtitle" = "Lámparas sincronizadas: %d";
+"route.updates.subtitle" = "Buscar e instalar nuevas versiones";
 "route.about.subtitle" = "Versión e información local";
 
 /* Proveedores */
-"providers.subtitle" = "%d conectado(s), %d próximamente";
+"providers.subtitle" = "%d conectado(s), %d disponible(s)";
 "provider.connected" = "Conectado y usado para sincronización";
 "provider.tuya" = "Cuenta Smart Life / Tuya Cloud";
 "provider.hue" = "Bridge Hue local (LAN)";
@@ -151,7 +151,7 @@
 "hue.bridge.ip" = "IP del bridge";
 "hue.reconnect" = "Reconectar Hue";
 "hue.connect.button" = "Conectar Hue";
-"hue.hint" = "Antes de conectar, presiona el botón físico del bridge Hue. LumoBar recibirá una clave local guardada en el Keychain.";
+"hue.hint" = "Antes de conectar, presiona el botón físico del bridge Hue. LumoBar recibirá una clave local guardada en el Llavero.";
 
 /* LIFX */
 "lifx.connected" = "LIFX conectado";
@@ -160,7 +160,7 @@
 "lifx.token.saved" = "Token LIFX guardado";
 "lifx.token.placeholder" = "Token LIFX";
 "lifx.save" = "Guardar y sincronizar";
-"lifx.hint" = "Crea el token en tu cuenta LIFX Cloud y pégalo aquí. Se guarda localmente en el Keychain de macOS.";
+"lifx.hint" = "Crea el token en tu cuenta LIFX Cloud y pégalo aquí. Se guarda localmente en el Llavero de macOS.";
 
 /* Govee */
 "govee.connected" = "Govee conectado";
@@ -169,27 +169,27 @@
 "govee.apikey.saved" = "Clave API guardada";
 "govee.apikey.placeholder" = "Clave API Govee";
 "govee.save" = "Guardar y sincronizar";
-"govee.apikey.hint" = "La clave se envía por correo de Govee. Límite de 60 solicitudes/minuto. Guardada localmente en el Keychain de macOS.";
+"govee.apikey.hint" = "La clave se envía por correo de Govee. Límite de 60 solicitudes/minuto. Guardada localmente en el Llavero de macOS.";
 
 /* Yeelight */
-"yeelight.connected.count" = "%d lámpara(s) Yeelight";
+"yeelight.connected.count" = "Lámparas Yeelight: %d";
 "yeelight.connect" = "Añadir una lámpara Yeelight";
-"yeelight.hint" = "Activa \"LAN Control\" en la app Yeelight, luego ingresa la IP local de la lámpara.";
+"yeelight.hint" = "Activa «LAN Control» en la app Yeelight, luego ingresa la IP local de la lámpara.";
 "yeelight.ip.placeholder" = "Dirección IP (ej: 192.168.1.42)";
 "device.name.placeholder" = "Nombre (opcional)";
 "device.add.sync" = "Añadir y sincronizar";
 "yeelight.ip.hint" = "La IP es visible en la app Yeelight (ajustes de la lámpara → Información del dispositivo). LAN Control debe estar activado en cada bombilla.";
 
 /* Nanoleaf */
-"nanoleaf.connected.count" = "%d panel(es) Nanoleaf";
+"nanoleaf.connected.count" = "Paneles Nanoleaf: %d";
 "nanoleaf.connect" = "Añadir un panel Nanoleaf";
-"nanoleaf.hint" = "Mantén presionado el botón de encendido 5-7s hasta que parpadee, luego presiona Emparejar.";
+"nanoleaf.hint" = "Mantén pulsado el botón de encendido 5-7 s hasta que parpadee y luego pulsa Emparejar.";
 "nanoleaf.ip.placeholder" = "Dirección IP (ej: 192.168.1.50)";
 "nanoleaf.pair.button" = "Emparejar y sincronizar";
 "nanoleaf.ip.hint" = "El puerto predeterminado es 16021. Asegúrate de que el panel esté en la misma red Wi-Fi.";
 
 /* WiZ */
-"wiz.connected.count" = "%d bombilla(s) WiZ";
+"wiz.connected.count" = "Bombillas WiZ: %d";
 "wiz.connect" = "Añadir una bombilla WiZ";
 "wiz.hint" = "Bombillas WiZ (Signify) en la misma red. No se requiere configuración.";
 "wiz.ip.placeholder" = "Dirección IP (ej: 192.168.1.55)";
@@ -197,7 +197,7 @@
 
 /* Automatizaciones */
 "automations.empty" = "Programa tus lámparas";
-"automations.active.count" = "%d activa(s)";
+"automations.active.count" = "Activas: %d";
 "automations.header" = "Automatizaciones";
 "automations.header.detail" = "Activa acciones a una hora fija, cada día o en ciertos días.";
 "automations.empty.message" = "Sin automatizaciones. Crea una a continuación.";
@@ -231,13 +231,13 @@
 "circadian.apply.now" = "Aplicar ahora";
 
 /* Dispositivos */
-"devices.subtitle" = "%d lámpara(s), %d en línea";
+"devices.subtitle" = "Lámparas: %d, en línea: %d";
 "devices.detected" = "Lámparas detectadas";
 "devices.online" = "En línea";
 "devices.sync" = "Sincronización";
 "devices.sync.now" = "Sincronizar ahora";
 "devices.sync.hint" = "La lista de lámparas también se actualiza automáticamente cada minuto.";
-"devices.sync.required.hint" = "Configura la cuenta Tuya antes de sincronizar.";
+"devices.sync.required.hint" = "Conecta un proveedor de luces antes de sincronizar.";
 "devices.display.options" = "Opciones de visualización";
 "devices.hide.offline" = "Ocultar lámparas sin conexión";
 
@@ -251,7 +251,7 @@
 "lamps.show.all.help" = "Muestra de nuevo las lámparas sin conexión";
 
 /* Actualizaciones */
-"updates.subtitle" = "Versión %@ (build %@)";
+"updates.subtitle" = "Versión %@ (compilación %@)";
 "updates.auto.check" = "Verificar automáticamente";
 "updates.auto.check.detail" = "Una vez al día en segundo plano";
 "updates.auto.install" = "Instalar automáticamente";
@@ -265,7 +265,7 @@
 "about.app" = "Aplicación";
 "about.version" = "Versión";
 "about.storage" = "Almacenamiento";
-"about.storage.value" = "Keychain + archivos locales";
+"about.storage.value" = "Llavero + archivos locales";
 "about.config.guide" = "Guía de configuración";
 
 /* Acciones de automatización */
@@ -279,7 +279,7 @@
 /* Escenas predefinidas */
 "scene.focus" = "Focus";
 "scene.relax" = "Relax";
-"scene.neon" = "Neon";
+"scene.neon" = "Neón";
 "scene.night" = "Noche";
 
 /* Sincronización */
@@ -289,7 +289,6 @@
 "menu.open" = "Abrir LumoBar";
 "menu.check.updates" = "Buscar actualizaciones…";
 "menu.about" = "Acerca de LumoBar v%@";
-"menu.quit" = "Salir";
 
 /* Habitaciones */
 "devices.rooms.title" = "Gestión de habitaciones";
@@ -299,16 +298,17 @@
 "room.name.placeholder" = "Nombre de la habitación";
 
 /* Modos de enfoque */
-"focus.title" = "Modos de enfoque";
-"focus.subtitle" = "Aplicar escenas cuando se activa el Enfoque de macOS";
-"focus.identifier.placeholder" = "Nombre del enfoque";
+"focus.title" = "Modos de concentración";
+"focus.subtitle" = "Aplicar escenas cuando se activa un modo de concentración de macOS";
+"focus.identifier.placeholder" = "Nombre del modo de concentración";
 "focus.scene.placeholder" = "Seleccionar escena";
-"focus.empty.message" = "No hay mapeos de enfoque configurados";
+"focus.empty.message" = "No hay asociaciones de concentración configuradas";
 
 /* Errors (services) */
 "error.offline" = "Dispositivo sin conexión.";
 "error.http.refused" = "solicitud rechazada";
 "error.tuya.http" = "Tuya HTTP %ld. Comprueba la región, las credenciales y los servicios Cloud activados.";
+"error.http" = "Error HTTP %ld.";
 "error.tuya.endpoint.invalid" = "Endpoint de Tuya no válido.";
 "error.tuya.invalid.response" = "Respuesta de Tuya no válida.";
 "error.tuya.uid.missing" = "Falta el UID de Tuya. Introdúcelo en los ajustes.";
@@ -342,7 +342,7 @@
 "error.wiz.not.in.settings" = "Bombilla WiZ no encontrada en los ajustes.";
 "error.wiz.unknown" = "Bombilla WiZ desconocida.";
 "error.yeelight.port.invalid" = "Puerto Yeelight no válido.";
-"error.yeelight.timeout" = "Yeelight: tiempo de espera agotado. Comprueba que LAN Control esté activado.";
+"error.yeelight.timeout" = "La bombilla no respondió a tiempo. Comprueba que LAN Control esté activado.";
 "error.yeelight.none" = "No hay ninguna lámpara Yeelight guardada.";
 "error.yeelight.unknown" = "Lámpara Yeelight desconocida. Inicia una sincronización.";
 "error.keychain.read" = "No se pudo leer el Llavero (%d).";
@@ -357,24 +357,24 @@
 "status.room.on" = "Habitación encendida.";
 "status.room.off" = "Habitación apagada.";
 "status.room.scene.applied" = "Escena %@ aplicada a la habitación.";
-"status.focus.save.failed" = "No se pudieron guardar los mapeos de enfoque.";
-"status.lamps.synced" = "%ld lámpara(s) sincronizada(s).";
+"status.focus.save.failed" = "No se pudieron guardar las asociaciones de concentración.";
+"status.lamps.synced" = "Lámparas sincronizadas: %ld.";
 "status.lamps.none.found" = "No se encontró ninguna lámpara compatible.";
 "status.settings.saved" = "Ajustes guardados.";
 "status.settings.saved.none.found" = "Ajustes guardados. No se encontró ninguna lámpara compatible.";
 "status.settings.unreadable" = "Los ajustes de %@ no se pueden leer.";
-"status.lifx.connected" = "LIFX conectado. %ld lámpara(s) sincronizada(s).";
-"status.govee.connected" = "Govee conectado. %ld lámpara(s) sincronizada(s).";
+"status.lifx.connected" = "LIFX conectado. Lámparas sincronizadas: %ld.";
+"status.govee.connected" = "Govee conectado. Lámparas sincronizadas: %ld.";
 "status.yeelight.ip.required" = "Se requiere la dirección IP de Yeelight.";
 "status.reset.relaunch.failed" = "Los ajustes se han borrado, pero LumoBar no pudo reiniciarse. Ciérrala y vuelve a abrirla manualmente.";
 "status.yeelight.already.added" = "Esta bombilla Yeelight ya está añadida.";
-"status.yeelight.added" = "Yeelight añadida. %ld lámpara(s) sincronizada(s).";
+"status.yeelight.added" = "Yeelight añadida. Lámparas sincronizadas: %ld.";
 "status.yeelight.removed" = "Yeelight eliminada.";
 "status.nanoleaf.ip.required" = "Se requiere la dirección IP de Nanoleaf.";
-"status.nanoleaf.added" = "Nanoleaf añadido. %ld lámpara(s) sincronizada(s).";
+"status.nanoleaf.added" = "Nanoleaf añadido. Lámparas sincronizadas: %ld.";
 "status.nanoleaf.removed" = "Nanoleaf eliminado.";
 "status.wiz.ip.required" = "Se requiere la dirección IP de WiZ.";
-"status.wiz.added" = "WiZ añadida. %ld lámpara(s) sincronizada(s).";
+"status.wiz.added" = "WiZ añadida. Lámparas sincronizadas: %ld.";
 "status.wiz.removed" = "WiZ eliminada.";
 "status.hue.none.found" = "No se encontró ningún bridge Hue.";
 "status.hue.found" = "%ld bridge(s) Hue detectado(s).";
@@ -384,7 +384,7 @@
 "error.tuya.credentials.incomplete" = "Credenciales de Tuya incompletas. Abre los ajustes.";
 "status.select.rgb" = "Selecciona al menos una lámpara RGB.";
 "status.select.lamp" = "Selecciona al menos una lámpara.";
-"status.color.applied" = "Color aplicado a %ld lámpara(s).";
+"status.color.applied" = "Color aplicado a lámparas: %ld.";
 "status.group.on" = "Grupo encendido.";
 "status.group.off" = "Grupo apagado.";
 "status.all.on" = "Todas las lámparas encendidas.";
@@ -395,14 +395,16 @@
 "status.scene.applied" = "Escena «%@» aplicada.";
 "status.scene.deleted" = "Escena eliminada.";
 "status.scenes.unreadable" = "Las escenas locales no se pueden leer.";
-"status.ambiance.no.rgb" = "No hay ninguna lámpara RGB en línea para aplicar este ambiente.";
-"status.ambiance.applied.all" = "Ambiente %@ aplicado a todas las lámparas RGB.";
-"status.ambiance.applied.count" = "Ambiente %@ aplicado a %ld lámpara(s).";
+"status.ambiance.no.rgb" = "No hay ninguna lámpara RGB en línea para aplicar esta escena.";
+"status.ambiance.applied.all" = "Escena %@ aplicada a todas las lámparas RGB.";
+"status.ambiance.applied.count" = "Escena %@ aplicada a lámparas: %ld.";
 "status.automation.saved" = "Automatización «%@» guardada.";
 "status.automation.deleted" = "Automatización eliminada.";
 "status.adaptive.saved" = "Ajustes adaptativos guardados.";
 "lamps.room.scenes" = "Escenas";
-"circadian.keyframe.brightness" = "%ld%% brillo";
+"circadian.keyframe.brightness" = "%ld %% brillo";
+"format.percent" = "%ld %%";
+"format.kelvin" = "%ld K";
 
 /* Tooltips */
 "help.search.clear" = "Borrar búsqueda";
@@ -436,7 +438,7 @@
 /* Adaptive lighting schedule editor */
 "circadian.schedule" = "Programa diario";
 "circadian.schedule.hint" = "Haz clic en un punto para cambiarlo. Los valores entre puntos se interpolan; pulsa Guardar para aplicar.";
-"circadian.now" = "Ahora: %ld %% · %ld K";
+"circadian.now" = "Ahora: %ld %% · %ld K";
 "circadian.keyframe.add" = "Añadir punto";
 "circadian.keyframe.delete" = "Eliminar";
 "circadian.keyframe.edit" = "Editar este punto";
@@ -445,8 +447,8 @@
 
 /* Focus automation & login item */
 "focus.automation.title" = "Automatización de Atajos";
-"focus.automation.hint" = "macOS no indica a las apps qué modo de enfoque está activo. En Atajos, abre Automatización, crea \"Cuando <Enfoque> se active\" con la acción \"Abrir URLs\" y pega la URL del mapeo correspondiente de abajo. Añade \"Cuando <Enfoque> se desactive\" con la URL de Enfoque desactivado. Cada mapeo de arriba tiene su propia URL.";
-"focus.automation.off" = "Enfoque desactivado";
+"focus.automation.hint" = "macOS no indica a las apps qué modo de concentración está activo. En Atajos, abre Automatización, crea «Cuando <Concentración> se active» con la acción «Abrir URLs» y pega la URL de la asociación correspondiente de abajo. Añade «Cuando <Concentración> se desactive» con la URL de Concentración desactivada. Cada asociación de arriba tiene su propia URL.";
+"focus.automation.off" = "Concentración desactivada";
 "focus.automation.copy.help" = "Copiar URL";
 "login.item.title" = "Abrir al iniciar sesión";
 "login.item.detail" = "Inicia LumoBar automáticamente al iniciar sesión";
@@ -466,13 +468,13 @@
 
 /* Editable presets & reset */
 "settings.scenes.restore.title" = "Restaurar escenas predeterminadas";
-"settings.scenes.restore.detail" = "Recupera las escenas integradas y deshace sus cambios";
+"settings.scenes.restore.detail" = "Restablece las escenas integradas";
 "settings.scenes.restore.button" = "Restaurar";
 "help.scenes.restore" = "Vuelve a añadir las escenas integradas eliminadas y restablece las modificadas. Tus propias escenas se conservan.";
 "status.scenes.restored" = "Escenas predeterminadas restauradas";
 "settings.reset.button" = "Restablecer todos los ajustes";
 "settings.reset.confirm.title" = "¿Restablecer todos los ajustes?";
-"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asignaciones de Focus, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. LumoBar se reiniciará con sus ajustes originales.";
+"settings.reset.confirm.message" = "Esto elimina de forma permanente tus escenas, habitaciones, orden de lámparas, automatizaciones, asociaciones de concentración, horario de iluminación adaptativa, ajustes de los proveedores de luz (incluidos los secretos guardados en el Llavero) y las preferencias de la app, como la bienvenida. LumoBar se reiniciará con sus ajustes originales.";
 "settings.reset.confirm.action" = "Restablecer y reiniciar";
 "settings.reset.confirm.cancel" = "Cancelar";
 "status.reset.failed" = "Restablecimiento incompleto, no se pudo eliminar: %@";
@@ -484,7 +486,7 @@
 "room.lamps.count.one" = "%d lámpara";
 "room.lamps.count.few" = "%d lámparas";
 "room.lamps.count.other" = "%d lámparas";
-"route.focus.sub.active" = "%d activo(s)";
+"route.focus.sub.active" = "Activos: %d";
 "lamps.scene.recapture" = "Volver a capturar el estado actual";
 "rooms.default.name" = "Mis lámparas";
 
@@ -501,8 +503,8 @@
 /* Service errors (B1) */
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "la bombilla no aplicó el comando";
-"error.hue.unauthorized" = "Hue: el bridge ya no acepta esta app. Vuelve a emparejar el bridge en Ajustes.";
-"error.yeelight.refused" = "Yeelight: conexión rechazada. Comprueba que LAN Control esté activado para esta bombilla.";
+"error.hue.unauthorized" = "El bridge ya no acepta esta app. Vuelve a emparejarlo en Ajustes.";
+"error.yeelight.refused" = "Conexión rechazada. Comprueba que LAN Control esté activado para esta bombilla.";
 
 /* Data safety (B3) */
 "status.data.read.failed" = "No se pudo leer %@. Se usan los valores predeterminados por ahora.";
@@ -514,19 +516,19 @@
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "¿Eliminar la escena «%@»?";
 "scene.delete.confirm.capture" = "¿Eliminar la escena capturada «%@»? Se perderán los estados guardados de las lámparas.";
-"scene.delete.confirm.used" = "Las automatizaciones y los ajustes de Focus que la usan se desactivarán.";
+"scene.delete.confirm.used" = "Las automatizaciones y los ajustes de concentración que la usan se desactivarán.";
 "scene.delete.confirm.button" = "Eliminar";
 "scenes.restore.confirm" = "¿Restaurar las escenas predeterminadas? Se perderán tus cambios en ellas.";
 "scenes.restore.confirm.button" = "Restaurar";
-"status.scene.deleted.disabled" = "Escena eliminada. Las automatizaciones y los ajustes de Focus que la usaban se han desactivado.";
+"status.scene.deleted.disabled" = "Escena eliminada. Las automatizaciones y los ajustes de concentración que la usaban se han desactivado.";
 
 /* Cleanup (B5a) */
 "a11y.group.expand" = "Mostrar los controles del grupo";
 "a11y.group.collapse" = "Ocultar los controles del grupo";
-"a11y.focus.add" = "Añadir mapeo de Focus";
+"a11y.focus.add" = "Añadir asociación de concentración";
 "a11y.room.add" = "Añadir habitación";
 "a11y.automation.enabled" = "Automatización activada";
-"a11y.focus.mapping.enabled" = "Mapeo activado";
+"a11y.focus.mapping.enabled" = "Asociación activada";
 "a11y.adaptive.enabled" = "Iluminación adaptativa";
 "a11y.scene.icon" = "Icono de la escena";
 "a11y.automation.action" = "Acción";

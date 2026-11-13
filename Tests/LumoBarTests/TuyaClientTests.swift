@@ -86,7 +86,7 @@ final class TuyaClientTests: XCTestCase {
         XCTAssertTrue(TuyaAPIError(message: "Command not supported", code: nil).isUnsupportedCommand)
         XCTAssertFalse(TuyaAPIError(message: "boom", code: nil).isUnsupportedCommand)
         XCTAssertFalse(LampControlError.offline.isTuyaUnsupportedCommand)
-        XCTAssertFalse(LampControlError.http(500).isTuyaUnsupportedCommand)
+        XCTAssertFalse(LampControlError.tuyaHTTP(500).isTuyaUnsupportedCommand)
     }
 }
 

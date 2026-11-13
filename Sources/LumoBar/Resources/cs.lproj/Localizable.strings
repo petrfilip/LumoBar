@@ -14,10 +14,10 @@
 
 /* Lamps View */
 "lamps.welcome.title" = "Vítejte v aplikaci LumoBar";
-"lamps.welcome.subtitle" = "Pro začátek přidejte své přihlašovací údaje Tuya";
-"lamps.open.settings" = "Otevřít nastavení Tuya";
+"lamps.welcome.subtitle" = "Pro začátek připojte poskytovatele osvětlení";
+"lamps.open.settings" = "Otevřít nastavení";
 "lamps.empty.title" = "Nebyly nalezeny žádné žárovky";
-"lamps.empty.subtitle" = "Ujistěte se, že jsou vaše žárovky zapnuté a propojené s účtem Smart Life";
+"lamps.empty.subtitle" = "Ujistěte se, že jsou žárovky zapnuté a dostupné z tohoto Macu";
 "lamps.sync.updating" = "Aktualizace…";
 "lamps.sync.auto" = "Automatická synchronizace";
 "lamps.sync.time" = "Synchronizováno %@";
@@ -30,7 +30,7 @@
 "lamps.scene.delete" = "Smazat";
 "lamps.scene.apply.preset" = "Použít „%@“";
 "lamps.scene.apply.capture" = "Použít stav „%@“";
-"lamps.scene.apply.ambiance" = "Použít náladu „%@“";
+"lamps.scene.apply.ambiance" = "Použít scénu „%@“";
 "lamps.color.mode" = "Barva";
 "lamps.capture.mode" = "Zachytit";
 "lamps.capture.state" = "Uložený stav žárovek: %d";
@@ -64,8 +64,8 @@
 "onboarding.step1.detail" = "Yeelight, WiZ, Philips Hue, Nanoleaf, LIFX, Govee nebo Tuya / Smart Life.";
 "onboarding.step2.title" = "Připojte poskytovatele";
 "onboarding.step2.detail" = "Zadejte jeho adresu nebo klíč. Tajné údaje zůstanou v Klíčence.";
-"onboarding.step3.title" = "Synchronizujte lampy";
-"onboarding.step3.detail" = "LumoBar lampy vyhledá a ovládat je budete moci z řádku nabídek.";
+"onboarding.step3.title" = "Synchronizujte žárovky";
+"onboarding.step3.detail" = "LumoBar žárovky vyhledá a budete je moci ovládat z řádku nabídek.";
 "onboarding.next" = "Další";
 "onboarding.configure" = "Nastavit";
 "onboarding.dismiss" = "Zavřít";
@@ -111,11 +111,11 @@
 "route.circadian.sub.disabled" = "Vypnuto";
 "route.circadian.sub.active" = "Aktivní — kontrolní body: %d";
 "route.devices.subtitle" = "Synchronizované žárovky: %d";
-"route.updates.subtitle" = "Aktualizace z App Store";
+"route.updates.subtitle" = "Kontrola a instalace nových verzí";
 "route.about.subtitle" = "Verze a místní informace";
 
 /* Providers */
-"providers.subtitle" = "Připojeno: %d, připravuje se: %d";
+"providers.subtitle" = "Připojeno: %d, k dispozici: %d";
 "provider.connected" = "Připojeno a používáno pro synchronizaci";
 "provider.tuya" = "Účet Smart Life / Tuya Cloud";
 "provider.hue" = "Místní Hue Bridge (LAN)";
@@ -128,7 +128,7 @@
 /* Tuya */
 "tuya.access.id" = "Access ID";
 "tuya.access.secret" = "Access Secret";
-"tuya.secret.placeholder" = "Secret je uložen";
+"tuya.secret.placeholder" = "Tajný klíč je uložen";
 "tuya.region" = "Oblast";
 "tuya.endpoint" = "Endpoint";
 "tuya.uid" = "UID uživatele";
@@ -234,10 +234,10 @@
 "devices.subtitle" = "Žárovky: %d, online: %d";
 "devices.detected" = "Nalezené žárovky";
 "devices.online" = "Online";
-"devices.sync" = "Synchronizovat";
+"devices.sync" = "Synchronizace";
 "devices.sync.now" = "Synchronizovat";
 "devices.sync.hint" = "Seznam žárovek se také automaticky aktualizuje každou minutu.";
-"devices.sync.required.hint" = "Před synchronizací nastavte účet Tuya.";
+"devices.sync.required.hint" = "Před synchronizací připojte poskytovatele osvětlení.";
 "devices.display.options" = "Možnosti zobrazení";
 "devices.hide.offline" = "Skrýt offline žárovky";
 
@@ -289,7 +289,6 @@
 "menu.open" = "Otevřít LumoBar";
 "menu.check.updates" = "Zkontrolovat aktualizace…";
 "menu.about" = "O aplikaci LumoBar v%@";
-"menu.quit" = "Ukončit";
 
 /* Rooms */
 "devices.rooms.title" = "Správa místností";
@@ -309,6 +308,7 @@
 "error.offline" = "Zařízení je offline.";
 "error.http.refused" = "požadavek byl odmítnut";
 "error.tuya.http" = "Tuya HTTP %ld. Zkontrolujte oblast, přihlašovací údaje a zapnuté cloudové služby.";
+"error.http" = "Chyba HTTP %ld.";
 "error.tuya.endpoint.invalid" = "Neplatný endpoint Tuya.";
 "error.tuya.invalid.response" = "Neplatná odpověď Tuya.";
 "error.tuya.uid.missing" = "Chybí UID Tuya. Zadejte jej v Nastavení.";
@@ -342,11 +342,11 @@
 "error.wiz.not.in.settings" = "Žárovka WiZ nebyla v nastavení nalezena.";
 "error.wiz.unknown" = "Neznámá žárovka WiZ.";
 "error.yeelight.port.invalid" = "Neplatný port Yeelight.";
-"error.yeelight.timeout" = "Yeelight: vypršel časový limit. Ujistěte se, že je zapnuto LAN Control.";
+"error.yeelight.timeout" = "Žárovka neodpověděla včas. Ujistěte se, že je zapnuto LAN Control.";
 "error.yeelight.none" = "Není uložena žádná žárovka Yeelight.";
 "error.yeelight.unknown" = "Neznámá žárovka Yeelight. Spusťte synchronizaci.";
 "error.keychain.read" = "Nelze číst z Klíčenky (%d).";
-"error.keychain.unreadable" = "Secret v Klíčence je nečitelný.";
+"error.keychain.unreadable" = "Tajný údaj v Klíčence nelze přečíst.";
 "error.keychain.update" = "Nelze aktualizovat Klíčenku (%d).";
 "error.keychain.save" = "Nelze uložit do Klíčenky (%d).";
 
@@ -395,14 +395,16 @@
 "status.scene.applied" = "Scéna „%@“ byla použita.";
 "status.scene.deleted" = "Scéna byla smazána.";
 "status.scenes.unreadable" = "Místní scény jsou nečitelné.";
-"status.ambiance.no.rgb" = "Pro použití této nálady není k dispozici žádná online žárovka RGB.";
-"status.ambiance.applied.all" = "Nálada %@ byla použita na všechny žárovky RGB.";
-"status.ambiance.applied.count" = "Nálada %@ byla použita na žárovky: %ld.";
+"status.ambiance.no.rgb" = "Pro použití této scény není k dispozici žádná online žárovka RGB.";
+"status.ambiance.applied.all" = "Scéna %@ byla použita na všechny žárovky RGB.";
+"status.ambiance.applied.count" = "Scéna %@ byla použita na žárovky: %ld.";
 "status.automation.saved" = "Automatizace „%@“ uložena.";
 "status.automation.deleted" = "Automatizace smazána.";
 "status.adaptive.saved" = "Adaptivní nastavení uloženo.";
 "lamps.room.scenes" = "Scény";
-"circadian.keyframe.brightness" = "Jas: %ld%%";
+"circadian.keyframe.brightness" = "Jas: %ld %%";
+"format.percent" = "%ld %%";
+"format.kelvin" = "%ld K";
 
 /* Tooltips */
 "help.search.clear" = "Vymazat hledání";
@@ -436,7 +438,7 @@
 /* Adaptive lighting schedule editor */
 "circadian.schedule" = "Denní plán";
 "circadian.schedule.hint" = "Kliknutím na časový bod jej upravíte. Hodnoty mezi body se plynule prolínají; změny použijete tlačítkem Uložit.";
-"circadian.now" = "Nyní: %ld %% · %ld K";
+"circadian.now" = "Nyní: %ld %% · %ld K";
 "circadian.keyframe.add" = "Přidat časový bod";
 "circadian.keyframe.delete" = "Odebrat";
 "circadian.keyframe.edit" = "Upravit tento časový bod";
@@ -466,13 +468,13 @@
 
 /* Editable presets & reset */
 "settings.scenes.restore.title" = "Obnovit výchozí scény";
-"settings.scenes.restore.detail" = "Vrátí vestavěné předvolby a zruší jejich úpravy";
+"settings.scenes.restore.detail" = "Obnoví vestavěné scény";
 "settings.scenes.restore.button" = "Obnovit";
 "help.scenes.restore" = "Znovu přidá smazané vestavěné scény a upravené vrátí do výchozího stavu. Vaše vlastní scény zůstanou zachovány.";
 "status.scenes.restored" = "Výchozí scény obnoveny";
 "settings.reset.button" = "Resetovat všechna nastavení";
 "settings.reset.confirm.title" = "Resetovat všechna nastavení?";
-"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí lamp, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. LumoBar se restartuje s původním nastavením.";
+"settings.reset.confirm.message" = "Tím se trvale odstraní vaše scény, místnosti, pořadí žárovek, automatizace, přiřazení režimů Soustředění, plán adaptivního osvětlení, nastavení poskytovatelů světel (včetně tajných klíčů uložených v Klíčence) a předvolby aplikace, například úvodní průvodce. LumoBar se restartuje s původním nastavením.";
 "settings.reset.confirm.action" = "Resetovat a restartovat";
 "settings.reset.confirm.cancel" = "Zrušit";
 "status.reset.failed" = "Reset není dokončen, nelze odstranit: %@";
@@ -480,20 +482,20 @@
 
 /* Added: save/cancel, room lamp counts, focus route subtitle */
 "action.cancel" = "Zrušit";
-"room.assign.lamps" = "Přiřadit lampy";
-"room.lamps.count.one" = "%d lampa";
-"room.lamps.count.few" = "%d lampy";
-"room.lamps.count.other" = "%d lamp";
+"room.assign.lamps" = "Přiřadit žárovky";
+"room.lamps.count.one" = "%d žárovka";
+"room.lamps.count.few" = "%d žárovky";
+"room.lamps.count.other" = "%d žárovek";
 "route.focus.sub.active" = "Aktivní: %d";
 "lamps.scene.recapture" = "Znovu zachytit aktuální stav";
-"rooms.default.name" = "Moje lampy";
+"rooms.default.name" = "Moje žárovky";
 
 /* App fixes (B2) */
 "status.nanoleaf.already.added" = "Toto zařízení Nanoleaf je již přidáno.";
 "status.wiz.already.added" = "Tato žárovka WiZ je již přidána.";
 "status.provider.sync.failed" = "%1$@ se nepodařilo aktualizovat: %2$@";
 "provider.disconnect" = "Odpojit";
-"help.provider.disconnect" = "Odstranit uložené přihlašovací údaje a zapomenout lampy tohoto poskytovatele";
+"help.provider.disconnect" = "Odstranit uložené přihlašovací údaje a zapomenout žárovky tohoto poskytovatele";
 "status.provider.disconnected" = "%@ odpojeno";
 "status.automations.save.failed" = "Automatizace se nepodařilo uložit: %@";
 "status.adaptive.save.failed" = "Nastavení adaptivního osvětlení se nepodařilo uložit: %@";
@@ -501,8 +503,8 @@
 /* Service errors (B1) */
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "žárovka příkaz neprovedla";
-"error.hue.unauthorized" = "Hue: bridge tuto aplikaci už nepřijímá. Spárujte bridge znovu v Nastavení.";
-"error.yeelight.refused" = "Yeelight: spojení bylo odmítnuto. Ujistěte se, že je pro tuto žárovku zapnuto LAN Control.";
+"error.hue.unauthorized" = "Bridge tuto aplikaci už nepřijímá. Spárujte ho znovu v Nastavení.";
+"error.yeelight.refused" = "Spojení bylo odmítnuto. Ujistěte se, že je pro tuto žárovku zapnuto LAN Control.";
 
 /* Data safety (B3) */
 "status.data.read.failed" = "Soubor %@ se nepodařilo přečíst. Zatím se použijí výchozí hodnoty.";
@@ -513,7 +515,7 @@
 
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "Smazat scénu „%@“?";
-"scene.delete.confirm.capture" = "Smazat zachycenou scénu „%@“? Uložené stavy lamp se ztratí.";
+"scene.delete.confirm.capture" = "Smazat zachycenou scénu „%@“? Uložené stavy žárovek se ztratí.";
 "scene.delete.confirm.used" = "Automatizace a nastavení Soustředění, která ji používají, se vypnou.";
 "scene.delete.confirm.button" = "Smazat";
 "scenes.restore.confirm" = "Obnovit výchozí scény? Vaše úpravy v nich se ztratí.";
@@ -523,10 +525,10 @@
 /* Cleanup (B5a) */
 "a11y.group.expand" = "Zobrazit ovládání skupiny";
 "a11y.group.collapse" = "Skrýt ovládání skupiny";
-"a11y.focus.add" = "Přidat mapování Soustředění";
+"a11y.focus.add" = "Přidat přiřazení Soustředění";
 "a11y.room.add" = "Přidat místnost";
 "a11y.automation.enabled" = "Automatizace zapnuta";
-"a11y.focus.mapping.enabled" = "Mapování zapnuto";
+"a11y.focus.mapping.enabled" = "Přiřazení zapnuto";
 "a11y.adaptive.enabled" = "Adaptivní osvětlení";
 "a11y.scene.icon" = "Ikona scény";
 "a11y.automation.action" = "Akce";

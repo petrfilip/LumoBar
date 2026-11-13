@@ -8,15 +8,25 @@ enum AutomationAction: Codable, Equatable, Hashable {
     case enableAdaptiveLighting
     case disableAdaptiveLighting
 
-    var title: String {
+    var title: String { title(userScenes: []) }
+
+    /// Display name; a built-in scene shows the user's current name for it (they can rename it),
+    /// falling back to the preset's own title.
+    func title(userScenes: [UserLightScene]) -> String {
         switch self {
         case .powerOffAll:              return L10n.actionPowerOff
         case .powerOnAll:               return L10n.actionPowerOn
-        case .applyScenePreset(let id): return L10n.actionScene(LightScenePreset.preset(id: id)?.title ?? id.capitalized)
+        case .applyScenePreset(let id):
+            return L10n.actionScene(Self.presetSceneName(id: id, in: userScenes))
         case .applyProfile:             return L10n.actionApplyProfile
         case .enableAdaptiveLighting:   return L10n.actionEnableAdaptive
         case .disableAdaptiveLighting:  return L10n.actionDisableAdaptive
         }
+    }
+
+    /// The name to show for a built-in scene: the user's current (possibly renamed) one.
+    static func presetSceneName(id: String, in userScenes: [UserLightScene]) -> String {
+        userScenes.first { $0.presetId == id }?.title ?? LightScenePreset.preset(id: id)?.title ?? id.capitalized
     }
 
     var icon: String {
@@ -46,7 +56,7 @@ struct Automation: Codable, Identifiable {
     }
 
     var timeString: String {
-        String(format: "%02d:%02d", hour, minute)
+        L10n.clockTime(hour: hour, minute: minute)
     }
 
     var weekdaysLabel: String {

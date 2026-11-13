@@ -180,14 +180,14 @@ extension SettingsView {
                 }
             } label: {
                 HStack(spacing: 12) {
-                    Text(String(format: "%02d:%02d", kf.hour, kf.minute))
+                    Text(L10n.clockTime(hour: kf.hour, minute: kf.minute))
                         .font(.system(size: 12, weight: .semibold).monospaced())
                         .foregroundStyle(accent)
                         .frame(width: 44, alignment: .leading)
                     Text(L10n.circadianKeyframeBrightness(kf.brightness))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(LCPalette.muted)
-                    Text("\(kf.temperature) K")
+                    Text(L10n.kelvin(kf.temperature))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(LCPalette.muted)
                     Spacer()
@@ -227,7 +227,7 @@ extension SettingsView {
                             get: { Double(binding.wrappedValue.brightness) },
                             set: { binding.wrappedValue.brightness = Int($0.rounded()) }
                         ), in: 1...100)
-                        Text("\(binding.wrappedValue.brightness) %")
+                        Text(L10n.percent(binding.wrappedValue.brightness))
                             .font(.system(size: 10, weight: .semibold).monospacedDigit())
                             .foregroundStyle(muted)
                             .frame(width: 44, alignment: .trailing)
@@ -242,7 +242,7 @@ extension SettingsView {
                             get: { Double(binding.wrappedValue.temperature) },
                             set: { binding.wrappedValue.temperature = Int(($0 / 100).rounded()) * 100 }
                         ), in: 1700...6500)
-                        Text("\(binding.wrappedValue.temperature) K")
+                        Text(L10n.kelvin(binding.wrappedValue.temperature))
                             .font(.system(size: 10, weight: .semibold).monospacedDigit())
                             .foregroundStyle(muted)
                             .frame(width: 44, alignment: .trailing)

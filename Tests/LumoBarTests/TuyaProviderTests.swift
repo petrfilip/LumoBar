@@ -61,7 +61,7 @@ final class TuyaProviderTests: XCTestCase {
         do {
             _ = try await provider().syncLights()
             XCTFail("expected error")
-        } catch LampControlError.http(let status) {
+        } catch LampControlError.tuyaHTTP(let status) {
             XCTAssertEqual(status, 500)
         }
     }
@@ -99,7 +99,7 @@ final class TuyaProviderTests: XCTestCase {
         do {
             _ = try await provider.setTemperature(deviceId: "a", value: 500)
             XCTFail("expected error")
-        } catch LampControlError.http(let status) {
+        } catch LampControlError.tuyaHTTP(let status) {
             XCTAssertEqual(status, 503)
         }
         XCTAssertEqual(count("/commands"), 1, "a transport error must not trigger the work_mode fallback")

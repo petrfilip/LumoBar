@@ -229,7 +229,7 @@ enum L10n {
 
     static var menuOpen: String { NSLocalizedString("menu.open", comment: "") }
     static var menuCheckUpdates: String { NSLocalizedString("menu.check.updates", comment: "") }
-    static var menuQuit: String { NSLocalizedString("menu.quit", comment: "") }
+    static var menuQuit: String { NSLocalizedString("app.quit", comment: "") }
 
     static func menuAbout(version: String) -> String {
         String(format: NSLocalizedString("menu.about", comment: ""), version)
@@ -360,6 +360,21 @@ enum L10n {
     }
     static func adaptiveSaveFailed(_ detail: String) -> String {
         String(format: s("status.adaptive.save.failed"), detail)
+    }
+
+    // Numbers and times that follow the app language's conventions ("50%" vs "50 %", "14:05" vs "2:05 PM")
+    static func percent(_ value: Int) -> String { String(format: s("format.percent"), value) }
+    static func kelvin(_ value: Int) -> String { String(format: s("format.kelvin"), value) }
+
+    /// A wall-clock time in the user's locale (24 h or 12 h), like the system time pickers show it.
+    /// Built on a fixed UTC date so a daylight-saving gap can never shift or drop the hour.
+    static func clockTime(hour: Int, minute: Int, locale: Locale = .current) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        let parts = DateComponents(year: 2001, month: 1, day: 1, hour: hour, minute: minute)
+        guard let date = calendar.date(from: parts) else { return String(format: "%02d:%02d", hour, minute) }
+        let style = Date.FormatStyle(date: .omitted, time: .shortened, locale: locale, calendar: calendar, timeZone: calendar.timeZone)
+        return date.formatted(style)
     }
 
     // Views

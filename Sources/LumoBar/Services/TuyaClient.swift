@@ -10,7 +10,7 @@ struct TuyaAPIError: LocalizedError {
     var commandCodes: String?
 
     var errorDescription: String? {
-        let details = code.map { " (code \($0))" } ?? ""
+        let details = code.map { " (\($0))" } ?? ""
         let text = message + details
         guard let commandCodes else { return text }
         return String(format: NSLocalizedString("error.tuya.command.failed", comment: ""), text, commandCodes)
@@ -98,7 +98,7 @@ actor TuyaClient {
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw LampControlError.http(httpResponse.statusCode)
+            throw LampControlError.tuyaHTTP(httpResponse.statusCode)
         }
 
         let envelope = try JSONDecoder().decode(TuyaEnvelope<Result>.self, from: data)

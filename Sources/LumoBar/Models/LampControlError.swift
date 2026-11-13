@@ -8,7 +8,10 @@ enum LampControlError: LocalizedError {
     case yeelight(String)
     /// Generic provider/device error for non-Tuya, non-Yeelight providers (LIFX, Govee, Hue).
     case device(String)
+    /// HTTP failure from a provider without a more specific message (Nanoleaf, …).
     case http(Int)
+    /// HTTP failure from the Tuya cloud; its message points at Tuya-specific causes.
+    case tuyaHTTP(Int)
     case invalidResponse
     case offline
 
@@ -17,6 +20,8 @@ enum LampControlError: LocalizedError {
         case .configuration(let message), .keychain(let message), .tuya(let message), .yeelight(let message), .device(let message):
             return message
         case .http(let status):
+            return String(format: NSLocalizedString("error.http", comment: ""), status)
+        case .tuyaHTTP(let status):
             return String(format: NSLocalizedString("error.tuya.http", comment: ""), status)
         case .invalidResponse:
             // Shared by every provider (Yeelight, Hue, LIFX, …), not only Tuya.

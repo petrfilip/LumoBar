@@ -46,7 +46,7 @@ final class YeelightClient {
         else { return .ignore }
 
         if let error = decoded.error {
-            return .failure(LampControlError.yeelight("Yeelight: \(error.message) (\(error.code))"))
+            return .failure(LampControlError.yeelight("\(error.message) (\(error.code))"))
         }
         if let result = decoded.result {
             return .result(result)
@@ -67,7 +67,7 @@ final class YeelightClient {
         if isConnectionRefused(error) {
             return .yeelight(NSLocalizedString("error.yeelight.refused", comment: ""))
         }
-        return .yeelight("Yeelight: \(error.localizedDescription)")
+        return .yeelight("\(error.localizedDescription)")
     }
 
     private func exchange(host: String, port: Int, command: String, requestID: Int) async throws -> [String] {
@@ -97,7 +97,7 @@ final class YeelightClient {
             func receiveNext() {
                 connection.receive(minimumIncompleteLength: 1, maximumLength: 8192) { data, _, isComplete, receiveError in
                     if let receiveError {
-                        finish(.failure(LampControlError.yeelight("Yeelight: \(receiveError.localizedDescription)")))
+                        finish(.failure(LampControlError.yeelight("\(receiveError.localizedDescription)")))
                         return
                     }
                     if let data {
@@ -142,7 +142,7 @@ final class YeelightClient {
                     let payload = command.data(using: .utf8) ?? Data()
                     connection.send(content: payload, completion: .contentProcessed { sendError in
                         if let sendError {
-                            finish(.failure(LampControlError.yeelight("Yeelight: \(sendError.localizedDescription)")))
+                            finish(.failure(LampControlError.yeelight("\(sendError.localizedDescription)")))
                             return
                         }
                         receiveNext()

@@ -14,11 +14,11 @@
 
 /* Lamps View */
 "lamps.welcome.title" = "Welcome to LumoBar";
-"lamps.welcome.subtitle" = "Add your Tuya credentials to get started";
-"lamps.open.settings" = "Open Tuya settings";
+"lamps.welcome.subtitle" = "Connect a light provider to get started";
+"lamps.open.settings" = "Open Settings";
 "lamps.empty.title" = "No lamps found";
-"lamps.empty.subtitle" = "Make sure your lamps are on and linked to your Smart Life account";
-"lamps.sync.updating" = "Updating...";
+"lamps.empty.subtitle" = "Make sure your lamps are on and reachable from this Mac";
+"lamps.sync.updating" = "Updating…";
 "lamps.sync.auto" = "Auto-sync";
 "lamps.sync.time" = "Synced %@";
 "lamps.online.count" = "%d online";
@@ -28,12 +28,12 @@
 "lamps.scene.button" = "Scene";
 "lamps.scene.edit" = "Edit";
 "lamps.scene.delete" = "Delete";
-"lamps.scene.apply.preset" = "Apply \"%@\"";
-"lamps.scene.apply.capture" = "Apply state \"%@\"";
-"lamps.scene.apply.ambiance" = "Apply ambiance \"%@\"";
+"lamps.scene.apply.preset" = "Apply “%@”";
+"lamps.scene.apply.capture" = "Apply state “%@”";
+"lamps.scene.apply.ambiance" = "Apply scene “%@”";
 "lamps.color.mode" = "Color";
 "lamps.capture.mode" = "Capture";
-"lamps.capture.state" = "State of %d lamp(s) saved";
+"lamps.capture.state" = "Lamp states saved: %d";
 "lamps.capture.state.detail" = "Power, brightness, temperature and color of each lamp.";
 "lamps.group.title" = "Group";
 "lamps.group.select.hint" = "Select 2 lamps";
@@ -101,21 +101,21 @@
 "route.govee.sub.connected" = "API key saved";
 "route.govee.sub.disconnected" = "Govee API key required";
 "route.yeelight.sub.none" = "No lamp registered";
-"route.yeelight.sub.connected" = "%d lamp(s) in LAN";
+"route.yeelight.sub.connected" = "Lamps in LAN: %d";
 "route.nanoleaf.sub.none" = "No panel registered";
-"route.nanoleaf.sub.connected" = "%d panel(s) in LAN";
+"route.nanoleaf.sub.connected" = "Panels in LAN: %d";
 "route.wiz.sub.none" = "No bulb registered";
-"route.wiz.sub.connected" = "%d bulb(s) in LAN";
+"route.wiz.sub.connected" = "Bulbs in LAN: %d";
 "route.automations.sub.none" = "No automation";
 "route.automations.sub.active" = "%d/%d active";
 "route.circadian.sub.disabled" = "Disabled";
 "route.circadian.sub.active" = "Active — %d checkpoints";
-"route.devices.subtitle" = "%d lamp(s) synced";
-"route.updates.subtitle" = "App Store updates";
+"route.devices.subtitle" = "Lamps synced: %d";
+"route.updates.subtitle" = "Check for and install new versions";
 "route.about.subtitle" = "Version and local information";
 
 /* Providers */
-"providers.subtitle" = "%d connected, %d upcoming";
+"providers.subtitle" = "%d connected, %d available";
 "provider.connected" = "Connected and used for sync";
 "provider.tuya" = "Smart Life / Tuya Cloud account";
 "provider.hue" = "Local Hue bridge (LAN)";
@@ -172,24 +172,24 @@
 "govee.apikey.hint" = "The key is sent by email by Govee. Limit of 60 requests/minute. Stored locally in the macOS Keychain.";
 
 /* Yeelight */
-"yeelight.connected.count" = "%d Yeelight lamp(s)";
+"yeelight.connected.count" = "Yeelight lamps: %d";
 "yeelight.connect" = "Add a Yeelight lamp";
-"yeelight.hint" = "Enable \"LAN Control\" in the Yeelight app, then enter the local IP of the lamp.";
+"yeelight.hint" = "Enable “LAN Control” in the Yeelight app, then enter the local IP of the lamp.";
 "yeelight.ip.placeholder" = "IP address (e.g. 192.168.1.42)";
 "device.name.placeholder" = "Name (optional)";
 "device.add.sync" = "Add and sync";
 "yeelight.ip.hint" = "The IP is visible in the Yeelight app (lamp settings → Device information). LAN Control must be enabled on each bulb.";
 
 /* Nanoleaf */
-"nanoleaf.connected.count" = "%d Nanoleaf panel(s)";
+"nanoleaf.connected.count" = "Nanoleaf panels: %d";
 "nanoleaf.connect" = "Add a Nanoleaf panel";
-"nanoleaf.hint" = "Hold the power button for 5-7s until it blinks, then press Pair.";
+"nanoleaf.hint" = "Hold the power button for 5-7 s until it blinks, then press Pair.";
 "nanoleaf.ip.placeholder" = "IP address (e.g. 192.168.1.50)";
 "nanoleaf.pair.button" = "Pair and sync";
 "nanoleaf.ip.hint" = "The default port is 16021. Make sure the panel is on the same Wi-Fi network.";
 
 /* WiZ */
-"wiz.connected.count" = "%d WiZ bulb(s)";
+"wiz.connected.count" = "WiZ bulbs: %d";
 "wiz.connect" = "Add a WiZ bulb";
 "wiz.hint" = "WiZ bulbs (Signify) on the same network. No configuration required.";
 "wiz.ip.placeholder" = "IP address (e.g. 192.168.1.55)";
@@ -231,13 +231,13 @@
 "circadian.apply.now" = "Apply now";
 
 /* Devices */
-"devices.subtitle" = "%d lamp(s), %d online";
+"devices.subtitle" = "Lamps: %d, online: %d";
 "devices.detected" = "Detected lamps";
 "devices.online" = "Online";
 "devices.sync" = "Sync";
 "devices.sync.now" = "Sync now";
 "devices.sync.hint" = "The lamp list also updates automatically every minute.";
-"devices.sync.required.hint" = "Set up Tuya account before syncing.";
+"devices.sync.required.hint" = "Connect a light provider before syncing.";
 "devices.display.options" = "Display Options";
 "devices.hide.offline" = "Hide offline lamps";
 
@@ -289,7 +289,6 @@
 "menu.open" = "Open LumoBar";
 "menu.check.updates" = "Check for Updates…";
 "menu.about" = "About LumoBar v%@";
-"menu.quit" = "Quit";
 
 /* Rooms */
 "devices.rooms.title" = "Room Management";
@@ -309,6 +308,7 @@
 "error.offline" = "Device offline.";
 "error.http.refused" = "request refused";
 "error.tuya.http" = "Tuya HTTP %ld. Check the region, the credentials and the enabled Cloud services.";
+"error.http" = "HTTP error %ld.";
 "error.tuya.endpoint.invalid" = "Invalid Tuya endpoint.";
 "error.tuya.invalid.response" = "Invalid Tuya response.";
 "error.tuya.uid.missing" = "Tuya UID missing. Enter it in Settings.";
@@ -342,7 +342,7 @@
 "error.wiz.not.in.settings" = "WiZ bulb not found in settings.";
 "error.wiz.unknown" = "Unknown WiZ bulb.";
 "error.yeelight.port.invalid" = "Invalid Yeelight port.";
-"error.yeelight.timeout" = "Yeelight: timed out. Make sure LAN Control is enabled.";
+"error.yeelight.timeout" = "The bulb did not respond in time. Make sure LAN Control is enabled.";
 "error.yeelight.none" = "No Yeelight lamp saved.";
 "error.yeelight.unknown" = "Unknown Yeelight lamp. Run a sync.";
 "error.keychain.read" = "Unable to read from Keychain (%d).";
@@ -358,23 +358,23 @@
 "status.room.off" = "Room turned off.";
 "status.room.scene.applied" = "Scene %@ applied to the room.";
 "status.focus.save.failed" = "Couldn't save Focus mappings.";
-"status.lamps.synced" = "%ld lamp(s) synced.";
+"status.lamps.synced" = "Lamps synced: %ld.";
 "status.lamps.none.found" = "No compatible lamp found.";
 "status.settings.saved" = "Settings saved.";
 "status.settings.saved.none.found" = "Settings saved. No compatible lamp found.";
 "status.settings.unreadable" = "%@ settings are unreadable.";
-"status.lifx.connected" = "LIFX connected. %ld lamp(s) synced.";
-"status.govee.connected" = "Govee connected. %ld lamp(s) synced.";
+"status.lifx.connected" = "LIFX connected. Lamps synced: %ld.";
+"status.govee.connected" = "Govee connected. Lamps synced: %ld.";
 "status.yeelight.ip.required" = "Yeelight IP address required.";
 "status.reset.relaunch.failed" = "Settings were erased, but LumoBar could not restart itself. Please quit and reopen it manually.";
 "status.yeelight.already.added" = "This Yeelight bulb is already added.";
-"status.yeelight.added" = "Yeelight added. %ld lamp(s) synced.";
+"status.yeelight.added" = "Yeelight added. Lamps synced: %ld.";
 "status.yeelight.removed" = "Yeelight removed.";
 "status.nanoleaf.ip.required" = "Nanoleaf IP address required.";
-"status.nanoleaf.added" = "Nanoleaf added. %ld lamp(s) synced.";
+"status.nanoleaf.added" = "Nanoleaf added. Lamps synced: %ld.";
 "status.nanoleaf.removed" = "Nanoleaf removed.";
 "status.wiz.ip.required" = "WiZ IP address required.";
-"status.wiz.added" = "WiZ added. %ld lamp(s) synced.";
+"status.wiz.added" = "WiZ added. Lamps synced: %ld.";
 "status.wiz.removed" = "WiZ removed.";
 "status.hue.none.found" = "No Hue bridge found.";
 "status.hue.found" = "%ld Hue bridge(s) found.";
@@ -384,7 +384,7 @@
 "error.tuya.credentials.incomplete" = "Tuya credentials incomplete. Open Settings.";
 "status.select.rgb" = "Select at least one RGB lamp.";
 "status.select.lamp" = "Select at least one lamp.";
-"status.color.applied" = "Color applied to %ld lamp(s).";
+"status.color.applied" = "Color applied to lamps: %ld.";
 "status.group.on" = "Group turned on.";
 "status.group.off" = "Group turned off.";
 "status.all.on" = "All lamps turned on.";
@@ -395,14 +395,16 @@
 "status.scene.applied" = "Scene “%@” applied.";
 "status.scene.deleted" = "Scene deleted.";
 "status.scenes.unreadable" = "Local scenes are unreadable.";
-"status.ambiance.no.rgb" = "No online RGB lamp to apply this ambiance.";
-"status.ambiance.applied.all" = "Ambiance %@ applied to all RGB lamps.";
-"status.ambiance.applied.count" = "Ambiance %@ applied to %ld lamp(s).";
+"status.ambiance.no.rgb" = "No online RGB lamp to apply this scene.";
+"status.ambiance.applied.all" = "Scene %@ applied to all RGB lamps.";
+"status.ambiance.applied.count" = "Scene %@ applied to lamps: %ld.";
 "status.automation.saved" = "Automation “%@” saved.";
 "status.automation.deleted" = "Automation deleted.";
 "status.adaptive.saved" = "Adaptive settings saved.";
 "lamps.room.scenes" = "Scenes";
-"circadian.keyframe.brightness" = "%ld%% bri.";
+"circadian.keyframe.brightness" = "%ld%% brightness";
+"format.percent" = "%ld%%";
+"format.kelvin" = "%ld K";
 
 /* Tooltips */
 "help.search.clear" = "Clear search";
@@ -436,7 +438,7 @@
 /* Adaptive lighting schedule editor */
 "circadian.schedule" = "Daily schedule";
 "circadian.schedule.hint" = "Click a time point to change it. Values between points are blended; press Save to apply.";
-"circadian.now" = "Now: %ld %% · %ld K";
+"circadian.now" = "Now: %ld%% · %ld K";
 "circadian.keyframe.add" = "Add time point";
 "circadian.keyframe.delete" = "Remove";
 "circadian.keyframe.edit" = "Edit this time point";
@@ -445,7 +447,7 @@
 
 /* Focus automation & login item */
 "focus.automation.title" = "Shortcuts automation";
-"focus.automation.hint" = "macOS doesn't tell apps which Focus is active. In Shortcuts, open Automation, create \"When <Focus> turns on\" with the action \"Open URLs\", and paste the URL of the matching mapping below. Add \"When <Focus> turns off\" with the Focus off URL. Each mapping above gets its own URL.";
+"focus.automation.hint" = "macOS doesn't tell apps which Focus is active. In Shortcuts, open Automation, create “When <Focus> turns on” with the action “Open URLs”, and paste the URL of the matching mapping below. Add “When <Focus> turns off” with the Focus off URL. Each mapping above gets its own URL.";
 "focus.automation.off" = "Focus off";
 "focus.automation.copy.help" = "Copy URL";
 "login.item.title" = "Launch at login";
@@ -466,7 +468,7 @@
 
 /* Editable presets & reset */
 "settings.scenes.restore.title" = "Restore default scenes";
-"settings.scenes.restore.detail" = "Bring back the built-in scenes and reset their edits";
+"settings.scenes.restore.detail" = "Reset the built-in scenes";
 "settings.scenes.restore.button" = "Restore";
 "help.scenes.restore" = "Re-add deleted built-in scenes and reset modified ones to their defaults. Your own scenes are kept.";
 "status.scenes.restored" = "Default scenes restored";
@@ -501,8 +503,8 @@
 /* Service errors (B1) */
 "error.wiz.device" = "WiZ: %@";
 "error.wiz.not.applied" = "the bulb did not apply the command";
-"error.hue.unauthorized" = "Hue: the bridge no longer accepts this app. Pair the bridge again in Settings.";
-"error.yeelight.refused" = "Yeelight: connection refused. Make sure LAN Control is enabled for this bulb.";
+"error.hue.unauthorized" = "The bridge no longer accepts this app. Pair it again in Settings.";
+"error.yeelight.refused" = "Connection refused. Make sure LAN Control is enabled for this bulb.";
 
 /* Data safety (B3) */
 "status.data.read.failed" = "Couldn't read %@. Using defaults for now.";

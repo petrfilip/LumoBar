@@ -85,7 +85,7 @@ extension SettingsView {
                 }
 
                 if isAddingAutomation {
-                    AutomationEditor(isPresented: $isAddingAutomation) { automation in
+                    AutomationEditor(isPresented: $isAddingAutomation, userScenes: appState.userScenes) { automation in
                         appState.saveAutomation(automation)
                     }
                     .transition(.opacity.combined(with: .move(edge: .top)))
@@ -110,6 +110,8 @@ extension SettingsView {
 
 private struct AutomationEditor: View {
     @Binding var isPresented: Bool
+    /// The user's scenes, so built-in presets show the name the user gave them.
+    var userScenes: [UserLightScene]
     var onSave: (Automation) -> Void
 
     @State private var name = ""
@@ -148,8 +150,8 @@ private struct AutomationEditor: View {
             }
 
             Picker("a11y.automation.action", selection: $action) {
-                ForEach(actions, id: \.title) { a in
-                    Label(a.title, systemImage: a.icon).tag(a)
+                ForEach(actions, id: \.self) { a in
+                    Label(a.title(userScenes: userScenes), systemImage: a.icon).tag(a)
                 }
             }
             .labelsHidden()
@@ -175,6 +177,9 @@ private struct AutomationEditor: View {
                             .liquidGlassCircle(tint: weekdays.contains(day) ? LCPalette.accent.opacity(0.50) : nil)
                     }
                     .buttonStyle(.plain)
+                    .help(L10n.dayNames[safe: day - 1] ?? "")
+                    .accessibilityLabel(L10n.dayNames[safe: day - 1] ?? "")
+                    .accessibilityAddTraits(weekdays.contains(day) ? .isSelected : [])
                 }
                 Spacer()
             }
@@ -182,7 +187,7 @@ private struct AutomationEditor: View {
             HStack(spacing: 8) {
                 Button {
                     let a = Automation(
-                        name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? action.title : name.trimmingCharacters(in: .whitespacesAndNewlines),
+                        name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? action.title(userScenes: userScenes) : name.trimmingCharacters(in: .whitespacesAndNewlines),
                         hour: hour, minute: minute,
                         weekdays: weekdays, action: action
                     )

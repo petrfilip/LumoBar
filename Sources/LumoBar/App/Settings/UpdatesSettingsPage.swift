@@ -31,7 +31,7 @@ extension SettingsView {
                 .disabled(!service.automaticChecksEnabled)
                 .opacity(service.automaticChecksEnabled ? 1 : 0.5)
 
-                infoRow("updates.current.version", value: "\(service.currentVersion) (\(service.currentBuild))", icon: "number")
+                infoRow("updates.current.version", value: L10n.aboutVersionValue(version: service.currentVersion, build: service.currentBuild), icon: "number")
             }
 
             Button {
@@ -49,7 +49,7 @@ extension SettingsView {
             .opacity(service.canCheckForUpdates ? 1 : 0.55)
 
             if let date = service.lastCheckedAt {
-                hintText(L10n.updatesLastCheck(date.formatted(date: .omitted, time: .shortened)))
+                hintText(L10n.updatesLastCheck(date.formatted(date: .abbreviated, time: .shortened)))
             }
         }
     }

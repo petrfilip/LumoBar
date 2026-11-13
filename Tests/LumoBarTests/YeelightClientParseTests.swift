@@ -48,7 +48,7 @@ final class YeelightClientParseTests: XCTestCase {
         guard case LampControlError.yeelight(let message) = error else {
             return XCTFail("expected LampControlError.yeelight, got \(error)")
         }
-        XCTAssertEqual(message, "Yeelight: unsupported method (-1)")
+        XCTAssertEqual(message, "unsupported method (-1)")
         XCTAssertEqual(error.localizedDescription, message)
     }
 

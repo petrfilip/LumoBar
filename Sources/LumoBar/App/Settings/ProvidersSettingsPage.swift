@@ -90,7 +90,7 @@ extension SettingsView {
         Button(role: .destructive) {
             Task { await appState.disconnectProvider(kind) }
         } label: {
-            Label("provider.disconnect", systemImage: "link.badge.minus")
+            Label("provider.disconnect", systemImage: "minus.circle")
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
         }
