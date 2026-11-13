@@ -102,7 +102,6 @@ summary:focus-visible {
 
 .brand,
 .nav-links,
-.language-switcher,
 .site-footer div {
   display: flex;
   align-items: center;
@@ -131,31 +130,6 @@ summary:focus-visible {
 .site-footer a:hover {
   color: var(--color-polar-white);
   text-decoration: underline;
-}
-
-.language-switcher {
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid rgba(193, 193, 193, 0.16);
-  border-radius: var(--radius-lg);
-  background: rgba(8, 8, 8, 0.62);
-}
-
-.language-switcher a {
-  min-width: 32px;
-  min-height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  color: var(--color-ash-gray);
-  font-family: var(--font-input);
-  font-size: 12px;
-}
-
-.language-switcher a[aria-current="page"] {
-  background: var(--color-dark-carbon);
-  color: var(--color-polar-white);
 }
 
 .header-cta {
