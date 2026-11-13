@@ -4,7 +4,7 @@ final class GoveeClient {
     private let baseURL = URL(string: "https://developer-api.govee.com/v1")!
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = ServiceSession.cloud) {
         self.session = session
     }
 

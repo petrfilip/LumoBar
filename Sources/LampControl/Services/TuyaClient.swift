@@ -9,7 +9,7 @@ final class TuyaClient {
     private var accessToken = ""
     private var tokenExpiresAt = Date.distantPast
 
-    init(accessId: String, accessSecret: String, endpoint: String, session: URLSession = .shared) throws {
+    init(accessId: String, accessSecret: String, endpoint: String, session: URLSession = ServiceSession.cloud) throws {
         self.accessId = accessId
         self.accessSecret = accessSecret
         guard let endpointURL = URL(string: endpoint) else {

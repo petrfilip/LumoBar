@@ -3,7 +3,7 @@ import Foundation
 final class HueClient {
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = ServiceSession.lan) {
         self.session = session
     }
 
