@@ -188,6 +188,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            appState.noteUserActive()
             let (view, rect) = popoverAnchor(for: button)
             // Size for the display the popover will open on *before* showing
             // it: resizing right after `show` made it jump / reposition.

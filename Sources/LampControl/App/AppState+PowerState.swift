@@ -40,6 +40,13 @@ extension AppState {
         }
     }
 
+    /// The user just opened the popover, so the Mac is awake and unlocked. Clears every pause
+    /// reason: a missed unlock/wake notification (the screen-lock ones are undocumented) must not
+    /// leave background polling off for good.
+    func noteUserActive() {
+        for reason in PollingPauseReason.allCases { resumePolling(for: reason) }
+    }
+
     func removePowerObservers() {
         for observer in powerObservers { observer.center.removeObserver(observer.token) }
         powerObservers.removeAll()
