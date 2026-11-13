@@ -509,6 +509,7 @@
 "status.data.recovered.unreadable" = "Le fichier %1$@ était illisible. Le fichier endommagé a été conservé sous le nom %2$@ et l'app a démarré avec les valeurs par défaut.";
 "status.data.recovered.partial" = "Certaines entrées de %1$@ étaient illisibles et ont été ignorées. Une copie de l'original a été conservée sous le nom %2$@.";
 "status.data.recovered.many" = "%d fichiers de données n'ont pas pu être lus entièrement. Des copies des originaux ont été conservées en fichiers .corrupt dans le dossier LumoBar.";
+"status.import.legacy" = "Vos réglages ont été importés depuis LampControl ; LampControl lui-même n'a pas été modifié. Si vous y utilisiez « Ouvrir à la connexion », réactivez-le pour LumoBar dans les Réglages.";
 
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "Supprimer la scène « %@ » ?";

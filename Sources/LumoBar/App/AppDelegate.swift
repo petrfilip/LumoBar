@@ -8,8 +8,14 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
-    private let appState = AppState()
+    private let appState: AppState
     private var cancellables = Set<AnyCancellable>()
+
+    /// `legacyImport` is what the first-launch import from LampControl copied (see `LegacyImport`).
+    init(legacyImport: LegacyImportReport? = nil) {
+        appState = AppState(legacyImport: legacyImport)
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configurePopover()

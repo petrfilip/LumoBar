@@ -8,6 +8,9 @@ protocol SecretStoring {
     func deleteSecret(service: String, account: String) throws
     /// Removes every item of `service`, whatever its account (used for per-device secrets).
     func deleteAllSecrets(service: String) throws
+    /// The accounts of every item of `service` (attributes only: nothing is decrypted, so this
+    /// never asks the user to unlock anything). Empty when there are none.
+    func accounts(service: String) throws -> [String]
 }
 
 extension SecretStoring {
@@ -106,6 +109,23 @@ final class KeychainStore: SecretStoring {
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.delete", comment: ""), status))
         }
+    }
+
+    func accounts(service: String) throws -> [String] {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecReturnAttributes as String: true,
+            kSecMatchLimit as String: kSecMatchLimitAll
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound { return [] }
+        guard status == errSecSuccess else {
+            throw LampControlError.keychain(String(format: NSLocalizedString("error.keychain.read", comment: ""), status))
+        }
+        let rows = result as? [[String: Any]] ?? []
+        return rows.compactMap { $0[kSecAttrAccount as String] as? String }
     }
 
     private func baseQuery(service: String, account: String) -> [String: Any] {

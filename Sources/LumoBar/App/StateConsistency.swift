@@ -225,10 +225,10 @@ enum BannerPolicy {
     static let informationalLifetime: TimeInterval = 6
     static let errorLifetime: TimeInterval = 15
 
-    /// `nil` means "until the user dismisses it". Sticky errors are the ones that must not be
-    /// missed (a data file that was set aside), so they never expire.
+    /// `nil` means "until the user dismisses it". Sticky banners are the ones that must not be
+    /// missed (a data file that was set aside, a one-time import), so they never expire.
     static func lifetime(isError: Bool, isSticky: Bool) -> TimeInterval? {
-        if isError { return isSticky ? nil : errorLifetime }
-        return informationalLifetime
+        if isSticky { return nil }
+        return isError ? errorLifetime : informationalLifetime
     }
 }

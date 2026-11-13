@@ -509,6 +509,7 @@
 "status.data.recovered.unreadable" = "No se pudo leer %1$@. El archivo dañado se guardó como %2$@ y la app arrancó con los valores predeterminados.";
 "status.data.recovered.partial" = "Algunas entradas de %1$@ no se pudieron leer y se omitieron. Se guardó una copia del original como %2$@.";
 "status.data.recovered.many" = "No se pudieron leer por completo %d archivos de datos. Se guardaron copias de los originales como archivos .corrupt en la carpeta LumoBar.";
+"status.import.legacy" = "Se importaron tus ajustes de LampControl; LampControl no se ha modificado. Si usabas «Abrir al iniciar sesión» allí, vuelve a activarlo para LumoBar en Ajustes.";
 
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "¿Eliminar la escena «%@»?";

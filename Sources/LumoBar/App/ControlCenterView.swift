@@ -155,7 +155,7 @@ struct ControlCenterView: View {
             Text(appState.message)
                 .font(LCTypo.caption())
                 .foregroundStyle(LCPalette.ink)
-                .lineLimit(isErrorMessage ? 3 : 2)
+                .lineLimit(appState.messageIsSticky ? 5 : (isErrorMessage ? 3 : 2))
             Spacer(minLength: 0)
             Button {
                 appState.dismissMessage()

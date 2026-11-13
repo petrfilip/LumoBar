@@ -8,14 +8,26 @@ final class MemorySecrets: SecretStoring {
     var items: [String: String] = [:]
     /// Makes every write fail, like a locked or unavailable Keychain.
     var failWrites = false
+    /// Makes every read fail, like a Keychain that was not unlocked or a prompt that was denied.
+    var failReads = false
+    /// Every `readSecret` call, to check that an item is read at most once.
+    private(set) var reads: [String] = []
 
     private func key(_ service: String, _ account: String) -> String { service + "/" + account }
-    func readSecret(service: String, account: String) throws -> String { items[key(service, account)] ?? "" }
+    func readSecret(service: String, account: String) throws -> String {
+        reads.append(key(service, account))
+        if failReads { throw Failure() }
+        return items[key(service, account)] ?? ""
+    }
     func saveSecret(_ secret: String, service: String, account: String) throws {
         if failWrites { throw Failure() }
         items[key(service, account)] = secret
     }
     func deleteSecret(service: String, account: String) throws { items[key(service, account)] = nil }
+    func accounts(service: String) throws -> [String] {
+        if failReads { throw Failure() }
+        return items.keys.filter { $0.hasPrefix(service + "/") }.map { String($0.dropFirst(service.count + 1)) }.sorted()
+    }
     func deleteAllSecrets(service: String) throws {
         for k in items.keys where k.hasPrefix(service + "/") { items[k] = nil }
     }

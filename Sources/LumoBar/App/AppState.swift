@@ -122,7 +122,11 @@ final class AppState: ObservableObject {
     /// nothing re-creates the files that were just removed.
     var isResettingApp = false
 
-    init() {
+    /// What the first-launch import from LampControl copied; announced once by `runStartupSequence`.
+    let legacyImport: LegacyImportReport?
+
+    init(legacyImport: LegacyImportReport? = nil) {
+        self.legacyImport = legacyImport
         configureYeelightLiveSync()
         configurePollingGate()
         loadScenes()
@@ -268,6 +272,13 @@ final class AppState: ObservableObject {
     func showError(_ text: String, sticky: Bool = false) {
         message = text
         messageIsError = true
+        messageIsSticky = sticky
+        scheduleMessageDismiss()
+    }
+
+    /// An informational banner; `sticky` keeps it until the user dismisses it.
+    func showNotice(_ text: String, sticky: Bool = false) {
+        message = text
         messageIsSticky = sticky
         scheduleMessageDismiss()
     }

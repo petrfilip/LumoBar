@@ -509,6 +509,7 @@
 "status.data.recovered.unreadable" = "%1$@ could not be read. The damaged file was kept as %2$@ and the app started with defaults.";
 "status.data.recovered.partial" = "Some entries in %1$@ could not be read and were skipped. A copy of the original was kept as %2$@.";
 "status.data.recovered.many" = "%d data files could not be fully read. Copies of the originals were kept as .corrupt files in the LumoBar folder.";
+"status.import.legacy" = "Imported your settings from LampControl; LampControl itself was left untouched. If you used “Launch at login” there, turn it on again for LumoBar in Settings.";
 
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "Delete the scene “%@”?";

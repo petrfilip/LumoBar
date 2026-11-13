@@ -509,6 +509,7 @@
 "status.data.recovered.unreadable" = "Soubor %1$@ nešlo přečíst. Poškozený soubor byl uložen jako %2$@ a aplikace se spustila s výchozími hodnotami.";
 "status.data.recovered.partial" = "Některé položky v souboru %1$@ nešlo přečíst a byly přeskočeny. Kopie původního souboru byla uložena jako %2$@.";
 "status.data.recovered.many" = "Datové soubory (%d) se nepodařilo přečíst celé. Kopie originálů byly uloženy jako soubory .corrupt ve složce LumoBar.";
+"status.import.legacy" = "Nastavení z LampControl bylo převzato; samotný LampControl zůstal beze změny. Pokud jste tam používali „Spustit po přihlášení“, zapněte to znovu pro LumoBar v Nastavení.";
 
 /* Concurrency & state (B4) */
 "scene.delete.confirm" = "Smazat scénu „%@“?";

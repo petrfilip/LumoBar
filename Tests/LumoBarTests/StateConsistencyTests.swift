@@ -222,6 +222,7 @@ final class BannerPolicyTests: XCTestCase {
 
     func testStickyErrorsNeverExpire() {
         XCTAssertNil(BannerPolicy.lifetime(isError: true, isSticky: true))
+        XCTAssertNil(BannerPolicy.lifetime(isError: false, isSticky: true))
     }
 }
 

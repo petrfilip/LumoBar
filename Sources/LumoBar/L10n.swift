@@ -339,6 +339,7 @@ enum L10n {
             return String(format: s("status.data.recovered.partial"), event.fileName, event.backupName)
         }
     }
+    static var legacyImported: String { s("status.import.legacy") }
     static func resetFailed(_ items: String) -> String { String(format: s("status.reset.failed"), items) }
     static var ambianceNoRGB: String { s("status.ambiance.no.rgb") }
     static func ambianceAppliedToAll(_ title: String) -> String {

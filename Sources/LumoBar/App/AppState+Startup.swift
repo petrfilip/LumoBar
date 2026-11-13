@@ -25,6 +25,7 @@ extension AppState {
         await loadRoomsAndMigrateIfNeeded()
         loadFocusMappings()
         reportDataRecoveries()
+        reportLegacyImport()
         startAutoSync()
         finishFocusAutomationSetup()
         reconcileYeelightLiveSync()
@@ -61,6 +62,13 @@ extension AppState {
         let events = RecoveryLog.shared.drain()
         guard !events.isEmpty else { return }
         showError(L10n.dataRecovered(events), sticky: true)
+    }
+
+    /// One informational banner after an import that copied something. It stays until dismissed
+    /// (the popover is usually closed at launch) but never replaces an error the user has not seen.
+    private func reportLegacyImport() {
+        guard legacyImport?.copiedAnything == true, !(messageIsError && !message.isEmpty) else { return }
+        showNotice(L10n.legacyImported, sticky: true)
     }
 
     private func presentOnboardingIfNeeded() {
