@@ -9,6 +9,15 @@ enum TuyaRegion: String, Codable, CaseIterable, Hashable {
     case custom
 }
 
+extension TuyaRegion {
+    /// A region written by a newer version decodes as `.custom`: the stored endpoint is kept, so
+    /// the account still works and the file is not rejected as a whole.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = TuyaRegion(rawValue: raw) ?? .custom
+    }
+}
+
 struct TuyaSettings: Codable, Equatable {
     var accessId = ""
     var accessSecret = ""
@@ -46,6 +55,16 @@ struct StoredSettings: Codable {
     var endpoint: String
     var uid: String
     var region: TuyaRegion
+
+    enum CodingKeys: String, CodingKey { case accessId, endpoint, uid, region }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        accessId = try c.decodeIfPresent(String.self, forKey: .accessId) ?? ""
+        endpoint = try c.decodeIfPresent(String.self, forKey: .endpoint) ?? TuyaRegion.eu.defaultEndpoint
+        uid = try c.decodeIfPresent(String.self, forKey: .uid) ?? ""
+        region = try c.decodeIfPresent(TuyaRegion.self, forKey: .region) ?? .eu
+    }
 
     init(settings: TuyaSettings) {
         accessId = settings.accessId.trimmingCharacters(in: .whitespacesAndNewlines)

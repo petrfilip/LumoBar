@@ -41,6 +41,10 @@ struct Automation: Codable, Identifiable {
     var action: AutomationAction
     var lastFiredDate: Date?
 
+    enum CodingKeys: String, CodingKey {
+        case id, name, isEnabled, hour, minute, weekdays, action, lastFiredDate
+    }
+
     var timeString: String {
         String(format: "%02d:%02d", hour, minute)
     }
@@ -59,6 +63,22 @@ struct Automation: Codable, Identifiable {
             guard weekdays.contains(wd) else { return false }
         }
         return true
+    }
+}
+
+extension Automation {
+    /// Explicit so fields that were added later fall back to their defaults for old files
+    /// (synthesized `Decodable` ignores the property defaults).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decode(String.self, forKey: .name)
+        isEnabled = try c.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        hour = try c.decode(Int.self, forKey: .hour)
+        minute = try c.decode(Int.self, forKey: .minute)
+        weekdays = try c.decodeIfPresent(Set<Int>.self, forKey: .weekdays) ?? []
+        action = try c.decode(AutomationAction.self, forKey: .action)
+        lastFiredDate = try c.decodeIfPresent(Date.self, forKey: .lastFiredDate)
     }
 }
 

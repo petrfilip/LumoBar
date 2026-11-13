@@ -8,6 +8,22 @@ struct CircadianKeyframe: Codable, Identifiable, Equatable {
     var temperature: Int     // Kelvin
 
     var minuteOfDay: Int { hour * 60 + minute }
+
+    enum CodingKeys: String, CodingKey {
+        case id, hour, minute, brightness, temperature
+    }
+}
+
+extension CircadianKeyframe {
+    /// Explicit so a file without `id` still decodes (synthesized `Decodable` ignores the default).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        hour = try c.decode(Int.self, forKey: .hour)
+        minute = try c.decode(Int.self, forKey: .minute)
+        brightness = try c.decode(Int.self, forKey: .brightness)
+        temperature = try c.decode(Int.self, forKey: .temperature)
+    }
 }
 
 struct CircadianSettings: Codable, Equatable {
@@ -15,6 +31,10 @@ struct CircadianSettings: Codable, Equatable {
     var applyBrightness: Bool = true
     var applyTemperature: Bool = true
     var keyframes: [CircadianKeyframe]
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, applyBrightness, applyTemperature, keyframes
+    }
 
     static let defaultKeyframes: [CircadianKeyframe] = [
         CircadianKeyframe(hour:  6, minute: 0, brightness: 50,  temperature: 4000),
@@ -73,5 +93,17 @@ struct CircadianSettings: Codable, Equatable {
             brightness:   Int(round(Double(a.brightness)   + t * Double(b.brightness   - a.brightness))),
             temperature:  Int(round(Double(a.temperature)  + t * Double(b.temperature  - a.temperature)))
         )
+    }
+}
+
+extension CircadianSettings {
+    /// Explicit so the flags added later fall back to their defaults for old files, and one bad
+    /// keyframe does not discard the schedule.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled = try c.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? false
+        applyBrightness = try c.decodeIfPresent(Bool.self, forKey: .applyBrightness) ?? true
+        applyTemperature = try c.decodeIfPresent(Bool.self, forKey: .applyTemperature) ?? true
+        keyframes = try c.decodeLossyArray(CircadianKeyframe.self, forKey: .keyframes, default: Self.defaultKeyframes)
     }
 }

@@ -100,6 +100,27 @@ struct UserLightScene: Identifiable, Codable, Hashable {
 
     var isCapture: Bool { snapshots != nil }
 
+    enum CodingKeys: String, CodingKey {
+        case id, title, icon, color, snapshots, createdAt, presetId
+    }
+
+    /// Explicit so one snapshot of a lamp whose provider this version does not know is skipped
+    /// instead of making the whole scene (and with it the scene file) unreadable.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        icon = try c.decode(String.self, forKey: .icon)
+        color = try c.decode(HSVColor.self, forKey: .color)
+        if try !c.contains(.snapshots) || c.decodeNil(forKey: .snapshots) {
+            snapshots = nil
+        } else {
+            snapshots = try c.decodeLossyArray(LampSnapshot.self, forKey: .snapshots)
+        }
+        createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        presetId = try c.decodeIfPresent(String.self, forKey: .presetId)
+    }
+
     init(
         id: UUID = UUID(),
         title: String,

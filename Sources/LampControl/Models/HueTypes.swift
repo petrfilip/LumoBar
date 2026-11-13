@@ -9,6 +9,18 @@ struct HueSettings: Codable, Equatable {
         !bridgeIP.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+
+    enum CodingKeys: String, CodingKey { case bridgeID, bridgeIP, username }
+}
+
+extension HueSettings {
+    /// Explicit so a field missing from an old file falls back to its default.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bridgeID = try c.decodeIfPresent(String.self, forKey: .bridgeID) ?? ""
+        bridgeIP = try c.decodeIfPresent(String.self, forKey: .bridgeIP) ?? ""
+        username = try c.decodeIfPresent(String.self, forKey: .username) ?? ""
+    }
 }
 
 struct HueBridge: Identifiable, Codable, Equatable {

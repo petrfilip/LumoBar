@@ -15,6 +15,10 @@ struct FocusMapping: Codable, Identifiable, Equatable {
     var sceneId: UUID?           // UserLightScene ID or preset scene ID
     var isEnabled: Bool = true
 
+    enum CodingKeys: String, CodingKey {
+        case id, focusIdentifier, focusDisplayName, sceneId, isEnabled
+    }
+
     init(id: String = UUID().uuidString, focusIdentifier: String, focusDisplayName: String, sceneId: UUID? = nil, isEnabled: Bool = true) {
         self.id = id
         self.focusIdentifier = focusIdentifier
@@ -25,6 +29,18 @@ struct FocusMapping: Codable, Identifiable, Equatable {
 }
 
 extension FocusMapping {
+    /// Explicit so an older file without `id` / `isEnabled` still decodes (synthesized `Decodable`
+    /// ignores the property defaults).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString,
+            focusIdentifier: try c.decode(String.self, forKey: .focusIdentifier),
+            focusDisplayName: try c.decodeIfPresent(String.self, forKey: .focusDisplayName) ?? "",
+            sceneId: try c.decodeIfPresent(UUID.self, forKey: .sceneId),
+            isEnabled: try c.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true)
+    }
+
     /// True when `identifier` names this mapping's Focus. Identifiers are matched
     /// case-insensitively (and ignoring surrounding whitespace) because the
     /// `lampcontrol://focus?mode=` URL is resolved that way.

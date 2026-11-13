@@ -5,11 +5,33 @@ struct WizDevice: Codable, Identifiable {
     var name: String
     var host: String
     var port: Int = 38899
+
+    enum CodingKeys: String, CodingKey { case id, name, host, port }
+}
+
+extension WizDevice {
+    /// Explicit so fields added later fall back to their defaults for old files.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        host = try c.decode(String.self, forKey: .host)
+        port = try c.decodeIfPresent(Int.self, forKey: .port) ?? 38899
+    }
 }
 
 struct WizSettings: Codable {
     var devices: [WizDevice] = []
     var isConfigured: Bool { !devices.isEmpty }
+
+    enum CodingKeys: String, CodingKey { case devices }
+}
+
+extension WizSettings {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        devices = try c.decodeLossyArray(WizDevice.self, forKey: .devices)
+    }
 }
 
 struct WizRequest: Encodable {

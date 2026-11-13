@@ -9,12 +9,37 @@ struct NanoleafDevice: Codable, Identifiable {
     var serial: String = ""
 
     var baseURL: String { "http://\(host):\(port)/api/v1" }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, host, port, authToken, serial
+    }
+}
+
+extension NanoleafDevice {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        host = try c.decode(String.self, forKey: .host)
+        port = try c.decodeIfPresent(Int.self, forKey: .port) ?? 16021
+        authToken = try c.decode(String.self, forKey: .authToken)
+        serial = try c.decodeIfPresent(String.self, forKey: .serial) ?? ""
+    }
 }
 
 struct NanoleafSettings: Codable {
     var devices: [NanoleafDevice] = []
 
     var isConfigured: Bool { !devices.isEmpty }
+
+    enum CodingKeys: String, CodingKey { case devices }
+}
+
+extension NanoleafSettings {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        devices = try c.decodeLossyArray(NanoleafDevice.self, forKey: .devices)
+    }
 }
 
 // API response types

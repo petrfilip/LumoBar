@@ -6,6 +6,15 @@ struct YeelightSettings: Codable, Equatable {
     var isConfigured: Bool {
         !bulbs.isEmpty
     }
+
+    enum CodingKeys: String, CodingKey { case bulbs }
+}
+
+extension YeelightSettings {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bulbs = try c.decodeLossyArray(YeelightBulb.self, forKey: .bulbs)
+    }
 }
 
 struct YeelightBulb: Codable, Equatable, Identifiable, Hashable {
