@@ -456,23 +456,61 @@ final class AppState: ObservableObject {
         }
     }
 
-    func saveLifxSettingsAndSync() async {
+    /// The credential is passed in by the settings form (which edits a draft): nothing typed
+    /// reaches the live settings until it is saved here. Returns true when it was stored.
+    @discardableResult
+    func saveLifxSettingsAndSync(token: String) async -> Bool {
+        var saved = false
         await runBusy {
-            lifxSettings = try lifxSettingsStore.save(lifxSettings)
+            lifxSettings = try lifxSettingsStore.save(LifxSettings(token: token))
+            saved = true
             lightProviders[.lifx] = nil
             let merged = await syncConfiguredProviders(dropPrevious: [.lifx])
             let synced = applySync(merged)
             finishManualSync(merged, message: L10n.lifxConnected(synced.count), ownedBy: .lifx)
         }
+        return saved
     }
 
-    func saveGoveeSettingsAndSync() async {
+    @discardableResult
+    func saveGoveeSettingsAndSync(apiKey: String) async -> Bool {
+        var saved = false
         await runBusy {
-            goveeSettings = try goveeSettingsStore.save(goveeSettings)
+            goveeSettings = try goveeSettingsStore.save(GoveeSettings(apiKey: apiKey))
+            saved = true
             lightProviders[.govee] = nil
             let merged = await syncConfiguredProviders(dropPrevious: [.govee])
             let synced = applySync(merged)
             finishManualSync(merged, message: L10n.goveeConnected(synced.count), ownedBy: .govee)
+        }
+        return saved
+    }
+
+    /// Forgets the credential of a cloud / bridge provider (Keychain item included) and drops
+    /// its lamps. Device-list providers (Yeelight, WiZ, Nanoleaf) are disconnected by removing
+    /// their devices.
+    func disconnectProvider(_ kind: LightProviderKind) async {
+        await runBusy {
+            switch kind {
+            case .lifx:
+                lifxSettings = try lifxSettingsStore.save(LifxSettings(token: ""))
+            case .govee:
+                goveeSettings = try goveeSettingsStore.save(GoveeSettings(apiKey: ""))
+            case .philipsHue:
+                var next = hueSettings
+                next.username = ""
+                hueSettings = try hueSettingsStore.save(next)
+            case .tuya:
+                let saved = try settingsStore.save(settings, clearSecret: true)
+                settings = saved.settings
+                hasSecret = saved.hasSecret
+            case .yeelight, .nanoleaf, .wiz:
+                return
+            }
+            lightProviders[kind] = nil
+            let merged = await syncConfiguredProviders(dropPrevious: [kind])
+            applySync(merged)
+            finishManualSync(merged, message: L10n.providerDisconnected(kind.title))
         }
     }
 
@@ -535,28 +573,37 @@ final class AppState: ObservableObject {
         }
     }
 
-    func saveSettings() async {
+    /// `draft` comes from the settings form; an empty `accessSecret` keeps the stored secret.
+    @discardableResult
+    func saveSettings(_ draft: TuyaSettings) async -> Bool {
+        var stored = false
         await runBusy {
-            let saved = try settingsStore.save(settings)
+            let saved = try settingsStore.save(draft)
             settings = saved.settings
             hasSecret = saved.hasSecret
+            stored = true
             lightProviders[.tuya] = nil
             message = L10n.settingsSaved
             selectedTab = .lamps
         }
+        return stored
     }
 
-    func saveSettingsAndSync() async {
+    @discardableResult
+    func saveSettingsAndSync(_ draft: TuyaSettings) async -> Bool {
+        var stored = false
         await runBusy {
-            let saved = try settingsStore.save(settings)
+            let saved = try settingsStore.save(draft)
             settings = saved.settings
             hasSecret = saved.hasSecret
+            stored = true
             lightProviders[.tuya] = nil
 
             let merged = await syncConfiguredProviders(dropPrevious: [.tuya])
             let synced = applySync(merged)
             finishManualSync(merged, message: synced.isEmpty ? L10n.settingsSavedNoneFound : L10n.lampsSynced(synced.count), ownedBy: .tuya)
         }
+        return stored
     }
 
     func syncLamps(silent: Bool = false) async {
@@ -1075,26 +1122,26 @@ final class AppState: ObservableObject {
         }
     }
 
-    func selectHueBridge(_ bridge: HueBridge) {
-        hueSettings.bridgeID = bridge.id
-        hueSettings.bridgeIP = bridge.internalipaddress
-        message = L10n.hueBridgeSelected
-    }
-
-    func pairHueBridge() async {
+    /// Pairs with the bridge at `bridgeIP` (the user pressed its button) and saves the result.
+    /// The address comes from the settings form's draft; it only becomes part of the live
+    /// settings once pairing worked. Returns true when the bridge was paired and stored.
+    @discardableResult
+    func pairHueBridge(bridgeID: String, bridgeIP: String) async -> Bool {
+        var paired = false
         await runBusy {
-            let bridgeIP = hueSettings.bridgeIP.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !bridgeIP.isEmpty else {
+            let ip = bridgeIP.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !ip.isEmpty else {
                 throw LampControlError.configuration(L10n.hueBridgeRequired)
             }
 
-            let username = try await hueClient.createUser(bridgeIP: bridgeIP)
+            let username = try await hueClient.createUser(bridgeIP: ip)
             guard !isResettingApp else { return }
-            hueSettings.username = username
-            hueSettings = try hueSettingsStore.save(hueSettings)
+            hueSettings = try hueSettingsStore.save(HueSettings(bridgeID: bridgeID, bridgeIP: ip, username: username))
+            paired = true
             lightProviders[.philipsHue] = nil
             message = L10n.hueBridgeConnected
         }
+        return paired
     }
 
     // MARK: - White handling

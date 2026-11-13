@@ -271,6 +271,9 @@ enum L10n {
         String(format: s("status.lamps.synced"), count)
     }
     static var lampsNoneFound: String { s("status.lamps.none.found") }
+    static func providerDisconnected(_ provider: String) -> String {
+        String(format: s("status.provider.disconnected"), provider)
+    }
     /// `provider` is a brand name and is not translated.
     static func providerSyncFailed(_ provider: String, detail: String) -> String {
         String(format: s("status.provider.sync.failed"), provider, detail)

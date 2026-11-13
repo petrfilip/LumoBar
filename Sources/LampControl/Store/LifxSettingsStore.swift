@@ -1,7 +1,12 @@
 import Foundation
 
 final class LifxSettingsStore {
-    private let keychain = KeychainStore()
+    private let keychain: SecretStoring
+
+    init(keychain: SecretStoring = KeychainStore()) {
+        self.keychain = keychain
+    }
+
     private let keychainService = KeychainStore.Item.lifx.service
     private let keychainAccount = KeychainStore.Item.lifx.account
 
@@ -11,9 +16,7 @@ final class LifxSettingsStore {
 
     func save(_ input: LifxSettings) throws -> LifxSettings {
         let token = input.token.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !token.isEmpty {
-            try keychain.saveSecret(token, service: keychainService, account: keychainAccount)
-        }
+        try keychain.writeOrDelete(token, service: keychainService, account: keychainAccount)
 
         return try load()
     }

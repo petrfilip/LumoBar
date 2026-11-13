@@ -9,10 +9,14 @@ final class SettingsStore {
         return SettingsSnapshot(settings: settings, hasSecret: !secret.isEmpty)
     }
 
-    func save(_ input: TuyaSettings) throws -> SettingsSnapshot {
+    /// An empty `accessSecret` means "keep the stored one" (the secret is never read back into
+    /// the form); only `clearSecret` removes it from the Keychain.
+    func save(_ input: TuyaSettings, clearSecret: Bool = false) throws -> SettingsSnapshot {
         let stored = StoredSettings(settings: input)
 
-        if !input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if clearSecret {
+            try keychain.deleteSecret(service: KeychainStore.Item.tuya.service, account: KeychainStore.Item.tuya.account)
+        } else if !input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             try keychain.saveSecret(input.accessSecret.trimmingCharacters(in: .whitespacesAndNewlines))
         }
 

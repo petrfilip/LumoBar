@@ -23,6 +23,13 @@ struct SettingsView: View {
     /// Unsaved edits to the adaptive schedule; `nil` = nothing edited.
     @State private var circadianDraft: CircadianSettings?
     @State private var copiedFocusMode: String?
+    // Credential forms edit a draft (`nil` = untouched) and only reach AppState when saved, so a
+    // half-typed token never makes a provider look "configured".
+    @State private var hueBridgeIPDraft: String?
+    @State private var hueBridgeIDDraft: String?
+    @State private var lifxTokenDraft: String?
+    @State private var goveeKeyDraft: String?
+    @State private var tuyaDraft: TuyaSettings?
 
     private let ink = LCTheme.ink
     private let muted = LCTheme.muted
@@ -270,6 +277,38 @@ struct SettingsView: View {
         }
     }
 
+    private var hueBridgeIP: Binding<String> {
+        Binding(get: { hueBridgeIPDraft ?? appState.hueSettings.bridgeIP }, set: { hueBridgeIPDraft = $0 })
+    }
+
+    private var hueBridgeID: String { hueBridgeIDDraft ?? appState.hueSettings.bridgeID }
+
+    private var lifxToken: Binding<String> {
+        Binding(get: { lifxTokenDraft ?? appState.lifxSettings.token }, set: { lifxTokenDraft = $0 })
+    }
+
+    private var goveeKey: Binding<String> {
+        Binding(get: { goveeKeyDraft ?? appState.goveeSettings.apiKey }, set: { goveeKeyDraft = $0 })
+    }
+
+    /// The Tuya form's values: the draft while editing, else what is saved.
+    private var tuya: Binding<TuyaSettings> {
+        Binding(get: { tuyaDraft ?? appState.settings }, set: { tuyaDraft = $0 })
+    }
+
+    private func disconnectButton(_ kind: LightProviderKind) -> some View {
+        Button(role: .destructive) {
+            Task { await appState.disconnectProvider(kind) }
+        } label: {
+            Label("provider.disconnect", systemImage: "link.badge.minus")
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+        }
+        .liquidGlassButtonStyle()
+        .help("help.provider.disconnect")
+        .disabled(appState.isBusy)
+    }
+
     private var hueSettings: some View {
         VStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
@@ -283,9 +322,15 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(appState.hueSettings.isConfigured ? "hue.connected" : "hue.connect")
                             .font(.system(size: 13, weight: .semibold))
-                        Text(appState.hueSettings.bridgeIP.isEmpty ? "hue.bridge.detect.hint" : appState.hueSettings.bridgeIP)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(muted)
+                        Group {
+                            if appState.hueSettings.bridgeIP.isEmpty {
+                                Text("hue.bridge.detect.hint")
+                            } else {
+                                Text(verbatim: appState.hueSettings.bridgeIP)
+                            }
+                        }
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(muted)
                     }
 
                     Spacer()
@@ -308,11 +353,13 @@ struct SettingsView: View {
                 VStack(spacing: 8) {
                     ForEach(appState.discoveredHueBridges) { bridge in
                         Button {
-                            appState.selectHueBridge(bridge)
+                            hueBridgeIDDraft = bridge.id
+                            hueBridgeIPDraft = bridge.internalipaddress
+                            appState.message = L10n.hueBridgeSelected
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: appState.hueSettings.bridgeID == bridge.id ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(appState.hueSettings.bridgeID == bridge.id ? Color.green : muted)
+                                Image(systemName: hueBridgeID == bridge.id ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(hueBridgeID == bridge.id ? Color.green : muted)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(bridge.id)
                                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
@@ -334,17 +381,24 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                formField("hue.bridge.ip", text: $appState.hueSettings.bridgeIP, icon: "network")
+                formField("hue.bridge.ip", text: hueBridgeIP, icon: "network")
 
                 Button {
-                    Task { await appState.pairHueBridge() }
+                    Task {
+                        if await appState.pairHueBridge(bridgeID: hueBridgeID, bridgeIP: hueBridgeIP.wrappedValue) {
+                            hueBridgeIPDraft = nil
+                            hueBridgeIDDraft = nil
+                        }
+                    }
                 } label: {
                     Label(appState.hueSettings.isConfigured ? "hue.reconnect" : "hue.connect.button", systemImage: "link")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 9)
                 }
                 .liquidGlassButtonStyle(prominent: true)
-                .disabled(appState.isBusy || appState.hueSettings.bridgeIP.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(appState.isBusy || hueBridgeIP.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                if appState.hueSettings.isConfigured { disconnectButton(.philipsHue) }
 
                 hint("hue.hint")
             }
@@ -374,7 +428,7 @@ struct SettingsView: View {
                     Spacer()
                 }
 
-                SecureField(appState.lifxSettings.isConfigured ? "lifx.token.saved" : "lifx.token.placeholder", text: $appState.lifxSettings.token)
+                SecureField(appState.lifxSettings.isConfigured ? "lifx.token.saved" : "lifx.token.placeholder", text: lifxToken)
                     .textFieldStyle(.plain)
                     .foregroundStyle(ink)
                     .autocorrectionDisabled()
@@ -383,14 +437,18 @@ struct SettingsView: View {
                     .liquidGlassSurface(radius: 13, tint: Color.white.opacity(0.08), interactive: true)
 
                 Button {
-                    Task { await appState.saveLifxSettingsAndSync() }
+                    Task {
+                        if await appState.saveLifxSettingsAndSync(token: lifxToken.wrappedValue) { lifxTokenDraft = nil }
+                    }
                 } label: {
                     Label("lifx.save", systemImage: "bolt.badge.checkmark")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 9)
                 }
                 .liquidGlassButtonStyle(prominent: true)
-                .disabled(appState.isBusy || appState.lifxSettings.token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(appState.isBusy || lifxToken.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                if appState.lifxSettings.isConfigured { disconnectButton(.lifx) }
 
                 hint("lifx.hint")
             }
@@ -420,7 +478,7 @@ struct SettingsView: View {
                     Spacer()
                 }
 
-                SecureField(appState.goveeSettings.isConfigured ? "govee.apikey.saved" : "govee.apikey.placeholder", text: $appState.goveeSettings.apiKey)
+                SecureField(appState.goveeSettings.isConfigured ? "govee.apikey.saved" : "govee.apikey.placeholder", text: goveeKey)
                     .textFieldStyle(.plain)
                     .foregroundStyle(ink)
                     .autocorrectionDisabled()
@@ -429,14 +487,18 @@ struct SettingsView: View {
                     .liquidGlassSurface(radius: 13, tint: Color.white.opacity(0.08), interactive: true)
 
                 Button {
-                    Task { await appState.saveGoveeSettingsAndSync() }
+                    Task {
+                        if await appState.saveGoveeSettingsAndSync(apiKey: goveeKey.wrappedValue) { goveeKeyDraft = nil }
+                    }
                 } label: {
                     Label("govee.save", systemImage: "bolt.badge.checkmark")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 9)
                 }
                 .liquidGlassButtonStyle(prominent: true)
-                .disabled(appState.isBusy || appState.goveeSettings.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(appState.isBusy || goveeKey.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                if appState.goveeSettings.isConfigured { disconnectButton(.govee) }
 
                 hint("govee.apikey.hint")
             }
@@ -1685,16 +1747,18 @@ struct SettingsView: View {
             setupSummary
 
             settingsGroup {
-                formField("tuya.access.id", text: $appState.settings.accessId, icon: "key")
+                formField("tuya.access.id", text: tuya.accessId, icon: "key")
                 secureField
                 settingsPicker
-                formField("tuya.endpoint", text: $appState.settings.endpoint, icon: "network")
-                formField("tuya.uid", text: $appState.settings.uid, icon: "person.crop.circle")
+                formField("tuya.endpoint", text: tuya.endpoint, icon: "network")
+                formField("tuya.uid", text: tuya.uid, icon: "person.crop.circle")
             }
 
             HStack(spacing: 8) {
                 Button {
-                    Task { await appState.saveSettings() }
+                    Task {
+                        if await appState.saveSettings(tuya.wrappedValue) { tuyaDraft = nil }
+                    }
                 } label: {
                     Label("tuya.save", systemImage: "checkmark.seal.fill")
                         .font(.system(size: 13, weight: .semibold))
@@ -1708,7 +1772,9 @@ struct SettingsView: View {
                 .opacity(appState.isBusy ? 0.55 : 1)
 
                 Button {
-                    Task { await appState.saveSettingsAndSync() }
+                    Task {
+                        if await appState.saveSettingsAndSync(tuya.wrappedValue) { tuyaDraft = nil }
+                    }
                 } label: {
                     Label("tuya.test", systemImage: "bolt.badge.checkmark")
                         .font(.system(size: 13, weight: .semibold))
@@ -1722,6 +1788,8 @@ struct SettingsView: View {
                 .opacity(appState.isBusy || !isSetupComplete ? 0.55 : 1)
             }
 
+            if appState.hasSecret { disconnectButton(.tuya) }
+
             hint("tuya.hint")
         }
     }
@@ -1730,7 +1798,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 6) {
             fieldLabel("tuya.access.secret", icon: "lock")
 
-            SecureField(appState.hasSecret ? "tuya.secret.placeholder" : "tuya.access.secret", text: $appState.settings.accessSecret)
+            SecureField(appState.hasSecret ? "tuya.secret.placeholder" : "tuya.access.secret", text: tuya.accessSecret)
                 .textFieldStyle(.plain)
                 .foregroundStyle(ink)
                 .autocorrectionDisabled()
@@ -1744,7 +1812,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 6) {
             fieldLabel("tuya.region", icon: "globe.europe.africa")
 
-            Picker("tuya.region", selection: $appState.settings.region) {
+            Picker("tuya.region", selection: tuya.region) {
                 Text("Europe").tag(TuyaRegion.eu)
                 Text("US West").tag(TuyaRegion.us)
                 Text("US East").tag(TuyaRegion.usEast)
@@ -1758,8 +1826,8 @@ struct SettingsView: View {
             .padding(.horizontal, 12)
             .frame(height: 38)
             .liquidGlassSurface(radius: 13, tint: Color.white.opacity(0.08), interactive: true)
-            .onChange(of: appState.settings.region) { _ in
-                appState.settings.applyEndpoint(for: appState.settings.region)
+            .onChange(of: tuya.wrappedValue.region) { region in
+                tuya.wrappedValue.applyEndpoint(for: region)
             }
         }
     }
@@ -2185,10 +2253,10 @@ struct SettingsView: View {
 
     private var setupSteps: [SetupStep] {
         [
-            SetupStep(title: "ID",     icon: "key.fill",              isComplete: !appState.settings.accessId.trimmed.isEmpty),
-            SetupStep(title: "Secret", icon: "lock.fill",             isComplete: appState.hasSecret || !appState.settings.accessSecret.trimmed.isEmpty),
-            SetupStep(title: "Region", icon: "globe.europe.africa.fill", isComplete: !appState.settings.endpoint.trimmed.isEmpty),
-            SetupStep(title: "UID",    icon: "person.fill",           isComplete: !appState.settings.uid.trimmed.isEmpty)
+            SetupStep(title: "ID",     icon: "key.fill",              isComplete: !tuya.wrappedValue.accessId.trimmed.isEmpty),
+            SetupStep(title: "Secret", icon: "lock.fill",             isComplete: appState.hasSecret || !tuya.wrappedValue.accessSecret.trimmed.isEmpty),
+            SetupStep(title: "Region", icon: "globe.europe.africa.fill", isComplete: !tuya.wrappedValue.endpoint.trimmed.isEmpty),
+            SetupStep(title: "UID",    icon: "person.fill",           isComplete: !tuya.wrappedValue.uid.trimmed.isEmpty)
         ]
     }
 

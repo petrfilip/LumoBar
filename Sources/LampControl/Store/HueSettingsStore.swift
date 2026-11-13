@@ -1,7 +1,12 @@
 import Foundation
 
 final class HueSettingsStore {
-    private let keychain = KeychainStore()
+    private let keychain: SecretStoring
+
+    init(keychain: SecretStoring = KeychainStore()) {
+        self.keychain = keychain
+    }
+
     private let keychainService = KeychainStore.Item.hue.service
     private let keychainAccount = KeychainStore.Item.hue.account
 
@@ -18,9 +23,7 @@ final class HueSettingsStore {
 
     func save(_ input: HueSettings) throws -> HueSettings {
         let username = input.username.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !username.isEmpty {
-            try keychain.saveSecret(username, service: keychainService, account: keychainAccount)
-        }
+        try keychain.writeOrDelete(username, service: keychainService, account: keychainAccount)
 
         let stored = HueSettings(
             bridgeID: input.bridgeID.trimmingCharacters(in: .whitespacesAndNewlines),

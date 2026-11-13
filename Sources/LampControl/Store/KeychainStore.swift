@@ -1,7 +1,26 @@
 import Foundation
 import Security
 
-final class KeychainStore {
+/// The part of the Keychain the settings stores use; a protocol so tests can use memory.
+protocol SecretStoring {
+    func readSecret(service: String, account: String) throws -> String
+    func saveSecret(_ secret: String, service: String, account: String) throws
+    func deleteSecret(service: String, account: String) throws
+}
+
+extension SecretStoring {
+    /// Saves `secret`, or removes the item when it is empty: clearing a field must forget the
+    /// secret, otherwise `load()` would bring the old one back.
+    func writeOrDelete(_ secret: String, service: String, account: String) throws {
+        if secret.isEmpty {
+            try deleteSecret(service: service, account: account)
+        } else {
+            try saveSecret(secret, service: service, account: account)
+        }
+    }
+}
+
+final class KeychainStore: SecretStoring {
     /// Every Keychain item LampControl creates (single source of truth, also
     /// used by "Reset all settings").
     struct Item: Equatable {

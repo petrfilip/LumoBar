@@ -1,7 +1,12 @@
 import Foundation
 
 final class GoveeSettingsStore {
-    private let keychain = KeychainStore()
+    private let keychain: SecretStoring
+
+    init(keychain: SecretStoring = KeychainStore()) {
+        self.keychain = keychain
+    }
+
     private let keychainService = KeychainStore.Item.govee.service
     private let keychainAccount = KeychainStore.Item.govee.account
 
@@ -11,9 +16,7 @@ final class GoveeSettingsStore {
 
     func save(_ input: GoveeSettings) throws -> GoveeSettings {
         let key = input.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !key.isEmpty {
-            try keychain.saveSecret(key, service: keychainService, account: keychainAccount)
-        }
+        try keychain.writeOrDelete(key, service: keychainService, account: keychainAccount)
 
         return try load()
     }
